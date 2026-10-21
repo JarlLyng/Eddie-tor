@@ -39,21 +39,37 @@ private struct ProjectInspector: View {
                     get: { editor.project.background.color },
                     set: { color in editor.edit(coalesce: "background") { $0.background = RGBA(color) } }
                 ), supportsOpacity: false)
+                Toggle("Magnetisk hovedspor (V1)", isOn: editor.projectBinding(\.magneticMain))
             }
             Section("Overblik") {
                 LabeledContent("Varighed", value: timecode(editor.project.duration, fps: editor.project.fps))
+                if editor.project.inPoint != nil || editor.project.outPoint != nil {
+                    LabeledContent("Ind / ud", value: "\(timecode(editor.project.inPoint ?? 0, fps: editor.project.fps)) – \(timecode(editor.project.outPoint ?? editor.project.duration, fps: editor.project.fps))")
+                }
                 LabeledContent("Klip", value: "\(editor.project.clips.count)")
                 LabeledContent("Medier", value: "\(editor.project.media.count)")
             }
-            Section("Genveje") {
+            Section("Genveje (som i Rush)") {
                 shortcut("Afspil / pause", "Mellemrum")
-                shortcut("Del klip", "S  eller  ⌘B")
-                shortcut("Slet klip", "⌫")
-                shortcut("Tilføj tekst", "T")
-                shortcut("Et billede frem / tilbage", "→  ←")
-                shortcut("Et sekund frem / tilbage", "⇧→  ⇧←")
-                shortcut("Zoom", "+  −")
-                shortcut("Fortryd", "⌘Z")
+                shortcut("Spol tilbage / stop / frem", "J  K  L")
+                shortcut("Et billede tilbage / frem", "←  →")
+                shortcut("Forrige / næste klip", "↑  ↓")
+                shortcut("Del klip", "S")
+                shortcut("Trim start / slut til hoved", "Q  W")
+                shortcut("Dupliker", "D")
+                shortcut("Ny tekst", "G")
+                shortcut("Adskil lyd", "E")
+                shortcut("Slet", "⌫")
+                shortcut("Tilføj overgang", "⌘D")
+                shortcut("Kopiér / klip ud / sæt ind", "⌘C  ⌘X  ⌘V")
+                shortcut("Ind- / udpunkt", "I  O")
+                shortcut("Gå til ind / ud", "⇧I  ⇧O")
+                shortcut("Ryd ind / ud / begge", "⌥I  ⌥O  ⌥X")
+                shortcut("Zoom ind / ud / hele", "=  −  \\")
+                shortcut("Snap / gentag", "⌘Y  ⌘L")
+                shortcut("Værktøjer", "⌘1 ⌘2 ⌘4 ⌘5 ⌘6")
+                shortcut("Stort preview / medier", "`  Y")
+                shortcut("Eksporter", "⌘E")
             }
         }
         .formStyle(.grouped)
@@ -71,67 +87,63 @@ private struct ClipInspector: View {
     private static let fontFamilies = NSFontManager.shared.availableFontFamilies
 
     var body: some View {
-        Form {
-            Section {
-                LabeledContent("Type", value: kindName)
-                if let media = editor.project.media(clip.mediaID) {
-                    LabeledContent("Fil") { Text(media.name).lineLimit(1).truncationMode(.middle) }
-                }
-                LabeledContent("Start") {
-                    TextField("", value: startBinding, format: .number.precision(.fractionLength(0...2)))
-                        .multilineTextAlignment(.trailing).frame(width: 80)
-                    Text("sek").foregroundStyle(.secondary)
-                }
-                LabeledContent("Varighed") {
-                    TextField("", value: durationBinding, format: .number.precision(.fractionLength(0...2)))
-                        .multilineTextAlignment(.trailing).frame(width: 80)
-                    Text("sek").foregroundStyle(.secondary)
+        let current = editor.selectedClip ?? clip
+        let tabs = InspectorTab.available(for: current, hasAudio: editor.project.media(clip.mediaID)?.hasAudio == true)
+        let tab = tabs.contains(editor.inspectorTab) ? editor.inspectorTab : tabs[0]
+        VStack(spacing: 0) {
+            Picker("", selection: Binding(get: { tab }, set: { editor.inspectorTab = $0 })) {
+                ForEach(tabs) { t in
+                    Image(systemName: t.icon).help("\(t.label) (⌘\(t.rawValue))").tag(t)
                 }
             }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
+            Text(tab.label).font(.caption).foregroundStyle(.secondary).padding(.top, 4)
 
-            if clip.kind == .title { titleSection }
-
-            if clip.kind == .video || clip.kind == .image {
-                Section("Billede") {
-                    Picker("Tilpasning", selection: editor.binding(clip.id, \.fill, fallback: clip.fill)) {
-                        Text("Udfyld rammen").tag(true)
-                        Text("Vis hele billedet").tag(false)
+            Form {
+                Section {
+                    LabeledContent("Type", value: kindName)
+                    if let media = editor.project.media(clip.mediaID) {
+                        LabeledContent("Fil") { Text(media.name).lineLimit(1).truncationMode(.middle) }
                     }
-                    slider("Størrelse", \.scale, 0.1...3, percent: true)
-                    slider("Vandret", \.offsetX, -1...1, percent: true)
-                    slider("Lodret", \.offsetY, -1...1, percent: true)
-                    Button("Nulstil placering") {
-                        editor.updateClip(clip.id) { $0.scale = 1; $0.offsetX = 0; $0.offsetY = 0 }
+                    LabeledContent("Start") {
+                        TextField("", value: startBinding, format: .number.precision(.fractionLength(0...2)))
+                            .multilineTextAlignment(.trailing).frame(width: 80)
+                            .disabled(editor.project.isMagnetic(current))
+                        Text("sek").foregroundStyle(.secondary)
                     }
-                    Text("Tip: træk i preview for at flytte billedet.").font(.caption).foregroundStyle(.secondary)
+                    LabeledContent("Varighed") {
+                        TextField("", value: Binding(get: { editor.selectedClip?.duration ?? clip.duration },
+                                                     set: { editor.setDuration(clip.id, $0) }),
+                                  format: .number.precision(.fractionLength(0...2)))
+                            .multilineTextAlignment(.trailing).frame(width: 80)
+                        Text("sek").foregroundStyle(.secondary)
+                    }
+                }
+
+                switch tab {
+                case .text: titleSections
+                case .transitions: transitionSections(current)
+                case .speed: speedSection(current)
+                case .audio: audioSection(current)
+                case .position: positionSections
+                }
+
+                Section {
+                    Button("Del ved afspilningshoved  (S)") { editor.splitAtPlayhead() }
+                    Button("Dupliker  (D)") { editor.duplicateSelection() }
+                    Button("Slet klip", role: .destructive) { editor.deleteSelection() }
                 }
             }
-
-            if clip.kind == .audio || (clip.kind == .video && editor.project.media(clip.mediaID)?.hasAudio == true) {
-                Section("Lyd") {
-                    slider("Lydstyrke", \.volume, 0...2, percent: true)
-                    Toggle("Slå lyd fra", isOn: Binding(
-                        get: { editor.selectedClip?.volume == 0 },
-                        set: { muted in editor.updateClip(clip.id) { $0.volume = muted ? 0 : 1 } }
-                    ))
-                }
-            }
-
-            Section(clip.kind == .audio ? "Fade" : "Fade ind og ud") {
-                slider("Fade ind", \.fadeIn, 0...3, unit: "s")
-                slider("Fade ud", \.fadeOut, 0...3, unit: "s")
-            }
-
-            Section {
-                Button("Del ved afspilningshoved") { editor.splitAtPlayhead() }
-                Button("Dupliker") { editor.duplicateSelection() }
-                Button("Slet klip", role: .destructive) { editor.deleteSelection() }
-            }
+            .formStyle(.grouped)
         }
-        .formStyle(.grouped)
     }
 
-    @ViewBuilder private var titleSection: some View {
+    // MARK: Text
+
+    @ViewBuilder private var titleSections: some View {
         Section("Tekst") {
             TextEditor(text: editor.binding(clip.id, \Clip.title!.text, fallback: clip.title?.text ?? ""))
                 .font(.body)
@@ -162,6 +174,147 @@ private struct ClipInspector: View {
         }
     }
 
+    // MARK: Transitions
+
+    @ViewBuilder private func transitionSections(_ current: Clip) -> some View {
+        if current.kind == .title {
+            Section("Fade") {
+                slider("Fade ind", \.fadeIn, 0...3, unit: "s")
+                slider("Fade ud", \.fadeOut, 0...3, unit: "s")
+            }
+        } else {
+            Section {
+                transitionPicker("Ved start", \.transitionIn, current: current)
+            } header: {
+                Text("Start")
+            } footer: {
+                if editor.project.isMagnetic(current) {
+                    Text("På hovedsporet glider klippet ind over klippet før, så overgangen bliver mellem de to.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            Section("Slut") {
+                transitionPicker("Ved slut", \.transitionOut, current: current)
+            }
+        }
+    }
+
+    @ViewBuilder private func transitionPicker(_ title: String, _ keyPath: WritableKeyPath<Clip, Transition?>, current: Clip) -> some View {
+        let transition = current[keyPath: keyPath]
+        Picker(title, selection: Binding<TransitionKind?>(
+            get: { transition?.kind },
+            set: { kind in
+                editor.updateClip(clip.id) { c in
+                    if let kind {
+                        c[keyPath: keyPath] = Transition(kind: kind, duration: c[keyPath: keyPath]?.duration ?? Editor.defaultTransition.duration)
+                    } else {
+                        c[keyPath: keyPath] = nil
+                    }
+                }
+            }
+        )) {
+            Text("Ingen").tag(TransitionKind?.none)
+            ForEach(TransitionKind.allCases) { Text($0.label).tag(TransitionKind?.some($0)) }
+        }
+        if let transition {
+            let value = Binding<Double>(
+                get: { editor.selectedClip?[keyPath: keyPath]?.duration ?? transition.duration },
+                set: { d in editor.updateClip(clip.id, coalesce: "\(keyPath)") { $0[keyPath: keyPath]?.duration = d } }
+            )
+            LabeledContent("Varighed") {
+                HStack {
+                    Slider(value: value, in: 0.1...3)
+                    Text(String(format: "%.1f s", value.wrappedValue))
+                        .font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(width: 44, alignment: .trailing)
+                }
+            }
+        }
+    }
+
+    // MARK: Speed
+
+    @ViewBuilder private func speedSection(_ current: Clip) -> some View {
+        let percent = Binding<Double>(
+            get: { (editor.selectedClip?.speed ?? clip.speed) * 100 },
+            set: { editor.setSpeed(clip.id, $0 / 100) }
+        )
+        Section("Hastighed") {
+            LabeledContent("Hastighed") {
+                HStack {
+                    Slider(value: percent, in: 10...400)
+                    TextField("", value: percent, format: .number.precision(.fractionLength(0)))
+                        .multilineTextAlignment(.trailing).frame(width: 50)
+                    Text("%").foregroundStyle(.secondary)
+                }
+            }
+            HStack {
+                ForEach([25, 50, 100, 200, 400], id: \.self) { p in
+                    Button("\(p) %") { editor.setSpeed(clip.id, Double(p) / 100) }
+                }
+            }
+            Toggle("Bevar tonehøjde", isOn: editor.binding(clip.id, \.maintainPitch, fallback: true))
+            LabeledContent("Kildelængde", value: String(format: "%.2f s", current.sourceDuration))
+            Text("Klippet bliver kortere eller længere, så den samme del af optagelsen vises. Op til 1000 % kan skrives i feltet.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: Audio
+
+    @ViewBuilder private func audioSection(_ current: Clip) -> some View {
+        Section("Lyd") {
+            slider("Lydstyrke", \.volume, 0...2, percent: true)
+            Toggle("Slå lyd fra", isOn: Binding(
+                get: { editor.selectedClip?.volume == 0 },
+                set: { muted in editor.updateClip(clip.id) { $0.volume = muted ? 0 : 1 } }
+            ))
+            slider("Fade ind", \.fadeIn, 0...3, unit: "s")
+            slider("Fade ud", \.fadeOut, 0...3, unit: "s")
+            if current.kind == .video {
+                Button("Adskil lyd til eget spor  (E)") { editor.separateAudio() }
+            }
+        }
+    }
+
+    // MARK: Position
+
+    @ViewBuilder private var positionSections: some View {
+        Section("Størrelse og placering") {
+            Picker("Tilpasning", selection: editor.binding(clip.id, \.fill, fallback: clip.fill)) {
+                Text("Udfyld rammen").tag(true)
+                Text("Vis hele billedet").tag(false)
+            }
+            slider("Størrelse", \.scale, 0.1...3, percent: true)
+            slider("Vandret", \.offsetX, -1...1, percent: true)
+            slider("Lodret", \.offsetY, -1...1, percent: true)
+            slider("Rotation", \.rotation, -180...180, unit: "°")
+            slider("Opacitet", \.opacity, 0...1, percent: true)
+            HStack {
+                Toggle("Spejl vandret", isOn: editor.binding(clip.id, \.flipH, fallback: false))
+                Toggle("Spejl lodret", isOn: editor.binding(clip.id, \.flipV, fallback: false))
+            }
+            Text("Tip: træk i preview for at flytte billedet.").font(.caption).foregroundStyle(.secondary)
+        }
+        Section("Beskæring") {
+            slider("Venstre", \.cropLeft, 0...0.5, percent: true)
+            slider("Højre", \.cropRight, 0...0.5, percent: true)
+            slider("Top", \.cropTop, 0...0.5, percent: true)
+            slider("Bund", \.cropBottom, 0...0.5, percent: true)
+            slider("Blød kant", \.feather, 0...100, unit: "px")
+        }
+        Section {
+            Button("Nulstil størrelse, placering og beskæring") {
+                editor.updateClip(clip.id) { c in
+                    c.scale = 1; c.offsetX = 0; c.offsetY = 0; c.rotation = 0; c.opacity = 1
+                    c.flipH = false; c.flipV = false
+                    c.cropLeft = 0; c.cropRight = 0; c.cropTop = 0; c.cropBottom = 0; c.feather = 0
+                }
+            }
+        }
+    }
+
+    // MARK: Helpers
+
     private var kindName: String {
         switch clip.kind {
         case .video: "Video"
@@ -179,29 +332,10 @@ private struct ClipInspector: View {
         Binding(
             get: { editor.selectedClip?.start ?? clip.start },
             set: { value in
-                guard let current = editor.selectedClip else { return }
+                guard let current = editor.selectedClip, !editor.project.isMagnetic(current) else { return }
                 let start = editor.freeStart(current.group, track: current.track, desired: max(0, value),
                                              duration: current.duration, excluding: current.id)
                 editor.updateClip(clip.id) { $0.start = start }
-            }
-        )
-    }
-
-    private var durationBinding: Binding<Double> {
-        Binding(
-            get: { editor.selectedClip?.duration ?? clip.duration },
-            set: { value in
-                guard let current = editor.selectedClip else { return }
-                var limit = Double.infinity
-                if current.hasMediaTiming, let media = editor.project.media(current.mediaID) {
-                    limit = media.duration - current.sourceIn
-                }
-                let next = editor.project.clips
-                    .filter { $0.group == current.group && $0.track == current.track && $0.start >= current.end - 1e-6 && $0.id != current.id }
-                    .map(\.start).min()
-                if let next { limit = min(limit, next - current.start) }
-                let duration = min(max(value, 1 / Double(editor.project.fps)), limit)
-                editor.updateClip(clip.id) { $0.duration = duration }
             }
         )
     }

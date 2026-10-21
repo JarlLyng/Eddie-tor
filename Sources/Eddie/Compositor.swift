@@ -3,6 +3,13 @@ import CoreImage
 import CoreText
 import AppKit
 
+struct LayerEffect: Sendable {
+    var kind: TransitionKind
+    var duration: Double
+    /// Paired effects are the two halves of a transition between neighbouring clips on the main track.
+    var paired: Bool
+}
+
 /// Everything the compositor needs to draw one clip. Built by `CompositionBuilder`.
 struct RenderLayer: @unchecked Sendable {
     enum Content {
@@ -18,12 +25,21 @@ struct RenderLayer: @unchecked Sendable {
     var offsetX: Double
     var offsetY: Double
     var fill: Bool
+    var rotation: Double
+    var opacity: Double
+    var flipH: Bool
+    var flipV: Bool
+    var crop: (left: Double, right: Double, top: Double, bottom: Double)
+    var feather: Double
+    /// Title fades. Video and image clips use transitions instead.
     var fadeIn: Double
     var fadeOut: Double
+    var inEffect: LayerEffect?
+    var outEffect: LayerEffect?
     /// Draw order: lower first. (group, track, start)
     var z: (Int, Int, Double)
 
-    func opacity(at t: Double) -> Double {
+    func fadeOpacity(at t: Double) -> Double {
         let s = start.seconds, e = end.seconds
         var o = 1.0
         if fadeIn > 0 { o = min(o, (t - s) / fadeIn) }
@@ -90,10 +106,11 @@ final class EddieCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
         var image = CIImage(color: CIColor(red: bg.r, green: bg.g, blue: bg.b)).cropped(to: frame)
         for layer in instruction.layers where layer.start.seconds <= t + 1e-6 && t < layer.end.seconds {
             guard var layerImage = content(of: layer, request: request, canvas: size) else { continue }
-            let opacity = layer.opacity(at: t)
+            var opacity = layer.opacity
+            if case .title = layer.content { opacity *= layer.fadeOpacity(at: t) }
             if opacity <= 0 { continue }
             if opacity < 1 { layerImage = layerImage.withOpacity(opacity) }
-            image = layerImage.composited(over: image)
+            image = Transitions.composite(layerImage, layer: layer, at: t, over: image, frame: frame)
         }
 
         let bufferWidth = CGFloat(CVPixelBufferGetWidth(output))
@@ -122,15 +139,48 @@ final class EddieCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
         }
     }
 
-    private func place(_ source: CIImage, layer: RenderLayer, canvas: CGSize) -> CIImage {
+    /// Flip, crop and feather in source space, then scale to fit or fill, move, and rotate around the picture's centre.
+    private func place(_ source: CIImage, layer: RenderLayer, canvas: CGSize) -> CIImage? {
         let w = source.extent.width, h = source.extent.height
-        guard w > 0, h > 0 else { return source }
+        guard w > 0, h > 0 else { return nil }
         let fit = min(canvas.width / w, canvas.height / h)
         let fill = max(canvas.width / w, canvas.height / h)
         let s = (layer.fill ? fill : fit) * layer.scale
+
+        var image = source
+        if layer.flipH || layer.flipV {
+            image = image.transformed(by: CGAffineTransform(scaleX: layer.flipH ? -1 : 1, y: layer.flipV ? -1 : 1)
+                .concatenating(CGAffineTransform(translationX: layer.flipH ? w : 0, y: layer.flipV ? h : 0)))
+        }
+        let c = layer.crop
+        if c.left + c.right + c.top + c.bottom > 0 || layer.feather > 0 {
+            let rect = CGRect(x: w * c.left, y: h * c.bottom,
+                              width: w * (1 - c.left - c.right), height: h * (1 - c.top - c.bottom))
+            guard rect.width > 1, rect.height > 1 else { return nil }
+            if layer.feather > 0 {
+                let mask = CIImage(color: .white).cropped(to: rect)
+                    .applyingGaussianBlur(sigma: layer.feather / s)
+                    .cropped(to: source.extent)
+                image = image.applyingFilter("CIBlendWithMask", parameters: [
+                    kCIInputBackgroundImageKey: CIImage.empty(),
+                    kCIInputMaskImageKey: mask,
+                ])
+            } else {
+                image = image.cropped(to: rect)
+            }
+        }
+
         let tx = (canvas.width - w * s) / 2 + layer.offsetX * canvas.width
         let ty = (canvas.height - h * s) / 2 - layer.offsetY * canvas.height
-        return source.transformed(by: CGAffineTransform(scaleX: s, y: s).concatenating(CGAffineTransform(translationX: tx, y: ty)))
+        var transform = CGAffineTransform(scaleX: s, y: s).concatenating(CGAffineTransform(translationX: tx, y: ty))
+        if layer.rotation != 0 {
+            let cx = tx + w * s / 2, cy = ty + h * s / 2
+            transform = transform
+                .concatenating(CGAffineTransform(translationX: -cx, y: -cy))
+                .concatenating(CGAffineTransform(rotationAngle: -layer.rotation * .pi / 180))
+                .concatenating(CGAffineTransform(translationX: cx, y: cy))
+        }
+        return image.transformed(by: transform)
     }
 
     /// Maps a track's preferredTransform (e.g. a phone held upright) to the orientation CoreImage needs.
@@ -142,6 +192,70 @@ final class EddieCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
         default: .up
         }
     }
+}
+
+/// How a clip enters or leaves. Progress runs 0 → 1 over the effect's duration.
+enum Transitions {
+    static func composite(_ image: CIImage, layer: RenderLayer, at t: Double, over below: CIImage, frame: CGRect) -> CIImage {
+        if let effect = layer.inEffect, effect.duration > 0 {
+            let p = (t - layer.start.seconds) / effect.duration
+            if p < 1 { return enter(image, effect: effect, progress: max(p, 0), over: below, frame: frame) }
+        }
+        if let effect = layer.outEffect, effect.duration > 0 {
+            let remaining = (layer.end.seconds - t) / effect.duration
+            if remaining < 1 { return leave(image, effect: effect, progress: 1 - max(remaining, 0), over: below, frame: frame) }
+        }
+        return image.composited(over: below)
+    }
+
+    private static func enter(_ image: CIImage, effect: LayerEffect, progress p: Double, over below: CIImage, frame: CGRect) -> CIImage {
+        switch effect.kind {
+        case .crossDissolve:
+            return image.withOpacity(p).composited(over: below)
+        case .dipToBlack, .dipToWhite:
+            let solid = solidColor(effect.kind, frame: frame)
+            if effect.paired {
+                // First half: the outgoing clip fades to the colour. Second half: this clip fades up from it.
+                if p < 0.5 { return solid.withOpacity(p * 2).composited(over: below) }
+                return solid.withOpacity(2 - p * 2).composited(over: image.composited(over: solid))
+            }
+            return tint(image, toward: effect.kind, amount: 1 - p).composited(over: below)
+        default:
+            let v = effect.kind.pushVector ?? .zero
+            let e = 1 - smooth(p)
+            // Enters from the side opposite to the direction of movement. Screen y points down, CoreImage y up.
+            let moved = image.transformed(by: CGAffineTransform(translationX: -v.dx * e * frame.width, y: v.dy * e * frame.height))
+            return moved.composited(over: below)
+        }
+    }
+
+    private static func leave(_ image: CIImage, effect: LayerEffect, progress p: Double, over below: CIImage, frame: CGRect) -> CIImage {
+        switch effect.kind {
+        case .crossDissolve:
+            // When paired, the incoming clip on top does the dissolve.
+            return (effect.paired ? image : image.withOpacity(1 - p)).composited(over: below)
+        case .dipToBlack, .dipToWhite:
+            return (effect.paired ? image : tint(image, toward: effect.kind, amount: p)).composited(over: below)
+        default:
+            let v = effect.kind.pushVector ?? .zero
+            let e = smooth(p)
+            let moved = image.transformed(by: CGAffineTransform(translationX: v.dx * e * frame.width, y: -v.dy * e * frame.height))
+            return moved.composited(over: below)
+        }
+    }
+
+    private static func solidColor(_ kind: TransitionKind, frame: CGRect) -> CIImage {
+        CIImage(color: kind == .dipToWhite ? .white : .black).cropped(to: frame)
+    }
+
+    /// Paints the colour over the picture only where the picture is, so overlays dip on their own.
+    private static func tint(_ image: CIImage, toward kind: TransitionKind, amount: Double) -> CIImage {
+        guard amount > 0 else { return image }
+        let color = CIImage(color: kind == .dipToWhite ? .white : .black).cropped(to: image.extent).withOpacity(min(amount, 1))
+        return color.applyingFilter("CISourceAtopCompositing", parameters: [kCIInputBackgroundImageKey: image])
+    }
+
+    private static func smooth(_ p: Double) -> Double { p * p * (3 - 2 * p) }
 }
 
 extension CIImage {

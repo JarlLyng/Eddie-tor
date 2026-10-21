@@ -111,7 +111,31 @@ struct Clip: Identifiable, Codable, Hashable, Sendable {
 
     var title: TitleStyle?
 
+    /// Playback speed; 2 is twice as fast. `duration` is the time on the timeline,
+    /// so the clip uses `duration * speed` seconds of its source.
+    var speed: Double = 1
+    var maintainPitch = true
+    /// The clip's audio has been moved to its own clip on an audio track.
+    var audioDetached = false
+
+    /// Degrees, clockwise.
+    var rotation: Double = 0
+    var opacity: Double = 1
+    var flipH = false
+    var flipV = false
+    /// Fractions (0...1) of the source cut away from each edge.
+    var cropLeft: Double = 0
+    var cropRight: Double = 0
+    var cropTop: Double = 0
+    var cropBottom: Double = 0
+    /// Soft edge in pixels of the rendered frame.
+    var feather: Double = 0
+
+    var transitionIn: Transition?
+    var transitionOut: Transition?
+
     var end: Double { start + duration }
+    var sourceDuration: Double { duration * speed }
 
     var group: TrackGroup {
         switch kind {
@@ -124,8 +148,48 @@ struct Clip: Identifiable, Codable, Hashable, Sendable {
     var hasMediaTiming: Bool { kind == .video || kind == .audio }
 }
 
+enum TransitionKind: String, Codable, CaseIterable, Identifiable, Sendable {
+    case crossDissolve, dipToBlack, dipToWhite, pushLeft, pushRight, pushUp, pushDown
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .crossDissolve: "Krydsfade"
+        case .dipToBlack: "Dyk til sort"
+        case .dipToWhite: "Dyk til hvid"
+        case .pushLeft: "Skub til venstre"
+        case .pushRight: "Skub til højre"
+        case .pushUp: "Skub op"
+        case .pushDown: "Skub ned"
+        }
+    }
+
+    /// Direction the picture moves, in screen terms (y down).
+    var pushVector: CGVector? {
+        switch self {
+        case .pushLeft: CGVector(dx: -1, dy: 0)
+        case .pushRight: CGVector(dx: 1, dy: 0)
+        case .pushUp: CGVector(dx: 0, dy: -1)
+        case .pushDown: CGVector(dx: 0, dy: 1)
+        default: nil
+        }
+    }
+}
+
+struct Transition: Codable, Hashable, Sendable {
+    var kind: TransitionKind = .crossDissolve
+    var duration: Double = 0.5
+}
+
+struct TrackFlags: Codable, Hashable, Sendable {
+    var hidden = false
+    var muted = false
+    var locked = false
+}
+
 struct Project: Codable, Equatable, Sendable {
-    var version = 1
+    var version = 2
     var aspect: AspectRatio = .portrait
     var fps = 30
     var background = RGBA.black
@@ -134,8 +198,22 @@ struct Project: Codable, Equatable, Sendable {
     var audioTracks = 2
     var media: [MediaItem] = []
     var clips: [Clip] = []
+    /// Like Rush: clips on V1 always sit back to back from the start, so deleting or trimming closes the gap.
+    var magneticMain = true
+    /// Keyed by `TrackRow.id`.
+    var trackFlags: [String: TrackFlags] = [:]
+    var inPoint: Double?
+    var outPoint: Double?
 
     var duration: Double { clips.map(\.end).max() ?? 0 }
+
+    func flags(_ group: TrackGroup, _ index: Int) -> TrackFlags {
+        trackFlags[TrackRow(group: group, index: index).id] ?? TrackFlags()
+    }
+
+    func isMagnetic(_ clip: Clip) -> Bool {
+        magneticMain && clip.group == .visual && clip.track == 0
+    }
 
     func media(_ id: UUID?) -> MediaItem? {
         guard let id else { return nil }
@@ -190,3 +268,66 @@ func timecode(_ seconds: Double, fps: Int) -> String {
 /// SwiftUI's `@State` is a macro in the macOS 27 SDK whose plugin ships only with Xcode.
 /// Using the underlying property wrapper under another name lets Eddie build with the Command Line Tools alone.
 typealias ViewState = SwiftUI.State
+
+// Decoding fills in defaults for keys missing from files saved by earlier versions.
+extension KeyedDecodingContainer {
+    fileprivate func value<T: Decodable>(_ key: Key, _ fallback: T) throws -> T {
+        try decodeIfPresent(T.self, forKey: key) ?? fallback
+    }
+}
+
+extension Clip {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = Clip(kind: .video, track: 0, start: 0, duration: 0)
+        id = try c.value(.id, d.id)
+        kind = try c.decode(ClipKind.self, forKey: .kind)
+        track = try c.value(.track, 0)
+        start = try c.value(.start, 0)
+        duration = try c.value(.duration, 0)
+        mediaID = try c.decodeIfPresent(UUID.self, forKey: .mediaID)
+        sourceIn = try c.value(.sourceIn, d.sourceIn)
+        volume = try c.value(.volume, d.volume)
+        fadeIn = try c.value(.fadeIn, d.fadeIn)
+        fadeOut = try c.value(.fadeOut, d.fadeOut)
+        scale = try c.value(.scale, d.scale)
+        offsetX = try c.value(.offsetX, d.offsetX)
+        offsetY = try c.value(.offsetY, d.offsetY)
+        fill = try c.value(.fill, d.fill)
+        title = try c.decodeIfPresent(TitleStyle.self, forKey: .title)
+        speed = try c.value(.speed, d.speed)
+        maintainPitch = try c.value(.maintainPitch, d.maintainPitch)
+        audioDetached = try c.value(.audioDetached, d.audioDetached)
+        rotation = try c.value(.rotation, d.rotation)
+        opacity = try c.value(.opacity, d.opacity)
+        flipH = try c.value(.flipH, d.flipH)
+        flipV = try c.value(.flipV, d.flipV)
+        cropLeft = try c.value(.cropLeft, d.cropLeft)
+        cropRight = try c.value(.cropRight, d.cropRight)
+        cropTop = try c.value(.cropTop, d.cropTop)
+        cropBottom = try c.value(.cropBottom, d.cropBottom)
+        feather = try c.value(.feather, d.feather)
+        transitionIn = try c.decodeIfPresent(Transition.self, forKey: .transitionIn)
+        transitionOut = try c.decodeIfPresent(Transition.self, forKey: .transitionOut)
+    }
+}
+
+extension Project {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = Project()
+        version = try c.value(.version, d.version)
+        aspect = try c.value(.aspect, d.aspect)
+        fps = try c.value(.fps, d.fps)
+        background = try c.value(.background, d.background)
+        titleTracks = try c.value(.titleTracks, d.titleTracks)
+        visualTracks = try c.value(.visualTracks, d.visualTracks)
+        audioTracks = try c.value(.audioTracks, d.audioTracks)
+        media = try c.value(.media, d.media)
+        clips = try c.value(.clips, d.clips)
+        magneticMain = try c.value(.magneticMain, d.magneticMain)
+        trackFlags = try c.value(.trackFlags, d.trackFlags)
+        inPoint = try c.decodeIfPresent(Double.self, forKey: .inPoint)
+        outPoint = try c.decodeIfPresent(Double.self, forKey: .outPoint)
+    }
+}

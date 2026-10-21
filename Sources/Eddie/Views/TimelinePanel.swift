@@ -1,7 +1,7 @@
 import SwiftUI
 
 private let rulerHeight: CGFloat = 24
-private let headerWidth: CGFloat = 54
+private let headerWidth: CGFloat = 96
 
 struct TimelinePanel: View {
     @Environment(Editor.self) private var editor
@@ -27,6 +27,7 @@ struct TimelinePanel: View {
             .background(Color(white: 0.11))
         }
         .onChange(of: editor.currentTime) { _, time in followPlayhead(time) }
+        .onChange(of: editor.zoomToFitRequest) { zoomToFit() }
     }
 
     private var contentWidth: CGFloat {
@@ -42,21 +43,33 @@ struct TimelinePanel: View {
         }
     }
 
+    private func zoomToFit() {
+        let duration = max(editor.project.duration, 5)
+        editor.pps = min(max(Double(visibleWidth - 40) / duration, 4), 600)
+        scroll.scrollTo(x: 0)
+    }
+
     private var toolbar: some View {
-        HStack(spacing: 12) {
+        @Bindable var editor = editor
+        return HStack(spacing: 12) {
             Button { editor.togglePlay() } label: { Image(systemName: editor.isPlaying ? "pause.fill" : "play.fill") }
-                .help("Afspil / pause (mellemrum)")
+                .help("Afspil / pause (mellemrum, J K L)")
             Text("\(timecode(editor.currentTime, fps: editor.project.fps))  /  \(timecode(editor.project.duration, fps: editor.project.fps))")
                 .font(.system(.body, design: .monospaced))
                 .foregroundStyle(.secondary)
             Divider().frame(height: 18)
             Button { editor.splitAtPlayhead() } label: { Image(systemName: "scissors") }
                 .help("Del klip ved afspilningshovedet (S)")
+            Button { editor.duplicateSelection() } label: { Image(systemName: "plus.square.on.square") }
+                .help("Dupliker (D)")
+                .disabled(editor.selection == nil)
             Button { editor.deleteSelection() } label: { Image(systemName: "trash") }
                 .help("Slet valgt klip (⌫)")
                 .disabled(editor.selection == nil)
             Button { editor.addTitle() } label: { Image(systemName: "textformat") }
-                .help("Tilføj tekst (T)")
+                .help("Tilføj tekst (G)")
+            Button { editor.applyDefaultTransition() } label: { Image(systemName: "rectangle.righthalf.inset.filled.arrow.right") }
+                .help("Tilføj overgang (⌘D)")
             Menu {
                 Button("Videospor") { editor.addTrack(.visual) }
                 Button("Lydspor") { editor.addTrack(.audio) }
@@ -70,17 +83,25 @@ struct TimelinePanel: View {
                 .help("Fortryd (⌘Z)").disabled(!editor.canUndo)
             Button { editor.redo() } label: { Image(systemName: "arrow.uturn.forward") }
                 .help("Annuller fortryd (⇧⌘Z)").disabled(!editor.canRedo)
+            Divider().frame(height: 18)
+            Toggle(isOn: $editor.snapping) { Image(systemName: "arrow.right.and.line.vertical.and.arrow.left") }
+                .toggleStyle(.button)
+                .help("Snap til kanter og afspilningshoved (⌘Y)")
+            Toggle(isOn: $editor.loopPlayback) { Image(systemName: "repeat") }
+                .toggleStyle(.button)
+                .help("Gentag afspilning, inden for ind/ud hvis de er sat (⌘L)")
+            Toggle(isOn: editor.projectBinding(\.magneticMain)) { Image(systemName: "rectangle.compress.vertical") }
+                .toggleStyle(.button)
+                .help("Magnetisk hovedspor: klip på V1 ligger altid uden huller")
             Spacer()
             Button { editor.pps = max(editor.pps / 1.4, 4) } label: { Image(systemName: "minus.magnifyingglass") }
+                .help("Zoom ud (−)")
             Slider(value: Binding(get: { log(editor.pps) }, set: { editor.pps = exp($0) }), in: log(4)...log(600))
                 .frame(width: 140)
             Button { editor.pps = min(editor.pps * 1.4, 600) } label: { Image(systemName: "plus.magnifyingglass") }
-            Button("Tilpas") {
-                let duration = max(editor.project.duration, 5)
-                editor.pps = min(max(Double(visibleWidth - 40) / duration, 4), 600)
-                scroll.scrollTo(x: 0)
-            }
-            .help("Vis hele tidslinjen")
+                .help("Zoom ind (=)")
+            Button("Tilpas") { zoomToFit() }
+                .help("Vis hele tidslinjen (\\)")
         }
         .buttonStyle(.borderless)
         .padding(.horizontal, 12)
@@ -91,18 +112,49 @@ struct TimelinePanel: View {
         VStack(spacing: 0) {
             Color.clear.frame(height: rulerHeight)
             ForEach(editor.rows) { row in
-                HStack(spacing: 4) {
-                    Image(systemName: row.group == .title ? "textformat" : row.group == .visual ? "film" : "speaker.wave.2")
-                        .font(.system(size: 10))
-                    Text(row.label).font(.caption.bold())
-                }
-                .foregroundStyle(.secondary)
-                .frame(width: headerWidth, height: row.height)
-                .background(Color(white: 0.15))
-                .overlay(alignment: .bottom) { Rectangle().fill(Color.black.opacity(0.5)).frame(height: 1) }
+                TrackHeader(row: row)
+                    .frame(width: headerWidth, height: row.height)
             }
         }
         .frame(width: headerWidth)
+    }
+}
+
+private struct TrackHeader: View {
+    @Environment(Editor.self) private var editor
+    let row: TrackRow
+
+    var body: some View {
+        let flags = editor.project.flags(row.group, row.index)
+        HStack(spacing: 2) {
+            Text(row.label)
+                .font(.caption.bold())
+                .foregroundStyle(row.group == .visual && row.index == 0 && editor.project.magneticMain ? Color.accentColor : .secondary)
+                .frame(width: 22, alignment: .leading)
+                .help(row.group == .visual && row.index == 0 ? "Hovedspor" : "")
+            Spacer(minLength: 0)
+            if row.group != .audio {
+                flagButton(\.hidden, active: flags.hidden, on: "eye.slash.fill", off: "eye", help: "Skjul spor")
+            }
+            if row.group != .title {
+                flagButton(\.muted, active: flags.muted, on: "speaker.slash.fill", off: "speaker.wave.2", help: "Slå lyd fra")
+            }
+            flagButton(\.locked, active: flags.locked, on: "lock.fill", off: "lock.open", help: "Lås spor")
+        }
+        .padding(.horizontal, 6)
+        .background(Color(white: 0.15))
+        .overlay(alignment: .bottom) { Rectangle().fill(Color.black.opacity(0.5)).frame(height: 1) }
+    }
+
+    private func flagButton(_ flag: WritableKeyPath<TrackFlags, Bool>, active: Bool, on: String, off: String, help: String) -> some View {
+        Button { editor.toggleFlag(row, flag) } label: {
+            Image(systemName: active ? on : off)
+                .font(.system(size: 10))
+                .foregroundStyle(active ? Color.orange : Color.secondary)
+                .frame(width: 18, height: 18)
+        }
+        .buttonStyle(.borderless)
+        .help(help)
     }
 }
 
@@ -133,7 +185,16 @@ private struct RulerView: View {
 
     var body: some View {
         let pps = editor.pps
+        let inPoint = editor.project.inPoint, outPoint = editor.project.outPoint
+        let duration = editor.project.duration
         Canvas { ctx, size in
+            if inPoint != nil || outPoint != nil {
+                let a = (inPoint ?? 0) * pps, b = (outPoint ?? duration) * pps
+                ctx.fill(Path(CGRect(x: a, y: 0, width: max(b - a, 1), height: size.height)), with: .color(.accentColor.opacity(0.3)))
+                for x in [inPoint, outPoint].compactMap({ $0 }).map({ $0 * pps }) {
+                    ctx.fill(Path(CGRect(x: x - 1, y: 0, width: 2, height: size.height)), with: .color(.accentColor))
+                }
+            }
             let major = [0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600].first { $0 * pps >= 70 } ?? 600
             let minor = major / (major >= 10 ? 5 : 4)
             let ticks = Int(Double(size.width) / (minor * pps)) + 1
@@ -159,6 +220,7 @@ private struct RulerView: View {
             if editor.isPlaying { editor.pause() }
             editor.seek(value.location.x / pps)
         })
+        .help("Ind- og udpunkt: I og O")
     }
 }
 
@@ -186,6 +248,7 @@ private struct TrackLane: View {
     @ViewState private var targeted = false
 
     var body: some View {
+        let flags = editor.project.flags(row.group, row.index)
         ZStack(alignment: .topLeading) {
             Rectangle()
                 .fill(targeted ? Color.accentColor.opacity(0.18) : Color(white: row.group == .visual ? 0.13 : 0.12))
@@ -199,11 +262,33 @@ private struct TrackLane: View {
                 ClipView(clip: clip, row: row)
                     .frame(width: max(clip.duration * editor.pps, 3), height: row.height - 6)
                     .offset(x: clip.start * editor.pps, y: 3)
+                    .opacity(flags.hidden || (flags.muted && row.group == .audio) ? 0.45 : 1)
+                    .allowsHitTesting(!flags.locked)
+            }
+            if flags.locked {
+                LockedPattern().allowsHitTesting(false)
             }
         }
         .dropDestination(for: String.self) { ids, location in
-            editor.dropMedia(ids, at: location.x / editor.pps, row: row)
-        } isTargeted: { targeted = $0 }
+            guard !flags.locked else { return false }
+            return editor.dropMedia(ids, at: location.x / editor.pps, row: row)
+        } isTargeted: { targeted = $0 && !flags.locked }
+    }
+}
+
+/// Diagonal stripes over a locked track.
+private struct LockedPattern: View {
+    var body: some View {
+        Canvas { ctx, size in
+            var path = Path()
+            var x: CGFloat = -size.height
+            while x < size.width {
+                path.move(to: CGPoint(x: x, y: size.height))
+                path.addLine(to: CGPoint(x: x + size.height, y: 0))
+                x += 10
+            }
+            ctx.stroke(path, with: .color(.white.opacity(0.07)), lineWidth: 2)
+        }
     }
 }
 
@@ -228,6 +313,8 @@ private struct ClipView: View {
             label
         }
         .clipShape(RoundedRectangle(cornerRadius: 5))
+        .overlay(alignment: .leading) { transitionMarker(clip.transitionIn, leading: true) }
+        .overlay(alignment: .trailing) { transitionMarker(clip.transitionOut, leading: false) }
         .overlay(RoundedRectangle(cornerRadius: 5)
             .strokeBorder(selected ? Color.yellow : Color.black.opacity(0.35), lineWidth: selected ? 2 : 1))
         .overlay(alignment: .leading) { if width > 24 { handle(.trimStart, selected: selected) } }
@@ -236,8 +323,16 @@ private struct ClipView: View {
         .onTapGesture { editor.selection = clip.id }
         .gesture(drag(.move))
         .contextMenu {
-            Button("Del ved afspilningshoved") { editor.selection = clip.id; editor.splitAtPlayhead() }
-            Button("Dupliker") { editor.selection = clip.id; editor.duplicateSelection() }
+            Button("Del ved afspilningshoved  (S)") { editor.selection = clip.id; editor.splitAtPlayhead() }
+            Button("Dupliker  (D)") { editor.selection = clip.id; editor.duplicateSelection() }
+            Button("Kopiér  (⌘C)") { editor.selection = clip.id; editor.copySelection() }
+            Button("Klip ud  (⌘X)") { editor.selection = clip.id; editor.cutSelection() }
+            if clip.kind != .audio {
+                Button("Tilføj overgang  (⌘D)") { editor.selection = clip.id; editor.applyDefaultTransition() }
+            }
+            if clip.kind == .video, !clip.audioDetached, media?.hasAudio == true {
+                Button("Adskil lyd  (E)") { editor.selection = clip.id; editor.separateAudio() }
+            }
             Divider()
             Button("Slet", role: .destructive) { editor.selection = clip.id; editor.deleteSelection() }
         }
@@ -277,15 +372,15 @@ private struct ClipView: View {
                     }
                     .opacity(0.75)
                 }
-                if clip.kind == .video, let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
-                    WaveformView(peaks: peaks, sourceIn: clip.sourceIn, duration: clip.duration, volume: clip.volume)
+                if clip.kind == .video, !clip.audioDetached, let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
+                    WaveformView(peaks: peaks, sourceIn: clip.sourceIn, duration: clip.sourceDuration, volume: clip.volume)
                         .frame(height: height * 0.35)
                         .background(Color.black.opacity(0.35))
                 }
             }
         case .audio:
             if let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
-                WaveformView(peaks: peaks, sourceIn: clip.sourceIn, duration: clip.duration, volume: clip.volume)
+                WaveformView(peaks: peaks, sourceIn: clip.sourceIn, duration: clip.sourceDuration, volume: clip.volume)
                     .padding(.top, 14)
             }
         case .title:
@@ -297,6 +392,14 @@ private struct ClipView: View {
         HStack(spacing: 3) {
             Image(systemName: icon).font(.system(size: 9))
             Text(name).lineLimit(1)
+            if clip.hasMediaTiming, abs(clip.speed - 1) > 0.001 {
+                Text("\(Int((clip.speed * 100).rounded())) %")
+                    .lineLimit(1)
+                    .fixedSize()
+                    .padding(.horizontal, 3)
+                    .background(Color.white.opacity(0.25), in: RoundedRectangle(cornerRadius: 2))
+            }
+            if clip.audioDetached { Image(systemName: "speaker.slash").font(.system(size: 8)) }
         }
         .font(.system(size: 10, weight: .medium))
         .foregroundStyle(.white)
@@ -312,6 +415,26 @@ private struct ClipView: View {
         case .image: "photo"
         case .audio: "music.note"
         case .title: "textformat"
+        }
+    }
+
+    @ViewBuilder private func transitionMarker(_ transition: Transition?, leading: Bool) -> some View {
+        if let transition, clip.kind != .title {
+            let width = min(transition.duration, clip.duration / 2) * editor.pps
+            ZStack {
+                LinearGradient(colors: [.white.opacity(0.55), .white.opacity(0.05)],
+                               startPoint: leading ? .leading : .trailing, endPoint: leading ? .trailing : .leading)
+                Image(systemName: "rectangle.righthalf.inset.filled.arrow.right")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.black.opacity(0.7))
+            }
+            .frame(width: max(width, 6))
+            .clipShape(RoundedRectangle(cornerRadius: 5))
+            .onTapGesture {
+                editor.selection = clip.id
+                editor.inspectorTab = .transitions
+            }
+            .help(transition.kind.label)
         }
     }
 
@@ -337,14 +460,16 @@ private struct ClipView: View {
                 }
                 guard let origin else { return }
                 let updated = apply(mode, to: origin, dx: value.translation.width, dy: value.translation.height)
+                editor.floating = mode == .move && editor.project.isMagnetic(updated) ? origin.id : nil
                 editor.interact { project in
                     if let i = project.clips.firstIndex(where: { $0.id == origin.id }) { project.clips[i] = updated }
                 }
             }
             .onEnded { _ in
                 guard let origin else { return }
-                if mode == .move, let current = editor.project.clips.first(where: { $0.id == origin.id }) {
-                    // Never leave clips on top of each other: slide to the next free spot.
+                if mode == .move, let current = editor.project.clips.first(where: { $0.id == origin.id }),
+                   !editor.project.isMagnetic(current) {
+                    // Off the main track clips never overlap: slide to the next free spot.
                     let start = editor.freeStart(current.group, track: current.track, desired: current.start,
                                                  duration: current.duration, excluding: current.id)
                     editor.interact { project in
@@ -360,7 +485,9 @@ private struct ClipView: View {
         var c = o
         let dt = dx / editor.pps
         let minimum = 1 / Double(editor.project.fps)
+        let magnetic = editor.project.isMagnetic(o)
         let neighbours = editor.project.clips.filter { $0.group == o.group && $0.track == o.track && $0.id != o.id }
+        let speed = max(o.speed, 0.05)
 
         switch mode {
         case .move:
@@ -373,23 +500,33 @@ private struct ClipView: View {
             c.start = max(0, start)
             let steps = Int((dy / row.height).rounded())
             let count = editor.project.trackCount(o.group)
-            c.track = min(max(o.track + steps * row.downwardStep, 0), count - 1)
+            let track = min(max(o.track + steps * row.downwardStep, 0), count - 1)
+            if !editor.isLocked(o.group, track) { c.track = track }
+
+        case .trimStart where magnetic:
+            // Ripple trim: the clip's position stays, its content and length change, and the rest follows.
+            var delta = dt
+            if o.hasMediaTiming { delta = max(delta, -o.sourceIn / speed) }
+            delta = min(delta, o.duration - minimum)
+            c.duration = o.duration - delta
+            if o.hasMediaTiming { c.sourceIn = o.sourceIn + delta * speed }
 
         case .trimStart:
             var start = o.start + dt
             if let s = editor.snap(start, excluding: o.id) { start = s }
             var lower = neighbours.filter { $0.end <= o.start + 1e-6 }.map(\.end).max() ?? 0
-            if o.hasMediaTiming { lower = max(lower, o.start - o.sourceIn) }
+            if o.hasMediaTiming { lower = max(lower, o.start - o.sourceIn / speed) }
             start = min(max(start, lower), o.end - minimum)
             c.start = start
             c.duration = o.end - start
-            if o.hasMediaTiming { c.sourceIn = o.sourceIn + (start - o.start) }
+            if o.hasMediaTiming { c.sourceIn = o.sourceIn + (start - o.start) * speed }
 
         case .trimEnd:
             var end = o.end + dt
             if let s = editor.snap(end, excluding: o.id) { end = s }
-            var upper = neighbours.filter { $0.start >= o.end - 1e-6 }.map(\.start).min() ?? .infinity
-            if o.hasMediaTiming, let media { upper = min(upper, o.start + media.duration - o.sourceIn) }
+            var upper = Double.infinity
+            if !magnetic { upper = neighbours.filter { $0.start >= o.end - 1e-6 }.map(\.start).min() ?? .infinity }
+            if o.hasMediaTiming, let media { upper = min(upper, o.start + (media.duration - o.sourceIn) / speed) }
             end = max(min(end, upper), o.start + minimum)
             c.duration = end - o.start
         }

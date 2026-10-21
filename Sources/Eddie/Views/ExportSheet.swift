@@ -5,6 +5,7 @@ struct ExportSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ViewState private var codec = Exporter.Codec.h264
     @ViewState private var state = ExportState.idle
+    @ViewState private var onlyInOut = true
 
     enum ExportState {
         case idle
@@ -20,7 +21,13 @@ struct ExportSheet: View {
             let size = editor.project.aspect.renderSize
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
                 GridRow { Text("Format").foregroundStyle(.secondary); Text("\(editor.project.aspect.label) · \(Int(size.width))×\(Int(size.height)) · \(editor.project.fps) fps") }
-                GridRow { Text("Varighed").foregroundStyle(.secondary); Text(timecode(editor.project.duration, fps: editor.project.fps)) }
+                GridRow { Text("Varighed").foregroundStyle(.secondary); Text(timecode(exportRange.map { $0.upperBound - $0.lowerBound } ?? editor.project.duration, fps: editor.project.fps)) }
+                if hasInOut {
+                    GridRow {
+                        Text("Område").foregroundStyle(.secondary)
+                        Toggle("Kun mellem ind- og udpunkt", isOn: $onlyInOut).disabled(isExporting)
+                    }
+                }
                 GridRow {
                     Text("Codec").foregroundStyle(.secondary)
                     Picker("", selection: $codec) {
@@ -62,6 +69,15 @@ struct ExportSheet: View {
         .frame(width: 460)
     }
 
+    private var hasInOut: Bool { editor.project.inPoint != nil || editor.project.outPoint != nil }
+
+    private var exportRange: ClosedRange<Double>? {
+        guard hasInOut, onlyInOut else { return nil }
+        let start = editor.project.inPoint ?? 0
+        let end = editor.project.outPoint ?? editor.project.duration
+        return end > start ? start...end : nil
+    }
+
     private var isExporting: Bool { if case .exporting = state { true } else { false } }
     private var isDone: Bool { if case .done = state { true } else { false } }
 
@@ -77,9 +93,10 @@ struct ExportSheet: View {
         state = .exporting(0)
         let project = editor.project
         let codec = codec
+        let range = exportRange
         Task {
             do {
-                try await Exporter.export(project, to: url, codec: codec) { progress in
+                try await Exporter.export(project, to: url, codec: codec, range: range) { progress in
                     Task { @MainActor in if case .exporting = state { state = .exporting(progress) } }
                 }
                 state = .done(url)

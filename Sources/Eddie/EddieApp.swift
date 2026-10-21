@@ -14,7 +14,8 @@ enum Main {
 }
 
 struct EddieApp: App {
-    @ViewState private var editor = Editor()
+    // Debug runs with EDDIE_SNAPSHOT never touch the user's autosave.
+    @ViewState private var editor = Editor(persist: ProcessInfo.processInfo.environment["EDDIE_SNAPSHOT"] == nil)
     @NSApplicationDelegateAdaptor private var delegate: AppDelegate
 
     var body: some Scene {
@@ -37,6 +38,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Debug aid: EDDIE_SNAPSHOT=/path.png saves a picture of the window a few seconds after launch.
         guard let path = ProcessInfo.processInfo.environment["EDDIE_SNAPSHOT"] else { return }
+        if let project = ProcessInfo.processInfo.environment["EDDIE_OPEN"] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                guard let editor = self.editor else { return }
+                editor.open(URL(fileURLWithPath: project))
+                editor.selection = editor.project.clips.first { $0.kind == .image }?.id
+                editor.inspectorTab = .position
+            }
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
             guard let view = NSApp.windows.first(where: { $0.isVisible })?.contentView?.superview,
                   let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
@@ -87,16 +96,40 @@ struct EddieCommands: Commands {
             Button("Fortryd") { editor.undo() }.keyboardShortcut("z").disabled(!editor.canUndo)
             Button("Annuller fortryd") { editor.redo() }.keyboardShortcut("z", modifiers: [.command, .shift]).disabled(!editor.canRedo)
         }
+        // Single-key shortcuts (S, D, G …) are handled by the editor's key monitor so they never
+        // interfere with typing; the menus only show them as hints.
         CommandMenu("Klip") {
-            Button("Afspil / pause") { editor.togglePlay() }
-            Button("Del ved afspilningshoved  (S)") { editor.splitAtPlayhead() }.keyboardShortcut("b")
-            Button("Dupliker") { editor.duplicateSelection() }.keyboardShortcut("d")
+            Button("Afspil / pause  (mellemrum)") { editor.togglePlay() }
+            Divider()
+            Button("Del ved afspilningshoved  (S)") { editor.splitAtPlayhead() }
+            Button("Trim start til afspilningshoved  (Q)") { editor.trimToPlayhead(start: true) }
+            Button("Trim slut til afspilningshoved  (W)") { editor.trimToPlayhead(start: false) }
+            Button("Dupliker  (D)") { editor.duplicateSelection() }
+            Button("Adskil lyd  (E)") { editor.separateAudio() }
             Button("Slet  (⌫)") { editor.deleteSelection() }
             Divider()
-            Button("Tilføj tekst  (T)") { editor.addTitle() }
+            Button("Tilføj tekst  (G)") { editor.addTitle() }
+            Button("Tilføj overgang") { editor.applyDefaultTransition() }.keyboardShortcut("d")
             Divider()
-            Button("Zoom ind") { editor.pps = min(editor.pps * 1.4, 600) }.keyboardShortcut("+")
-            Button("Zoom ud") { editor.pps = max(editor.pps / 1.4, 4) }.keyboardShortcut("-")
+            Button("Sæt indpunkt  (I)") { editor.markIn() }
+            Button("Sæt udpunkt  (O)") { editor.markOut() }
+            Button("Ryd ind og ud  (⌥X)") { editor.clearInOut(in: true, out: true) }
+        }
+        CommandGroup(before: .toolbar) {
+            ForEach(InspectorTab.allCases) { tab in
+                Button(tab.label) { editor.inspectorTab = tab }
+                    .keyboardShortcut(KeyEquivalent(Character(String(tab.rawValue))))
+            }
+            Divider()
+            Toggle("Snap", isOn: Binding(get: { editor.snapping }, set: { editor.snapping = $0 })).keyboardShortcut("y")
+            Toggle("Gentag afspilning", isOn: Binding(get: { editor.loopPlayback }, set: { editor.loopPlayback = $0 })).keyboardShortcut("l")
+            Toggle("Stort preview  (`)", isOn: Binding(get: { editor.monitorMaximized }, set: { editor.monitorMaximized = $0 }))
+            Toggle("Vis medier  (Y)", isOn: Binding(get: { editor.showMedia }, set: { editor.showMedia = $0 }))
+            Divider()
+            Button("Zoom ind  (=)") { editor.pps = min(editor.pps * 1.4, 600) }
+            Button("Zoom ud  (−)") { editor.pps = max(editor.pps / 1.4, 4) }
+            Button("Vis hele tidslinjen  (\\)") { editor.zoomToFitRequest += 1 }
+            Divider()
         }
     }
 }

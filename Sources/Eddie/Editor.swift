@@ -3,6 +3,42 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// The inspector's tools, numbered like Rush's ⌘1–⌘6 (⌘3 is colour, which Eddie doesn't have yet).
+enum InspectorTab: Int, CaseIterable, Identifiable {
+    case text = 1, transitions = 2, speed = 4, audio = 5, position = 6
+
+    var id: Int { rawValue }
+
+    var label: String {
+        switch self {
+        case .text: "Tekst"
+        case .transitions: "Overgange"
+        case .speed: "Hastighed"
+        case .audio: "Lyd"
+        case .position: "Placering"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .text: "textformat"
+        case .transitions: "rectangle.righthalf.inset.filled.arrow.right"
+        case .speed: "gauge.with.dots.needle.67percent"
+        case .audio: "speaker.wave.2"
+        case .position: "crop.rotate"
+        }
+    }
+
+    static func available(for clip: Clip, hasAudio: Bool) -> [InspectorTab] {
+        switch clip.kind {
+        case .title: [.text, .transitions]
+        case .image: [.transitions, .position]
+        case .audio: [.speed, .audio]
+        case .video: hasAudio && !clip.audioDetached ? [.transitions, .speed, .audio, .position] : [.transitions, .speed, .position]
+        }
+    }
+}
+
 @MainActor @Observable
 final class Editor {
     private(set) var project = Project()
@@ -16,8 +52,20 @@ final class Editor {
     var showExport = false
     var errorMessage: String?
 
+    var inspectorTab: InspectorTab = .position
+    var snapping = true
+    var loopPlayback = false
+    var showMedia = true
+    var monitorMaximized = false
+    /// Bumped to ask the timeline to zoom so the whole sequence fits.
+    var zoomToFitRequest = 0
+    /// The main-track clip being dragged; it keeps the mouse position while the others make room.
+    var floating: UUID?
+
     let cache = MediaCache()
     @ObservationIgnored let player = AVPlayer()
+    @ObservationIgnored private var shuttleRate: Double = 0
+    @ObservationIgnored private var clipboard: [Clip] = []
     @ObservationIgnored private var undoStack: [Project] = []
     @ObservationIgnored private var redoStack: [Project] = []
     @ObservationIgnored private var lastCoalesce: (key: String, date: Date)?
@@ -28,6 +76,7 @@ final class Editor {
     @ObservationIgnored private var interacting = false
 
     static let projectType = UTType(exportedAs: "dk.eddie-tor.project", conformingTo: .json)
+    static let defaultTransition = Transition(kind: .crossDissolve, duration: 0.5)
 
     /// `persist: false` skips the autosave file (used by the self test).
     @ObservationIgnored private let persist: Bool
@@ -60,15 +109,35 @@ final class Editor {
         return isDirty ? "\(name) — redigeret" : name
     }
 
+    /// Sorted by start so a clip that overlaps its neighbour in a transition is drawn on top.
     func clips(in row: TrackRow) -> [Clip] {
-        project.clips.filter { $0.group == row.group && $0.track == row.index }
+        project.clips.filter { $0.group == row.group && $0.track == row.index }.sorted { $0.start < $1.start }
+    }
+
+    func isLocked(_ group: TrackGroup, _ index: Int) -> Bool { project.flags(group, index).locked }
+
+    func isLocked(_ clip: Clip) -> Bool { isLocked(clip.group, clip.track) }
+
+    /// The longest the clip can be on the timeline: limited by its source and, off the main track, by the next clip.
+    func maxDuration(_ clip: Clip) -> Double {
+        var limit = Double.infinity
+        if clip.hasMediaTiming, let media = project.media(clip.mediaID) {
+            limit = (media.duration - clip.sourceIn) / max(clip.speed, 0.05)
+        }
+        if !project.isMagnetic(clip) {
+            let next = project.clips
+                .filter { $0.group == clip.group && $0.track == clip.track && $0.id != clip.id && $0.start >= clip.end - 1e-6 }
+                .map(\.start).min()
+            if let next { limit = min(limit, next - clip.start) }
+        }
+        return limit
     }
 
     // MARK: - Editing with undo
 
     /// Applies a change as one undo step. Changes with the same `coalesce` key in quick succession
     /// (typing, dragging a slider) are merged into a single step.
-    func edit(coalesce key: String? = nil, _ change: (inout Project) -> Void) {
+    func edit(coalesce key: String? = nil, rebuild: Bool = true, _ change: (inout Project) -> Void) {
         let now = Date()
         if let key, let last = lastCoalesce, last.key == key, now.timeIntervalSince(last.date) < 1.5 {
             // Same gesture: keep the existing undo point.
@@ -77,7 +146,8 @@ final class Editor {
         }
         lastCoalesce = key.map { ($0, now) }
         change(&project)
-        didChange()
+        Self.packMain(&project)
+        didChange(rebuild: rebuild)
     }
 
     func updateClip(_ id: UUID, coalesce key: String? = nil, _ change: (inout Clip) -> Void) {
@@ -112,12 +182,15 @@ final class Editor {
 
     func interact(livePreview: Bool = false, _ change: (inout Project) -> Void) {
         change(&project)
+        Self.packMain(&project, floating: floating)
         if livePreview { scheduleRebuild(delay: 0.03) }
     }
 
     func endInteraction() {
         guard interacting else { return }
         interacting = false
+        Self.packMain(&project, floating: floating, commit: true)
+        floating = nil
         if undoStack.last == project {
             undoStack.removeLast()
         } else {
@@ -150,11 +223,53 @@ final class Editor {
         redoStack.removeAll()
     }
 
-    private func didChange() {
+    private func didChange(rebuild: Bool = true) {
+        if let clip = selectedClip, isLocked(clip) { selection = nil }
         if let selection, !project.clips.contains(where: { $0.id == selection }) { self.selection = nil }
         isDirty = true
-        scheduleRebuild()
+        if rebuild { scheduleRebuild() }
         scheduleAutosave()
+    }
+
+    // MARK: - Magnetic main track
+
+    /// Lays the clips on V1 out back to back from 0, overlapping where a clip starts with a transition.
+    /// A clip being dragged (`floating`) keeps its position and gets the slot nearest its centre;
+    /// with `commit` it is moved into that slot.
+    nonisolated static func packMain(_ project: inout Project, floating: UUID? = nil, commit: Bool = false) {
+        guard project.magneticMain else { return }
+        let main = project.clips.indices.filter { project.isMagnetic(project.clips[$0]) }
+        var order = main.filter { project.clips[$0].id != floating }.sorted { project.clips[$0].start < project.clips[$1].start }
+
+        if let floating, let f = main.first(where: { project.clips[$0].id == floating }) {
+            let centre = project.clips[f].start + project.clips[f].duration / 2
+            var cursor = 0.0
+            var slot = order.count
+            for (n, i) in order.enumerated() {
+                if cursor + project.clips[i].duration / 2 > centre { slot = n; break }
+                cursor += project.clips[i].duration
+            }
+            order.insert(f, at: slot)
+        }
+
+        var cursor = 0.0
+        for (n, i) in order.enumerated() {
+            var overlap = 0.0
+            if n > 0, let transition = project.clips[i].transitionIn {
+                let previous = project.clips[order[n - 1]]
+                overlap = min(transition.duration, previous.duration / 2, project.clips[i].duration / 2)
+            }
+            let start = max(0, cursor - overlap)
+            if project.clips[i].id != floating || commit { project.clips[i].start = start }
+            cursor = start + project.clips[i].duration
+        }
+    }
+
+    /// Where to put a clip dropped at `time` on the main track so it lands before or after the clip under it.
+    func mainInsertionStart(at time: Double, excluding: UUID? = nil) -> Double {
+        let main = project.clips.filter { project.isMagnetic($0) && $0.id != excluding }
+        guard let hit = main.first(where: { $0.start <= time && time < $0.end }) else { return time }
+        return time < hit.start + hit.duration / 2 ? hit.start - 0.0001 : hit.start + 0.0001
     }
 
     // MARK: - Timeline operations
@@ -180,6 +295,14 @@ final class Editor {
         project.clips.filter { $0.group == group && $0.track == track }.map(\.end).max() ?? 0
     }
 
+    /// Where a new clip goes: inserted on the main track, or the next free spot on other tracks.
+    private func placement(for clip: Clip, at time: Double?) -> Double {
+        if project.isMagnetic(clip) {
+            return time.map { mainInsertionStart(at: $0) } ?? trackEnd(.visual, track: 0)
+        }
+        return freeStart(clip.group, track: clip.track, desired: time ?? trackEnd(clip.group, track: clip.track), duration: clip.duration)
+    }
+
     /// Adds media to the timeline. Without a time it is appended to the end of the first track, as in Rush.
     func add(_ media: MediaItem, at time: Double? = nil, track: Int = 0) {
         let kind: ClipKind = switch media.kind {
@@ -188,8 +311,11 @@ final class Editor {
         case .audio: .audio
         }
         var clip = Clip(kind: kind, track: track, start: 0, duration: media.kind == .image ? 4 : media.duration, mediaID: media.id)
-        let desired = time ?? trackEnd(clip.group, track: track)
-        clip.start = freeStart(clip.group, track: track, desired: desired, duration: clip.duration)
+        guard !isLocked(clip) else {
+            errorMessage = "Sporet \(TrackRow(group: clip.group, index: track).label) er låst."
+            return
+        }
+        clip.start = placement(for: clip, at: time)
         edit { $0.clips.append(clip) }
         selection = clip.id
     }
@@ -210,20 +336,23 @@ final class Editor {
 
     func addTitle() {
         let duration = 3.0
-        var clip = Clip(kind: .title, track: 0, start: 0, duration: duration, fadeIn: 0.25, fadeOut: 0.25, title: TitleStyle())
-        clip.start = freeStart(.title, track: 0, desired: currentTime, duration: duration)
-        if clip.start > currentTime + 0.01, project.titleTracks > 1 {
-            let other = freeStart(.title, track: 1, desired: currentTime, duration: duration)
-            if other < clip.start { clip.track = 1; clip.start = other }
+        var best: (track: Int, start: Double)?
+        for track in 0..<project.titleTracks where !isLocked(.title, track) {
+            let start = freeStart(.title, track: track, desired: currentTime, duration: duration)
+            if best == nil || start < best!.start - 0.01 { best = (track, start) }
         }
+        guard let best else { errorMessage = "Alle tekstspor er låst."; return }
+        let clip = Clip(kind: .title, track: best.track, start: best.start, duration: duration,
+                        fadeIn: 0.25, fadeOut: 0.25, title: TitleStyle())
         edit { $0.clips.append(clip) }
         selection = clip.id
+        inspectorTab = .text
     }
 
     /// Splits the selected clip at the playhead, or every clip under the playhead if none is selected.
     func splitAtPlayhead() {
         let t = currentTime
-        let under = project.clips.filter { $0.start + 0.01 < t && t < $0.end - 0.01 }
+        let under = project.clips.filter { $0.start + 0.01 < t && t < $0.end - 0.01 && !isLocked($0) }
         let targets = under.filter { $0.id == selection }.isEmpty ? under : under.filter { $0.id == selection }
         guard !targets.isEmpty else { NSSound.beep(); return }
         var newSelection: UUID?
@@ -235,9 +364,11 @@ final class Editor {
                 right.start = t
                 right.duration = target.end - t
                 right.fadeIn = 0
-                if target.hasMediaTiming { right.sourceIn = target.sourceIn + (t - target.start) }
+                right.transitionIn = nil
+                if target.hasMediaTiming { right.sourceIn = target.sourceIn + (t - target.start) * target.speed }
                 project.clips[i].duration = t - target.start
                 project.clips[i].fadeOut = 0
+                project.clips[i].transitionOut = nil
                 project.clips.append(right)
                 if target.id == selection { newSelection = right.id }
             }
@@ -245,17 +376,113 @@ final class Editor {
         if let newSelection { selection = newSelection }
     }
 
+    /// Q and W in Rush: trims the start or end of the clip under the playhead to the playhead.
+    /// On the main track the rest of the sequence follows.
+    func trimToPlayhead(start trimStart: Bool) {
+        let t = currentTime
+        let under = project.clips.filter { $0.start + 0.01 < t && t < $0.end - 0.01 && !isLocked($0) }
+        guard let target = under.first(where: { $0.id == selection }) ?? under.first(where: { project.isMagnetic($0) }) ?? under.first else {
+            NSSound.beep(); return
+        }
+        updateClip(target.id) { clip in
+            if trimStart {
+                let delta = t - clip.start
+                clip.start = t
+                clip.duration -= delta
+                if clip.hasMediaTiming { clip.sourceIn += delta * clip.speed }
+            } else {
+                clip.duration = t - clip.start
+            }
+        }
+        selection = target.id
+        if trimStart, let clip = selectedClip { seek(clip.start) }
+    }
+
     func deleteSelection() {
-        guard let selection else { return }
-        edit { $0.clips.removeAll { $0.id == selection } }
+        guard let clip = selectedClip, !isLocked(clip) else { return }
+        edit { $0.clips.removeAll { $0.id == clip.id } }
     }
 
     func duplicateSelection() {
-        guard var clip = selectedClip else { return }
+        guard var clip = selectedClip, !isLocked(clip) else { return }
+        let original = clip
         clip.id = UUID()
-        clip.start = freeStart(clip.group, track: clip.track, desired: clip.end, duration: clip.duration)
+        clip.start = project.isMagnetic(clip)
+            ? original.start + 0.0001
+            : freeStart(clip.group, track: clip.track, desired: original.end, duration: clip.duration)
         edit { $0.clips.append(clip) }
         selection = clip.id
+    }
+
+    func copySelection() {
+        guard let clip = selectedClip else { return }
+        clipboard = [clip]
+    }
+
+    func cutSelection() {
+        copySelection()
+        deleteSelection()
+    }
+
+    func paste() {
+        guard var clip = clipboard.first else { NSSound.beep(); return }
+        clip.id = UUID()
+        if clip.track >= project.trackCount(clip.group) || isLocked(clip) { clip.track = 0 }
+        guard !isLocked(clip) else { NSSound.beep(); return }
+        clip.start = placement(for: clip, at: currentTime)
+        edit { $0.clips.append(clip) }
+        selection = clip.id
+    }
+
+    /// E in Rush: moves the sound of a video clip to its own clip on a free audio track.
+    func separateAudio() {
+        guard let video = selectedClip, video.kind == .video, !video.audioDetached, !isLocked(video),
+              project.media(video.mediaID)?.hasAudio == true else { NSSound.beep(); return }
+        let free = (0..<project.audioTracks).first { track in
+            !isLocked(.audio, track) && freeStart(.audio, track: track, desired: video.start, duration: video.duration) == video.start
+        }
+        var audio = Clip(kind: .audio, track: free ?? project.audioTracks, start: video.start, duration: video.duration, mediaID: video.mediaID)
+        audio.sourceIn = video.sourceIn
+        audio.volume = video.volume
+        audio.fadeIn = video.fadeIn
+        audio.fadeOut = video.fadeOut
+        audio.speed = video.speed
+        audio.maintainPitch = video.maintainPitch
+        edit { project in
+            if free == nil { project.audioTracks += 1 }
+            project.clips.append(audio)
+            if let i = project.clips.firstIndex(where: { $0.id == video.id }) { project.clips[i].audioDetached = true }
+        }
+    }
+
+    /// ⌘D in Rush: puts the default transition at the start of the selected clip,
+    /// or at the cut nearest the playhead on the main track.
+    func applyDefaultTransition() {
+        var target = selectedClip
+        if target == nil || target?.kind == .audio {
+            target = project.clips.filter { project.isMagnetic($0) }.min { abs($0.start - currentTime) < abs($1.start - currentTime) }
+        }
+        guard let target, target.kind != .audio, !isLocked(target) else { NSSound.beep(); return }
+        updateClip(target.id) { $0.transitionIn = $0.transitionIn ?? Self.defaultTransition }
+        selection = target.id
+        inspectorTab = .transitions
+    }
+
+    /// Changes speed while keeping the same part of the source, so the clip gets shorter or longer.
+    func setSpeed(_ id: UUID, _ speed: Double) {
+        guard let clip = project.clips.first(where: { $0.id == id }) else { return }
+        let speed = min(max(speed, 0.1), 10)
+        var updated = clip
+        updated.speed = speed
+        updated.duration = clip.sourceDuration / speed
+        updated.duration = min(updated.duration, maxDuration(updated))
+        updateClip(id, coalesce: "speed") { $0 = updated }
+    }
+
+    func setDuration(_ id: UUID, _ duration: Double) {
+        guard let clip = project.clips.first(where: { $0.id == id }) else { return }
+        let value = min(max(duration, 1 / Double(project.fps)), maxDuration(clip))
+        updateClip(id) { $0.duration = value }
     }
 
     func addTrack(_ group: TrackGroup) {
@@ -268,6 +495,14 @@ final class Editor {
         }
     }
 
+    func toggleFlag(_ row: TrackRow, _ flag: WritableKeyPath<TrackFlags, Bool>) {
+        edit { project in
+            var flags = project.flags(row.group, row.index)
+            flags[keyPath: flag].toggle()
+            project.trackFlags[row.id] = flags
+        }
+    }
+
     func removeMedia(_ id: UUID) {
         edit { project in
             project.media.removeAll { $0.id == id }
@@ -277,6 +512,7 @@ final class Editor {
 
     /// Snaps a time to the playhead or a clip edge if it is within a few points.
     func snap(_ time: Double, excluding: UUID?) -> Double? {
+        guard snapping else { return nil }
         let threshold = 8 / pps
         var candidates = [0, currentTime]
         for clip in project.clips where clip.id != excluding {
@@ -286,6 +522,31 @@ final class Editor {
         let best = candidates.min { abs($0 - time) < abs($1 - time) }
         if let best, abs(best - time) <= threshold { return best }
         return nil
+    }
+
+    // MARK: - In and out points
+
+    func markIn() {
+        let t = currentTime
+        edit(rebuild: false) { project in
+            project.inPoint = t
+            if let out = project.outPoint, out <= t { project.outPoint = nil }
+        }
+    }
+
+    func markOut() {
+        let t = currentTime
+        edit(rebuild: false) { project in
+            project.outPoint = t
+            if let i = project.inPoint, i >= t { project.inPoint = nil }
+        }
+    }
+
+    func clearInOut(in clearIn: Bool, out clearOut: Bool) {
+        edit(rebuild: false) { project in
+            if clearIn { project.inPoint = nil }
+            if clearOut { project.outPoint = nil }
+        }
     }
 
     // MARK: - Import
@@ -325,15 +586,36 @@ final class Editor {
 
     func play() {
         guard project.duration > 0 else { return }
-        if currentTime >= project.duration - 0.05 { seek(0) }
-        player.play()
+        if currentTime >= project.duration - 0.05 { seek(project.inPoint ?? 0) }
+        shuttleRate = 1
+        player.rate = 1
         isPlaying = true
     }
 
     func pause() {
+        shuttleRate = 0
         player.pause()
         isPlaying = false
-        currentTime = player.currentTime().seconds.isFinite ? player.currentTime().seconds : currentTime
+        let t = player.currentTime().seconds
+        if t.isFinite { currentTime = min(max(t, 0), project.duration) }
+    }
+
+    /// J and L: each press doubles the speed in that direction, up to 8×. K stops.
+    func shuttle(forward: Bool) {
+        guard project.duration > 0 else { return }
+        if forward {
+            shuttleRate = shuttleRate > 0 ? min(shuttleRate * 2, 8) : 1
+            if currentTime >= project.duration - 0.05 { seek(0) }
+        } else {
+            shuttleRate = shuttleRate < 0 ? max(shuttleRate * 2, -8) : -1
+            if !(player.currentItem?.canPlayReverse ?? false) {
+                pause()
+                step(frames: -project.fps)
+                return
+            }
+        }
+        player.rate = Float(shuttleRate)
+        isPlaying = true
     }
 
     func seek(_ time: Double) {
@@ -346,12 +628,31 @@ final class Editor {
         seek(currentTime + Double(frames) / Double(project.fps))
     }
 
+    /// ↑ and ↓: jump to the previous or next cut on any track.
+    func jumpToEdit(forward: Bool) {
+        if isPlaying { pause() }
+        let points = Set(project.clips.flatMap { [$0.start, $0.end] } + [0, project.duration]).sorted()
+        if forward {
+            seek(points.first { $0 > currentTime + 0.001 } ?? project.duration)
+        } else {
+            seek(points.last { $0 < currentTime - 0.001 } ?? 0)
+        }
+    }
+
     private func playerTick(_ time: CMTime) {
         guard isPlaying, time.isValid else { return }
         currentTime = time.seconds
-        if currentTime >= project.duration - 0.001 || player.rate == 0 {
-            isPlaying = false
-            player.pause()
+        if loopPlayback, shuttleRate > 0 {
+            let start = project.inPoint ?? 0
+            let end = project.outPoint ?? project.duration
+            if end > start, currentTime >= end - 0.5 / Double(project.fps) {
+                seek(start)
+                player.rate = Float(shuttleRate)
+                return
+            }
+        }
+        if (shuttleRate > 0 && currentTime >= project.duration - 0.001) || (shuttleRate < 0 && currentTime <= 0.001) || player.rate == 0 {
+            pause()
         }
     }
 
@@ -384,7 +685,7 @@ final class Editor {
             installedStructure = result.structureKey
         }
         if isPlaying {
-            player.play()
+            player.rate = Float(shuttleRate)
         } else {
             // Shows the new frame while paused.
             player.seek(to: CompositionBuilder.time(currentTime), toleranceBefore: .zero, toleranceAfter: .zero)
@@ -463,6 +764,7 @@ final class Editor {
 
     private func replaceProject(_ new: Project, url: URL?) {
         project = new
+        Self.packMain(&project)
         fileURL = url
         isDirty = false
         selection = nil
@@ -500,6 +802,7 @@ final class Editor {
         guard let data = try? Data(contentsOf: Self.autosaveURL),
               let saved = try? JSONDecoder().decode(Project.self, from: data) else { return }
         project = saved
+        Self.packMain(&project)
         fileURL = UserDefaults.standard.string(forKey: "autosaveFilePath").map { URL(fileURLWithPath: $0) }
         isDirty = UserDefaults.standard.bool(forKey: "autosaveDirty")
         cache.prepare(saved.media)
@@ -507,32 +810,67 @@ final class Editor {
 
     // MARK: - Keyboard
 
-    /// Space, arrows and delete work anywhere except while typing in a text field.
+    /// Rush's single-key shortcuts. They work anywhere except while typing in a text field;
+    /// shortcuts with ⌘ that don't clash with text editing live in the menus instead.
     func installKeyMonitor() {
         guard keyMonitor == nil else { return }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self else { return event }
+            guard let self, NSApp.keyWindow?.attachedSheet == nil else { return event }
             if NSApp.keyWindow?.firstResponder is NSText { return event }
-            let modifiers = event.modifierFlags.intersection([.command, .option, .control])
-            guard modifiers.isEmpty else { return event }
-            let shift = event.modifierFlags.contains(.shift)
-            switch event.keyCode {
-            case 49: togglePlay()                                   // space
-            case 51, 117: deleteSelection()                         // delete, forward delete
-            case 123: step(frames: shift ? -project.fps : -1)       // left
-            case 124: step(frames: shift ? project.fps : 1)         // right
-            case 115: seek(0)                                       // home
-            case 119: seek(project.duration)                        // end
-            default:
-                switch event.charactersIgnoringModifiers {
-                case "s": splitAtPlayhead()
-                case "t": addTitle()
-                case "+": pps = min(pps * 1.4, 600)
-                case "-": pps = max(pps / 1.4, 4)
-                default: return event
-                }
-            }
-            return nil
+            return handleKey(event) ? nil : event
         }
+    }
+
+    private func handleKey(_ event: NSEvent) -> Bool {
+        let flags = event.modifierFlags.intersection([.command, .option, .control, .shift])
+        let key = event.charactersIgnoringModifiers?.lowercased() ?? ""
+
+        if flags.contains(.control) { return false }
+        if flags.contains(.command) {
+            switch (key, flags.contains(.shift)) {
+            case ("c", false): copySelection()
+            case ("x", false): cutSelection()
+            case ("v", false): paste()
+            case ("a", true): selection = nil
+            default: return false
+            }
+            return true
+        }
+
+        let shift = flags.contains(.shift), option = flags.contains(.option)
+        switch event.keyCode {
+        case 49: togglePlay()                                       // space
+        case 51, 117: deleteSelection()                             // delete
+        case 123: step(frames: shift ? -project.fps : -1)           // ←
+        case 124: step(frames: shift ? project.fps : 1)             // →
+        case 126: jumpToEdit(forward: false)                        // ↑
+        case 125: jumpToEdit(forward: true)                         // ↓
+        case 115: seek(0)                                           // home
+        case 119: seek(project.duration)                            // end
+        default:
+            switch key {
+            case "s": splitAtPlayhead()
+            case "d": duplicateSelection()
+            case "g": addTitle()
+            case "e": separateAudio()
+            case "q": trimToPlayhead(start: true)
+            case "w": trimToPlayhead(start: false)
+            case "j": shuttle(forward: false)
+            case "k": pause()
+            case "l": shuttle(forward: true)
+            case "i":
+                if option { clearInOut(in: true, out: false) } else if shift { if let t = project.inPoint { seek(t) } } else { markIn() }
+            case "o":
+                if option { clearInOut(in: false, out: true) } else if shift { if let t = project.outPoint { seek(t) } } else { markOut() }
+            case "x" where option: clearInOut(in: true, out: true)
+            case "=", "+": pps = min(pps * 1.4, 600)
+            case "-": pps = max(pps / 1.4, 4)
+            case "\\": zoomToFitRequest += 1
+            case "`": monitorMaximized.toggle()
+            case "y": showMedia.toggle()
+            default: return false
+            }
+        }
+        return true
     }
 }

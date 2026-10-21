@@ -30,6 +30,7 @@ enum CompositionBuilder {
         let track: AVMutableCompositionTrack
         var end: CMTime
         var mix: AVMutableAudioMixInputParameters?
+        var pitch: AVAudioTimePitchAlgorithm?
     }
 
     static func build(_ project: Project) async throws -> BuildResult {
@@ -39,30 +40,73 @@ enum CompositionBuilder {
         var layers: [RenderLayer] = []
         var structureKey: [String] = []
 
-        func slot(in slots: inout [Slot], type: AVMediaType, from start: CMTime) throws -> Int {
-            if let i = slots.firstIndex(where: { $0.end <= start }) { return i }
+        func slot(in slots: inout [Slot], type: AVMediaType, from start: CMTime, pitch: AVAudioTimePitchAlgorithm?) throws -> Int {
+            if let i = slots.firstIndex(where: { $0.end <= start && $0.pitch == pitch }) { return i }
             guard let track = composition.addMutableTrack(withMediaType: type, preferredTrackID: kCMPersistentTrackID_Invalid) else {
                 throw BuildError.trackCreation
             }
-            slots.append(Slot(track: track, end: .zero, mix: type == .audio ? AVMutableAudioMixInputParameters(track: track) : nil))
+            var mix: AVMutableAudioMixInputParameters?
+            if type == .audio {
+                mix = AVMutableAudioMixInputParameters(track: track)
+                if let pitch { mix?.audioTimePitchAlgorithm = pitch }
+            }
+            slots.append(Slot(track: track, end: .zero, mix: mix, pitch: pitch))
             return slots.count - 1
         }
 
-        func insert(_ source: AVAssetTrack, range: CMTimeRange, at start: CMTime, into slots: inout [Slot], type: AVMediaType) throws -> Int {
-            let i = try slot(in: &slots, type: type, from: start)
+        /// Inserts a source range at `start`, stretched to `duration` when the clip's speed isn't 1.
+        func insert(_ source: AVAssetTrack, range: CMTimeRange, at start: CMTime, duration: CMTime,
+                    into slots: inout [Slot], type: AVMediaType, pitch: AVAudioTimePitchAlgorithm? = nil) throws -> Int {
+            let i = try slot(in: &slots, type: type, from: start, pitch: pitch)
             if start > slots[i].end {
                 slots[i].track.insertEmptyTimeRange(CMTimeRange(start: slots[i].end, end: start))
             }
             try slots[i].track.insertTimeRange(range, of: source, at: start)
+            if duration != range.duration {
+                slots[i].track.scaleTimeRange(CMTimeRange(start: start, duration: range.duration), toDuration: duration)
+            }
             slots[i].end = slots[i].track.timeRange.end
+            structureKey.append("\(type.rawValue)|\((source.asset as? AVURLAsset)?.url.path ?? "")|\(source.trackID)|\(start.value)|\(range.start.value)|\(range.duration.value)|\(duration.value)|\(pitch?.rawValue ?? "")")
             return i
+        }
+
+        // On the magnetic main track a transition at the start of a clip overlaps the previous clip;
+        // both halves are drawn, the incoming clip on top.
+        var pairedIn: [UUID: Double] = [:]
+        var pairedOut: [UUID: (TransitionKind, Double)] = [:]
+        let main = project.clips.filter { project.isMagnetic($0) }.sorted { $0.start < $1.start }
+        for (a, b) in zip(main, main.dropFirst()) {
+            let overlap = a.end - b.start
+            if let transition = b.transitionIn, overlap > 0.001 {
+                pairedIn[b.id] = overlap
+                pairedOut[a.id] = (transition.kind, overlap)
+            }
+        }
+
+        func effects(_ clip: Clip) -> (LayerEffect?, LayerEffect?) {
+            var enter: LayerEffect?, leave: LayerEffect?
+            if let t = clip.transitionIn {
+                if let overlap = pairedIn[clip.id] {
+                    enter = LayerEffect(kind: t.kind, duration: overlap, paired: true)
+                } else {
+                    enter = LayerEffect(kind: t.kind, duration: min(t.duration, clip.duration / 2), paired: false)
+                }
+            }
+            if let (kind, overlap) = pairedOut[clip.id] {
+                leave = LayerEffect(kind: kind, duration: overlap, paired: true)
+            } else if let t = clip.transitionOut {
+                leave = LayerEffect(kind: t.kind, duration: min(t.duration, clip.duration / 2), paired: false)
+            }
+            return (enter, leave)
         }
 
         func applyVolume(_ clip: Clip, slot: Slot, start: CMTime, duration: CMTime) {
             guard let mix = slot.mix else { return }
             let volume = Float(clip.volume)
             let seconds = duration.seconds
-            let fadeIn = min(clip.fadeIn, seconds / 2), fadeOut = min(clip.fadeOut, seconds / 2)
+            // Transitions on the main track cross-fade the sound as well.
+            let fadeIn = min(max(clip.fadeIn, pairedIn[clip.id] ?? 0), seconds / 2)
+            let fadeOut = min(max(clip.fadeOut, pairedOut[clip.id]?.1 ?? 0), seconds / 2)
             if fadeIn > 0 {
                 mix.setVolumeRamp(fromStartVolume: 0, toEndVolume: volume, timeRange: CMTimeRange(start: start, duration: time(fadeIn)))
             } else {
@@ -76,47 +120,57 @@ enum CompositionBuilder {
         }
 
         func layer(_ clip: Clip, content: RenderLayer.Content, start: CMTime, duration: CMTime) -> RenderLayer {
-            RenderLayer(
+            let (enter, leave) = effects(clip)
+            return RenderLayer(
                 content: content, start: start, end: start + duration,
                 scale: clip.scale, offsetX: clip.offsetX, offsetY: clip.offsetY, fill: clip.fill,
-                fadeIn: clip.fadeIn, fadeOut: clip.fadeOut,
+                rotation: clip.rotation, opacity: clip.opacity, flipH: clip.flipH, flipV: clip.flipV,
+                crop: (clip.cropLeft, clip.cropRight, clip.cropTop, clip.cropBottom), feather: clip.feather,
+                fadeIn: clip.kind == .title ? clip.fadeIn : 0, fadeOut: clip.kind == .title ? clip.fadeOut : 0,
+                inEffect: enter, outEffect: leave,
                 z: (clip.group == .title ? 1 : 0, clip.track, clip.start))
         }
 
         for clip in project.clips.sorted(by: { $0.start < $1.start }) {
             let start = time(clip.start)
-            var duration = time(clip.duration)
+            let duration = time(clip.duration)
             guard duration > .zero else { continue }
+            let flags = project.flags(clip.group, clip.track)
 
             switch clip.kind {
             case .title:
-                if let style = clip.title {
+                if let style = clip.title, !flags.hidden {
                     layers.append(layer(clip, content: .title(style), start: start, duration: duration))
                 }
 
             case .image:
-                guard let media = project.media(clip.mediaID), FileManager.default.fileExists(atPath: media.url.path) else { continue }
+                guard !flags.hidden, let media = project.media(clip.mediaID),
+                      FileManager.default.fileExists(atPath: media.url.path) else { continue }
                 layers.append(layer(clip, content: .image(media.url), start: start, duration: duration))
 
             case .video, .audio:
                 guard let media = project.media(clip.mediaID), FileManager.default.fileExists(atPath: media.url.path) else { continue }
                 let asset = AssetCache.asset(media.url)
                 let assetDuration = try await asset.load(.duration)
+                let speed = max(clip.speed, 0.05)
                 let sourceStart = time(clip.sourceIn)
-                duration = min(duration, assetDuration - sourceStart)
-                guard duration > .zero else { continue }
-                let range = CMTimeRange(start: sourceStart, duration: duration)
-                structureKey.append("\(clip.mediaID!)|\(start.value)|\(duration.value)|\(sourceStart.value)|\(clip.kind)")
+                let sourceDuration = min(time(clip.duration * speed), assetDuration - sourceStart)
+                guard sourceDuration > .zero else { continue }
+                let range = CMTimeRange(start: sourceStart, duration: sourceDuration)
+                let timelineDuration = speed == 1 ? sourceDuration : time(sourceDuration.seconds / speed)
 
-                if clip.kind == .video, let source = try await asset.loadTracks(withMediaType: .video).first {
-                    let i = try insert(source, range: range, at: start, into: &videoSlots, type: .video)
+                if clip.kind == .video, !flags.hidden, let source = try await asset.loadTracks(withMediaType: .video).first {
+                    let i = try insert(source, range: range, at: start, duration: timelineDuration, into: &videoSlots, type: .video)
                     let transform = try await source.load(.preferredTransform)
                     layers.append(layer(clip, content: .video(trackID: videoSlots[i].track.trackID, transform: transform),
-                                        start: start, duration: duration))
+                                        start: start, duration: timelineDuration))
                 }
-                if let source = try await asset.loadTracks(withMediaType: .audio).first {
-                    let i = try insert(source, range: range, at: start, into: &audioSlots, type: .audio)
-                    applyVolume(clip, slot: audioSlots[i], start: start, duration: duration)
+                let wantsAudio = clip.kind == .audio || !clip.audioDetached
+                if wantsAudio, !flags.muted, clip.volume > 0, let source = try await asset.loadTracks(withMediaType: .audio).first {
+                    let pitch: AVAudioTimePitchAlgorithm = clip.maintainPitch || speed == 1 ? .spectral : .varispeed
+                    let i = try insert(source, range: range, at: start, duration: timelineDuration,
+                                       into: &audioSlots, type: .audio, pitch: pitch)
+                    applyVolume(clip, slot: audioSlots[i], start: start, duration: timelineDuration)
                 }
             }
         }

@@ -90,6 +90,187 @@ enum SelfTest {
 
         try await MainActor.run { try editingTests(media: m) }
         print("editing tests ok")
+
+        let withAudio = await MediaLoader.load(output)!
+        try await MainActor.run { try rushEditingTests(media: m, videoWithAudio: withAudio) }
+        print("rush editing tests ok")
+
+        try await renderTests(dir, media: m)
+        print("render tests ok")
+    }
+
+    /// Magnetic main track, ripple trims, transitions, speed, track flags, copy/paste and in/out.
+    @MainActor
+    private static func rushEditingTests(media: [MediaItem], videoWithAudio: MediaItem) throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Rush-redigering: \(message)") } }
+        let editor = Editor(persist: false)
+        editor.edit { $0.media = media + [videoWithAudio] }
+        let video = media[0]
+        func main() -> [Clip] { editor.project.clips.filter { editor.project.isMagnetic($0) }.sorted { $0.start < $1.start } }
+
+        editor.add(video); editor.add(video); editor.add(video)
+        try check(main().map(\.start) == [0, 3, 6], "tre klip i træk")
+
+        // Deleting closes the gap.
+        editor.selection = main()[0].id
+        editor.deleteSelection()
+        try check(main().map(\.start) == [0, 3], "slet lukker hullet")
+
+        // W trims the end to the playhead and the next clip follows.
+        editor.selection = nil
+        editor.currentTime = 1
+        editor.trimToPlayhead(start: false)
+        try check(abs(main()[0].duration - 1) < 1e-9 && abs(main()[1].start - 1) < 1e-9, "W ripple-trim")
+
+        // Q trims the start: the source moves on, and the clip stays where it is.
+        editor.currentTime = 1.5
+        editor.selection = main()[1].id
+        editor.trimToPlayhead(start: true)
+        try check(abs(main()[1].start - 1) < 1e-9 && abs(main()[1].sourceIn - 0.5) < 1e-9 && abs(main()[1].duration - 2.5) < 1e-9, "Q ripple-trim")
+
+        // Dropping in the middle of a clip inserts before or after it.
+        editor.add(video, at: 0.2)
+        try check(main().count == 3 && main()[0].duration == 3 && main()[0].start == 0, "indsæt før første klip")
+
+        // Dragging a clip past its neighbour reorders the main track.
+        let first = main()[0].id, second = main()[1].id
+        editor.beginInteraction()
+        editor.floating = first
+        editor.interact { p in if let i = p.clips.firstIndex(where: { $0.id == first }) { p.clips[i].start = 3.5 } }
+        editor.endInteraction()
+        try check(main()[0].id == second && main().last?.id == first && main().map(\.start)[1] == main()[0].end, "træk omsorterer")
+
+        // A transition makes the clip overlap the one before it.
+        let before = main()
+        editor.selection = before[1].id
+        editor.applyDefaultTransition()
+        let after = main()
+        try check(abs(after[1].start - (before[1].start - 0.5)) < 1e-9 && after[1].transitionIn?.kind == .crossDissolve, "overgang overlapper")
+
+        // Speed keeps the same source and changes the length.
+        let speedID = after[2].id
+        let sourceBefore = after[2].sourceDuration
+        editor.setSpeed(speedID, 2)
+        let sped = editor.project.clips.first { $0.id == speedID }!
+        try check(abs(sped.duration - sourceBefore / 2) < 1e-9 && abs(sped.sourceDuration - sourceBefore) < 1e-9, "hastighed")
+        editor.currentTime = sped.start + 0.5
+        editor.selection = speedID
+        editor.splitAtPlayhead()
+        let right = editor.project.clips.first { $0.id == editor.selection }!
+        try check(abs(right.sourceIn - (sped.sourceIn + 1)) < 1e-9, "del med hastighed")
+
+        // Copy and paste.
+        let count = editor.project.clips.count
+        editor.copySelection()
+        editor.currentTime = 0
+        editor.paste()
+        try check(editor.project.clips.count == count + 1 && main().first?.id == editor.selection, "kopiér og sæt ind")
+
+        // Separate audio.
+        editor.add(videoWithAudio, at: 0, track: 1)
+        editor.separateAudio()
+        let detached = editor.project.clips.first { $0.mediaID == videoWithAudio.id && $0.kind == .video }!
+        let audio = editor.project.clips.first { $0.mediaID == videoWithAudio.id && $0.kind == .audio }
+        try check(detached.audioDetached && audio?.start == detached.start && audio?.duration == detached.duration, "adskil lyd")
+
+        // Locked tracks can't be edited.
+        editor.toggleFlag(TrackRow(group: .visual, index: 0), \.locked)
+        let locked = main()[0]
+        editor.selection = locked.id
+        try check(editor.selection == locked.id || editor.selection == nil, "valg")
+        editor.deleteSelection()
+        try check(main().contains { $0.id == locked.id }, "låst spor")
+        editor.toggleFlag(TrackRow(group: .visual, index: 0), \.locked)
+
+        // In and out points.
+        editor.currentTime = 1; editor.markIn()
+        editor.currentTime = 2; editor.markOut()
+        try check(editor.project.inPoint == 1 && editor.project.outPoint == 2, "ind og ud")
+
+        // Files from the first version still open.
+        let old = #"{"version":1,"aspect":"portrait","fps":30,"background":{"r":0,"g":0,"b":0,"a":1},"titleTracks":2,"visualTracks":3,"audioTracks":2,"media":[],"clips":[{"id":"9C3A1F43-2D19-4C59-9E47-2F1D7E7C1A10","kind":"title","track":0,"start":0,"duration":2,"sourceIn":0,"volume":1,"fadeIn":0,"fadeOut":0,"scale":1,"offsetX":0,"offsetY":0,"fill":true,"title":{"text":"Hej","fontFamily":"Helvetica Neue","bold":true,"size":90,"color":{"r":1,"g":1,"b":1,"a":1},"shadow":true,"background":false,"backgroundColor":{"r":0,"g":0,"b":0,"a":0.6},"x":0.5,"y":0.8}}]}"#
+        let decoded = try JSONDecoder().decode(Project.self, from: Data(old.utf8))
+        try check(decoded.clips.first?.speed == 1 && decoded.magneticMain && decoded.clips.first?.opacity == 1, "gammelt projekt")
+    }
+
+    /// Exports a 16:9 project and checks pixels inside a dissolve, a push and on hidden or muted tracks.
+    private static func renderTests(_ dir: URL, media m: [MediaItem]) async throws {
+        var project = Project()
+        project.aspect = .landscape
+        project.media = m
+        // The test video is red, green, blue for one second each.
+        var a = Clip(kind: .video, track: 0, start: 0, duration: 3, mediaID: m[0].id)
+        var b = Clip(kind: .video, track: 0, start: 3, duration: 3, mediaID: m[0].id)
+        b.transitionIn = Transition(kind: .crossDissolve, duration: 1)
+        var c = Clip(kind: .video, track: 0, start: 6, duration: 1.5, mediaID: m[0].id)
+        c.speed = 2
+        c.transitionIn = Transition(kind: .pushLeft, duration: 0.5)
+        var overlay = Clip(kind: .image, track: 1, start: 0, duration: 1, mediaID: m[2].id)
+        overlay.scale = 0.5; overlay.rotation = 30; overlay.opacity = 0.6; overlay.cropLeft = 0.3; overlay.feather = 20
+        var tone = Clip(kind: .audio, track: 0, start: 0, duration: 6, mediaID: m[3].id)
+        tone.fadeOut = 1
+        a.fadeIn = 0
+        project.clips = [a, b, c, overlay, tone]
+        Editor.packMain(&project)
+        let starts = project.clips.filter { project.isMagnetic($0) }.map(\.start)
+        guard starts == [0, 2, 4.5] else { throw err("pakning \(starts)") }
+
+        var demo = project
+        demo.inPoint = 1; demo.outPoint = 5
+        demo.clips.append(Clip(kind: .title, track: 0, start: 0.5, duration: 3, fadeIn: 0.25, fadeOut: 0.25, title: TitleStyle(text: "Eddie")))
+        try JSONEncoder().encode(demo).write(to: dir.appendingPathComponent("demo-rush.eddie"))
+
+        let url = dir.appendingPathComponent("render.mp4")
+        try await Exporter.export(project, to: url, codec: .h264) { _ in }
+        let asset = AVURLAsset(url: url)
+        let duration = try await asset.load(.duration).seconds
+        guard abs(duration - 6) < 0.05 else { throw err("varighed \(duration)") }
+        try await saveFrame(of: asset, at: 0.5, to: dir.appendingPathComponent("render-overlay.png"))
+        try await saveFrame(of: asset, at: 2.5, to: dir.appendingPathComponent("render-dissolve.png"))
+        try await saveFrame(of: asset, at: 4.75, to: dir.appendingPathComponent("render-push.png"))
+
+        func near(_ p: (Double, Double, Double), _ q: (Double, Double, Double), _ tolerance: Double = 0.12) -> Bool {
+            abs(p.0 - q.0) < tolerance && abs(p.1 - q.1) < tolerance && abs(p.2 - q.2) < tolerance
+        }
+        let red = (0.8, 0.2, 0.2), blue = (0.2, 0.3, 0.8)
+        // Middle of the dissolve: half blue (end of A), half red (start of B).
+        let mid = try await pixel(asset, at: 2.5, x: 0.5, y: 0.5)
+        let early = try await pixel(asset, at: 2.1, x: 0.5, y: 0.5), late = try await pixel(asset, at: 2.9, x: 0.5, y: 0.5)
+        print("dissolve", early, mid, late)
+        // Mixed in the middle, and moving from blue towards red.
+        guard mid.0 > 0.3, mid.0 < 0.7, mid.2 > 0.3, mid.2 < 0.7, early.0 < mid.0, mid.0 < late.0, early.2 > mid.2, mid.2 > late.2 else {
+            throw err("krydsfade \(early) \(mid) \(late)")
+        }
+        // Middle of the push: B (blue at its end) on the left, C (red at its start) on the right.
+        let left = try await pixel(asset, at: 4.75, x: 0.2, y: 0.5), rightSide = try await pixel(asset, at: 4.75, x: 0.8, y: 0.5)
+        print("push", left, rightSide)
+        guard near(left, blue), near(rightSide, red) else { throw err("skub \(left) \(rightSide)") }
+        guard try await asset.loadTracks(withMediaType: .audio).count == 1 else { throw err("lyd mangler") }
+
+        // Hidden V2 and muted A1: no overlay and no sound.
+        project.trackFlags[TrackRow(group: .visual, index: 1).id] = TrackFlags(hidden: true)
+        project.trackFlags[TrackRow(group: .audio, index: 0).id] = TrackFlags(muted: true)
+        let hiddenURL = dir.appendingPathComponent("render-hidden.mp4")
+        try await Exporter.export(project, to: hiddenURL, codec: .h264, range: 0.25...1.25) { _ in }
+        let hidden = AVURLAsset(url: hiddenURL)
+        let plain = try await pixel(hidden, at: 0.25, x: 0.5, y: 0.5)
+        guard near(plain, red), try await hidden.loadTracks(withMediaType: .audio).isEmpty else { throw err("skjult/stum \(plain)") }
+        let rangeDuration = try await hidden.load(.duration).seconds
+        guard abs(rangeDuration - 1) < 0.05 else { throw err("ind/ud-eksport \(rangeDuration)") }
+    }
+
+    private static func pixel(_ asset: AVAsset, at seconds: Double, x: Double, y: Double) async throws -> (Double, Double, Double) {
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = .zero
+        let (image, _) = try await generator.image(at: CMTime(seconds: seconds, preferredTimescale: 600))
+        var data = [UInt8](repeating: 0, count: 4)
+        let ctx = CGContext(data: &data, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                            space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        // Draw the image so the wanted pixel lands on the single pixel of the context (y from the top).
+        let w = CGFloat(image.width), h = CGFloat(image.height)
+        ctx.draw(image, in: CGRect(x: -x * w, y: -(1 - y) * h, width: w, height: h))
+        return (Double(data[0]) / 255, Double(data[1]) / 255, Double(data[2]) / 255)
     }
 
     @MainActor

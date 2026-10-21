@@ -7,12 +7,16 @@ struct ContentView: View {
         @Bindable var editor = editor
         VSplitView {
             HSplitView {
-                MediaBinView()
-                    .frame(minWidth: 200, idealWidth: 250, maxWidth: 420)
+                if editor.showMedia && !editor.monitorMaximized {
+                    MediaBinView()
+                        .frame(minWidth: 200, idealWidth: 250, maxWidth: 420)
+                }
                 PreviewPanel()
                     .frame(minWidth: 420, maxWidth: .infinity)
-                InspectorView()
-                    .frame(minWidth: 260, idealWidth: 290, maxWidth: 420)
+                if !editor.monitorMaximized {
+                    InspectorView()
+                        .frame(minWidth: 280, idealWidth: 310, maxWidth: 440)
+                }
             }
             .frame(minHeight: 320, idealHeight: 520)
             TimelinePanel()
