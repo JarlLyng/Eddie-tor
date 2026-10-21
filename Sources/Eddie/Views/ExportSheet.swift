@@ -1,0 +1,91 @@
+import SwiftUI
+
+struct ExportSheet: View {
+    @Environment(Editor.self) private var editor
+    @Environment(\.dismiss) private var dismiss
+    @ViewState private var codec = Exporter.Codec.h264
+    @ViewState private var state = ExportState.idle
+
+    enum ExportState {
+        case idle
+        case exporting(Double)
+        case done(URL)
+        case failed(String)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Eksporter video").font(.title2.bold())
+
+            let size = editor.project.aspect.renderSize
+            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
+                GridRow { Text("Format").foregroundStyle(.secondary); Text("\(editor.project.aspect.label) · \(Int(size.width))×\(Int(size.height)) · \(editor.project.fps) fps") }
+                GridRow { Text("Varighed").foregroundStyle(.secondary); Text(timecode(editor.project.duration, fps: editor.project.fps)) }
+                GridRow {
+                    Text("Codec").foregroundStyle(.secondary)
+                    Picker("", selection: $codec) {
+                        ForEach(Exporter.Codec.allCases) { Text($0.rawValue).tag($0) }
+                    }
+                    .labelsHidden()
+                    .frame(width: 220)
+                    .disabled(isExporting)
+                }
+            }
+
+            switch state {
+            case .idle:
+                EmptyView()
+            case .exporting(let progress):
+                ProgressView(value: progress) { Text("Eksporterer… \(Int(progress * 100)) %") }
+            case .done(let url):
+                Label("Færdig: \(url.lastPathComponent)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+            case .failed(let message):
+                Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+            }
+
+            HStack {
+                if case .done(let url) = state {
+                    Button("Vis i Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+                }
+                Spacer()
+                Button(isDone ? "Luk" : "Annuller") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                    .disabled(isExporting)
+                if !isDone {
+                    Button("Eksporter…") { chooseAndExport() }
+                        .keyboardShortcut(.defaultAction)
+                        .disabled(isExporting || editor.project.clips.isEmpty)
+                }
+            }
+        }
+        .padding(24)
+        .frame(width: 460)
+    }
+
+    private var isExporting: Bool { if case .exporting = state { true } else { false } }
+    private var isDone: Bool { if case .done = state { true } else { false } }
+
+    private func chooseAndExport() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.mpeg4Movie]
+        let base = editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Eddie-video"
+        panel.nameFieldStringValue = "\(base).mp4"
+        panel.directoryURL = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask).first
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        if editor.isPlaying { editor.pause() }
+        state = .exporting(0)
+        let project = editor.project
+        let codec = codec
+        Task {
+            do {
+                try await Exporter.export(project, to: url, codec: codec) { progress in
+                    Task { @MainActor in if case .exporting = state { state = .exporting(progress) } }
+                }
+                state = .done(url)
+            } catch {
+                state = .failed(error.localizedDescription)
+            }
+        }
+    }
+}
