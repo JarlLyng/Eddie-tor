@@ -1,4 +1,5 @@
 import AVFoundation
+import IAMJARLDesignTokens
 import SwiftUI
 
 struct PreviewPanel: View {
@@ -15,10 +16,9 @@ struct PreviewPanel: View {
                     .gesture(moveGesture(size: size))
                     .position(x: geo.size.width / 2, y: geo.size.height / 2)
             }
-            .background(Color(white: 0.08))
-            .padding(.bottom, 1)
+            .background(Tokens.Palette.Background.muted)
 
-            HStack(spacing: 14) {
+            HStack(spacing: Tokens.Spacing.lg) {
                 Button { editor.seek(0) } label: { Image(systemName: "backward.end.fill") }
                 Button { editor.step(frames: -1) } label: { Image(systemName: "backward.frame.fill") }
                 Button { editor.togglePlay() } label: {
@@ -28,7 +28,8 @@ struct PreviewPanel: View {
                 Button { editor.seek(editor.project.duration) } label: { Image(systemName: "forward.end.fill") }
             }
             .buttonStyle(.borderless)
-            .padding(.vertical, 8)
+            .foregroundStyle(Tokens.Palette.Text.primary)
+            .padding(.vertical, Tokens.Spacing.sm)
         }
     }
 
@@ -45,7 +46,7 @@ struct PreviewPanel: View {
     @ViewBuilder private func selectionOutline(size: CGSize) -> some View {
         if let clip = editor.selectedClip, clip.start <= editor.currentTime, editor.currentTime < clip.end, clip.kind != .audio {
             Rectangle()
-                .strokeBorder(Color.yellow.opacity(0.7), style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                .strokeBorder(Tokens.Palette.primary, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 .allowsHitTesting(false)
         }
     }
@@ -100,7 +101,7 @@ final class PlayerNSView: NSView {
     override init(frame: NSRect) {
         super.init(frame: frame)
         wantsLayer = true
-        layer?.backgroundColor = NSColor.black.cgColor
+        layer?.backgroundColor = NSColor.clear.cgColor
         playerLayer.videoGravity = .resizeAspect
         layer?.addSublayer(playerLayer)
     }

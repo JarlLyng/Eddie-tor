@@ -1,3 +1,4 @@
+import IAMJARLDesignTokens
 import SwiftUI
 
 struct ContentView: View {
@@ -22,6 +23,7 @@ struct ContentView: View {
             TimelinePanel()
                 .frame(minHeight: 220, idealHeight: 340)
         }
+        .background(Tokens.Palette.Background.app)
         .navigationTitle(editor.windowTitle)
         .toolbar {
             ToolbarItem(placement: .navigation) {

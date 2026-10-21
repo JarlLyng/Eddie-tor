@@ -1,3 +1,4 @@
+import IAMJARLDesignTokens
 import SwiftUI
 
 private let rulerHeight: CGFloat = 24
@@ -24,7 +25,7 @@ struct TimelinePanel: View {
                     .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.width } action: { _, w in visibleWidth = w }
                 }
             }
-            .background(Color(white: 0.11))
+            .background(Tokens.Palette.Background.app)
         }
         .onChange(of: editor.currentTime) { _, time in followPlayhead(time) }
         .onChange(of: editor.zoomToFitRequest) { zoomToFit() }
@@ -51,12 +52,12 @@ struct TimelinePanel: View {
 
     private var toolbar: some View {
         @Bindable var editor = editor
-        return HStack(spacing: 12) {
+        return HStack(spacing: Tokens.Spacing.md) {
             Button { editor.togglePlay() } label: { Image(systemName: editor.isPlaying ? "pause.fill" : "play.fill") }
                 .help("Afspil / pause (mellemrum, J K L)")
             Text("\(timecode(editor.currentTime, fps: editor.project.fps))  /  \(timecode(editor.project.duration, fps: editor.project.fps))")
-                .font(.system(.body, design: .monospaced))
-                .foregroundStyle(.secondary)
+                .ijFont(.sm, design: .monospaced)
+                .foregroundStyle(Tokens.Palette.Text.secondary)
             Divider().frame(height: 18)
             Button { editor.splitAtPlayhead() } label: { Image(systemName: "scissors") }
                 .help("Del klip ved afspilningshovedet (S)")
@@ -74,7 +75,7 @@ struct TimelinePanel: View {
                 Button("Videospor") { editor.addTrack(.visual) }
                 Button("Lydspor") { editor.addTrack(.audio) }
                 Button("Tekstspor") { editor.addTrack(.title) }
-            } label: { Image(systemName: "rectangle.stack.badge.plus") }
+            } label: { Image(systemName: "rectangle.stack.badge.plus").foregroundStyle(Tokens.Palette.Text.primary) }
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .help("Tilføj spor")
@@ -84,13 +85,13 @@ struct TimelinePanel: View {
             Button { editor.redo() } label: { Image(systemName: "arrow.uturn.forward") }
                 .help("Annuller fortryd (⇧⌘Z)").disabled(!editor.canRedo)
             Divider().frame(height: 18)
-            Toggle(isOn: $editor.snapping) { Image(systemName: "arrow.right.and.line.vertical.and.arrow.left") }
+            Toggle(isOn: $editor.snapping) { activeIcon("arrow.right.and.line.vertical.and.arrow.left", editor.snapping) }
                 .toggleStyle(.button)
                 .help("Snap til kanter og afspilningshoved (⌘Y)")
-            Toggle(isOn: $editor.loopPlayback) { Image(systemName: "repeat") }
+            Toggle(isOn: $editor.loopPlayback) { activeIcon("repeat", editor.loopPlayback) }
                 .toggleStyle(.button)
                 .help("Gentag afspilning, inden for ind/ud hvis de er sat (⌘L)")
-            Toggle(isOn: editor.projectBinding(\.magneticMain)) { Image(systemName: "rectangle.compress.vertical") }
+            Toggle(isOn: editor.projectBinding(\.magneticMain)) { activeIcon("rectangle.compress.vertical", editor.project.magneticMain) }
                 .toggleStyle(.button)
                 .help("Magnetisk hovedspor: klip på V1 ligger altid uden huller")
             Spacer()
@@ -104,8 +105,14 @@ struct TimelinePanel: View {
                 .help("Vis hele tidslinjen (\\)")
         }
         .buttonStyle(.borderless)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .foregroundStyle(Tokens.Palette.Text.primary)
+        .padding(.horizontal, Tokens.Spacing.md)
+        .padding(.vertical, Tokens.Spacing.xs)
+    }
+
+    /// Icons take the text colour; a switched-on tool takes the accent.
+    private func activeIcon(_ name: String, _ active: Bool) -> some View {
+        Image(systemName: name).foregroundStyle(active ? Tokens.Palette.primary : Tokens.Palette.Text.primary)
     }
 
     private var headers: some View {
@@ -128,8 +135,8 @@ private struct TrackHeader: View {
         let flags = editor.project.flags(row.group, row.index)
         HStack(spacing: 2) {
             Text(row.label)
-                .font(.caption.bold())
-                .foregroundStyle(row.group == .visual && row.index == 0 && editor.project.magneticMain ? Color.accentColor : .secondary)
+                .ijFont(.xs, weight: .semibold)
+                .foregroundStyle(row.group == .visual && row.index == 0 && editor.project.magneticMain ? Tokens.Palette.primary : Tokens.Palette.Text.secondary)
                 .frame(width: 22, alignment: .leading)
                 .help(row.group == .visual && row.index == 0 ? "Hovedspor" : "")
             Spacer(minLength: 0)
@@ -141,16 +148,16 @@ private struct TrackHeader: View {
             }
             flagButton(\.locked, active: flags.locked, on: "lock.fill", off: "lock.open", help: "Lås spor")
         }
-        .padding(.horizontal, 6)
-        .background(Color(white: 0.15))
-        .overlay(alignment: .bottom) { Rectangle().fill(Color.black.opacity(0.5)).frame(height: 1) }
+        .padding(.horizontal, Tokens.Spacing.xs)
+        .background(Tokens.Palette.Background.card)
+        .overlay(alignment: .bottom) { Rectangle().fill(Tokens.Palette.Border.subtle).frame(height: 1) }
     }
 
     private func flagButton(_ flag: WritableKeyPath<TrackFlags, Bool>, active: Bool, on: String, off: String, help: String) -> some View {
         Button { editor.toggleFlag(row, flag) } label: {
             Image(systemName: active ? on : off)
-                .font(.system(size: 10))
-                .foregroundStyle(active ? Color.orange : Color.secondary)
+                .font(.caption)
+                .foregroundStyle(active ? Tokens.Palette.primary : Tokens.Palette.Text.secondary)
                 .frame(width: 18, height: 18)
         }
         .buttonStyle(.borderless)
@@ -190,9 +197,9 @@ private struct RulerView: View {
         Canvas { ctx, size in
             if inPoint != nil || outPoint != nil {
                 let a = (inPoint ?? 0) * pps, b = (outPoint ?? duration) * pps
-                ctx.fill(Path(CGRect(x: a, y: 0, width: max(b - a, 1), height: size.height)), with: .color(.accentColor.opacity(0.3)))
+                ctx.fill(Path(CGRect(x: a, y: 0, width: max(b - a, 1), height: size.height)), with: .color(Tokens.Palette.primarySubtle))
                 for x in [inPoint, outPoint].compactMap({ $0 }).map({ $0 * pps }) {
-                    ctx.fill(Path(CGRect(x: x - 1, y: 0, width: 2, height: size.height)), with: .color(.accentColor))
+                    ctx.fill(Path(CGRect(x: x - 1, y: 0, width: 2, height: size.height)), with: .color(Tokens.Palette.primary))
                 }
             }
             let major = [0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600].first { $0 * pps >= 70 } ?? 600
@@ -205,16 +212,16 @@ private struct RulerView: View {
                 var path = Path()
                 path.move(to: CGPoint(x: x, y: size.height))
                 path.addLine(to: CGPoint(x: x, y: size.height - (isMajor ? 10 : 5)))
-                ctx.stroke(path, with: .color(.gray), lineWidth: 1)
+                ctx.stroke(path, with: .color(Tokens.Palette.Text.tertiary), lineWidth: 1)
                 if isMajor {
                     let label = major < 1
                         ? String(format: "%d:%04.1f", Int(t) / 60, t.truncatingRemainder(dividingBy: 60))
                         : String(format: "%d:%02d", Int(t) / 60, Int(t) % 60)
-                    ctx.draw(Text(label).font(.system(size: 9)).foregroundColor(.gray), at: CGPoint(x: x + 3, y: 2), anchor: .topLeading)
+                    ctx.draw(Text(label).font(.caption).foregroundColor(Tokens.Palette.Text.secondary), at: CGPoint(x: x + 3, y: 2), anchor: .topLeading)
                 }
             }
         }
-        .background(Color(white: 0.14))
+        .background(Tokens.Palette.Background.card)
         .contentShape(Rectangle())
         .gesture(DragGesture(minimumDistance: 0).onChanged { value in
             if editor.isPlaying { editor.pause() }
@@ -231,10 +238,10 @@ private struct PlayheadView: View {
         let x = editor.currentTime * editor.pps
         VStack(spacing: 0) {
             Image(systemName: "arrowtriangle.down.fill")
-                .font(.system(size: 11))
-                .foregroundStyle(.red)
+                .font(.caption)
+                .foregroundStyle(Tokens.Palette.primary)
                 .frame(height: rulerHeight - 6, alignment: .bottom)
-            Rectangle().fill(Color.red).frame(width: 1.5)
+            Rectangle().fill(Tokens.Palette.primary).frame(width: Tokens.Focus.width)
         }
         .frame(width: 12)
         .offset(x: x - 6, y: 4)
@@ -251,8 +258,8 @@ private struct TrackLane: View {
         let flags = editor.project.flags(row.group, row.index)
         ZStack(alignment: .topLeading) {
             Rectangle()
-                .fill(targeted ? Color.accentColor.opacity(0.18) : Color(white: row.group == .visual ? 0.13 : 0.12))
-                .overlay(alignment: .bottom) { Rectangle().fill(Color.black.opacity(0.5)).frame(height: 1) }
+                .fill(targeted ? Tokens.Palette.primarySubtle : Tokens.Palette.Background.muted)
+                .overlay(alignment: .bottom) { Rectangle().fill(Tokens.Palette.Border.subtle).frame(height: 1) }
                 .onTapGesture(coordinateSpace: .local) { location in
                     editor.selection = nil
                     if editor.isPlaying { editor.pause() }
@@ -287,7 +294,7 @@ private struct LockedPattern: View {
                 path.addLine(to: CGPoint(x: x + size.height, y: 0))
                 x += 10
             }
-            ctx.stroke(path, with: .color(.white.opacity(0.07)), lineWidth: 2)
+            ctx.stroke(path, with: .color(Tokens.Palette.Border.subtle), lineWidth: 2)
         }
     }
 }
@@ -305,18 +312,18 @@ private struct ClipView: View {
         let selected = editor.selection == clip.id
         let width = clip.duration * editor.pps
         ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 5).fill(color.opacity(0.75))
+            RoundedRectangle(cornerRadius: Tokens.Radius.sm).fill(selected ? Tokens.Palette.primarySubtle : Tokens.clipFill)
             // The thumbnail strip can be wider than the clip; pin it left so the label stays put.
             content
                 .frame(width: max(width, 3), height: row.height - 6, alignment: .bottomLeading)
                 .clipped()
             label
         }
-        .clipShape(RoundedRectangle(cornerRadius: 5))
+        .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.sm))
         .overlay(alignment: .leading) { transitionMarker(clip.transitionIn, leading: true) }
         .overlay(alignment: .trailing) { transitionMarker(clip.transitionOut, leading: false) }
-        .overlay(RoundedRectangle(cornerRadius: 5)
-            .strokeBorder(selected ? Color.yellow : Color.black.opacity(0.35), lineWidth: selected ? 2 : 1))
+        .overlay(RoundedRectangle(cornerRadius: Tokens.Radius.sm)
+            .strokeBorder(borderColor(selected: selected), lineWidth: selected ? Tokens.Focus.width : 1))
         .overlay(alignment: .leading) { if width > 24 { handle(.trimStart, selected: selected) } }
         .overlay(alignment: .trailing) { if width > 24 { handle(.trimEnd, selected: selected) } }
         .contentShape(Rectangle())
@@ -346,14 +353,13 @@ private struct ClipView: View {
         return media?.name ?? "Mangler fil"
     }
 
-    private var color: Color {
-        if clip.kind != .title, media.map({ FileManager.default.fileExists(atPath: $0.url.path) }) != true { return .red }
-        return switch clip.kind {
-        case .video: Color(red: 0.22, green: 0.42, blue: 0.82)
-        case .image: Color(red: 0.55, green: 0.35, blue: 0.80)
-        case .audio: Color(red: 0.20, green: 0.62, blue: 0.40)
-        case .title: Color(red: 0.88, green: 0.55, blue: 0.18)
-        }
+    private var isMissing: Bool {
+        clip.kind != .title && media.map({ FileManager.default.fileExists(atPath: $0.url.path) }) != true
+    }
+
+    private func borderColor(selected: Bool) -> Color {
+        if selected { return Tokens.Palette.primary }
+        return isMissing ? Tokens.Palette.State.error : Tokens.Palette.Border.default
     }
 
     @ViewBuilder private var content: some View {
@@ -375,13 +381,13 @@ private struct ClipView: View {
                 if clip.kind == .video, !clip.audioDetached, let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
                     WaveformView(peaks: peaks, sourceIn: clip.sourceIn, duration: clip.sourceDuration, volume: clip.volume)
                         .frame(height: height * 0.35)
-                        .background(Color.black.opacity(0.35))
+                        .background(Tokens.Palette.Background.app.opacity(0.6))
                 }
             }
         case .audio:
             if let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
                 WaveformView(peaks: peaks, sourceIn: clip.sourceIn, duration: clip.sourceDuration, volume: clip.volume)
-                    .padding(.top, 14)
+                    .padding(.top, Tokens.Spacing.lg)
             }
         case .title:
             EmptyView()
@@ -389,24 +395,23 @@ private struct ClipView: View {
     }
 
     private var label: some View {
-        HStack(spacing: 3) {
-            Image(systemName: icon).font(.system(size: 9))
+        HStack(spacing: Tokens.Spacing.xs) {
+            Image(systemName: icon).font(.caption2)
             Text(name).lineLimit(1)
             if clip.hasMediaTiming, abs(clip.speed - 1) > 0.001 {
                 Text("\(Int((clip.speed * 100).rounded())) %")
                     .lineLimit(1)
                     .fixedSize()
-                    .padding(.horizontal, 3)
-                    .background(Color.white.opacity(0.25), in: RoundedRectangle(cornerRadius: 2))
+                    .padding(.horizontal, Tokens.Spacing.xs)
+                    .background(Tokens.Palette.Background.muted, in: RoundedRectangle(cornerRadius: Tokens.Radius.sm))
             }
-            if clip.audioDetached { Image(systemName: "speaker.slash").font(.system(size: 8)) }
+            if clip.audioDetached { Image(systemName: "speaker.slash").font(.caption2) }
         }
-        .font(.system(size: 10, weight: .medium))
-        .foregroundStyle(.white)
-        .padding(.horizontal, 5)
-        .padding(.vertical, 1)
-        .background(Color.black.opacity(clip.kind == .title ? 0 : 0.45), in: RoundedRectangle(cornerRadius: 3))
-        .padding(3)
+        .ijFont(.xs, weight: .semibold)
+        .foregroundStyle(isMissing ? Tokens.Palette.State.error : Tokens.Palette.Text.primary)
+        .padding(.horizontal, Tokens.Spacing.xs)
+        .background(Tokens.Palette.Background.app.opacity(0.75), in: RoundedRectangle(cornerRadius: Tokens.Radius.sm))
+        .padding(Tokens.Spacing.xs / 2)
     }
 
     private var icon: String {
@@ -422,14 +427,14 @@ private struct ClipView: View {
         if let transition, clip.kind != .title {
             let width = min(transition.duration, clip.duration / 2) * editor.pps
             ZStack {
-                LinearGradient(colors: [.white.opacity(0.55), .white.opacity(0.05)],
-                               startPoint: leading ? .leading : .trailing, endPoint: leading ? .trailing : .leading)
+                Tokens.Palette.primarySubtle
                 Image(systemName: "rectangle.righthalf.inset.filled.arrow.right")
-                    .font(.system(size: 9))
-                    .foregroundStyle(.black.opacity(0.7))
+                    .font(.caption2)
+                    .foregroundStyle(Tokens.Palette.primary)
             }
             .frame(width: max(width, 6))
-            .clipShape(RoundedRectangle(cornerRadius: 5))
+            .overlay(alignment: leading ? .trailing : .leading) { Rectangle().fill(Tokens.Palette.primary).frame(width: 1) }
+            .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.sm))
             .onTapGesture {
                 editor.selection = clip.id
                 editor.inspectorTab = .transitions
@@ -440,7 +445,7 @@ private struct ClipView: View {
 
     private func handle(_ mode: Mode, selected: Bool) -> some View {
         Rectangle()
-            .fill(Color.white.opacity(selected || hoveringHandle ? 0.35 : 0.001))
+            .fill(selected || hoveringHandle ? Tokens.Palette.primary.opacity(0.5) : Color.clear)
             .frame(width: 7)
             .contentShape(Rectangle())
             .onHover { inside in
@@ -558,7 +563,7 @@ struct WaveformView: View {
                 path.addRect(CGRect(x: x, y: mid - h, width: 1.2, height: h * 2))
                 x += 2
             }
-            ctx.fill(path, with: .color(.white.opacity(0.75)))
+            ctx.fill(path, with: .color(Tokens.Palette.Text.secondary))
         }
         .allowsHitTesting(false)
     }

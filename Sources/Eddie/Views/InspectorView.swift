@@ -1,3 +1,4 @@
+import IAMJARLDesignTokens
 import SwiftUI
 
 struct InspectorView: View {
@@ -6,11 +7,11 @@ struct InspectorView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text(editor.selectedClip == nil ? "Projekt" : "Klip").font(.headline)
+                Text(editor.selectedClip == nil ? "Projekt" : "Klip").ijFont(.base, weight: .semibold)
                 Spacer()
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Tokens.Spacing.md)
+            .padding(.vertical, Tokens.Spacing.sm)
             Divider()
             if let clip = editor.selectedClip {
                 ClipInspector(clip: clip).id(clip.id)
@@ -73,10 +74,11 @@ private struct ProjectInspector: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
     }
 
     private func shortcut(_ action: String, _ keys: String) -> some View {
-        LabeledContent(action) { Text(keys).font(.system(.body, design: .monospaced)).foregroundStyle(.secondary) }
+        LabeledContent(action) { Text(keys).ijFont(.sm, design: .monospaced).foregroundStyle(Tokens.Palette.Text.secondary) }
     }
 }
 
@@ -98,9 +100,9 @@ private struct ClipInspector: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .padding(.horizontal, 12)
-            .padding(.top, 10)
-            Text(tab.label).font(.caption).foregroundStyle(.secondary).padding(.top, 4)
+            .padding(.horizontal, Tokens.Spacing.md)
+            .padding(.top, Tokens.Spacing.sm)
+            Text(tab.label).ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary).padding(.top, Tokens.Spacing.xs)
 
             Form {
                 Section {
@@ -112,14 +114,14 @@ private struct ClipInspector: View {
                         TextField("", value: startBinding, format: .number.precision(.fractionLength(0...2)))
                             .multilineTextAlignment(.trailing).frame(width: 80)
                             .disabled(editor.project.isMagnetic(current))
-                        Text("sek").foregroundStyle(.secondary)
+                        Text("sek").foregroundStyle(Tokens.Palette.Text.secondary)
                     }
                     LabeledContent("Varighed") {
                         TextField("", value: Binding(get: { editor.selectedClip?.duration ?? clip.duration },
                                                      set: { editor.setDuration(clip.id, $0) }),
                                   format: .number.precision(.fractionLength(0...2)))
                             .multilineTextAlignment(.trailing).frame(width: 80)
-                        Text("sek").foregroundStyle(.secondary)
+                        Text("sek").foregroundStyle(Tokens.Palette.Text.secondary)
                     }
                 }
 
@@ -138,6 +140,7 @@ private struct ClipInspector: View {
                 }
             }
             .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
         }
     }
 
@@ -146,10 +149,11 @@ private struct ClipInspector: View {
     @ViewBuilder private var titleSections: some View {
         Section("Tekst") {
             TextEditor(text: editor.binding(clip.id, \Clip.title!.text, fallback: clip.title?.text ?? ""))
-                .font(.body)
+                .ijFont(.base)
                 .frame(minHeight: 60)
                 .scrollContentBackground(.hidden)
-                .background(Color.black.opacity(0.2), in: RoundedRectangle(cornerRadius: 4))
+                .padding(Tokens.Spacing.xs)
+                .background(Tokens.Palette.Background.muted, in: RoundedRectangle(cornerRadius: Tokens.Radius.sm))
             Picker("Skrifttype", selection: editor.binding(clip.id, \Clip.title!.fontFamily, fallback: "Helvetica Neue")) {
                 ForEach(Self.fontFamilies, id: \.self) { Text($0).tag($0) }
             }
@@ -170,7 +174,7 @@ private struct ClipInspector: View {
                 Button("Midt") { setTitleY(0.5) }
                 Button("Bund") { setTitleY(0.82) }
             }
-            Text("Tip: træk i preview for at flytte teksten.").font(.caption).foregroundStyle(.secondary)
+            Text("Tip: træk i preview for at flytte teksten.").ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
         }
     }
 
@@ -190,7 +194,7 @@ private struct ClipInspector: View {
             } footer: {
                 if editor.project.isMagnetic(current) {
                     Text("På hovedsporet glider klippet ind over klippet før, så overgangen bliver mellem de to.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
                 }
             }
             Section("Slut") {
@@ -225,7 +229,7 @@ private struct ClipInspector: View {
                 HStack {
                     Slider(value: value, in: 0.1...3)
                     Text(String(format: "%.1f s", value.wrappedValue))
-                        .font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(width: 44, alignment: .trailing)
+                        .ijFont(.xs).monospacedDigit().foregroundStyle(Tokens.Palette.Text.secondary).frame(width: 44, alignment: .trailing)
                 }
             }
         }
@@ -244,7 +248,7 @@ private struct ClipInspector: View {
                     Slider(value: percent, in: 10...400)
                     TextField("", value: percent, format: .number.precision(.fractionLength(0)))
                         .multilineTextAlignment(.trailing).frame(width: 50)
-                    Text("%").foregroundStyle(.secondary)
+                    Text("%").foregroundStyle(Tokens.Palette.Text.secondary)
                 }
             }
             HStack {
@@ -255,7 +259,7 @@ private struct ClipInspector: View {
             Toggle("Bevar tonehøjde", isOn: editor.binding(clip.id, \.maintainPitch, fallback: true))
             LabeledContent("Kildelængde", value: String(format: "%.2f s", current.sourceDuration))
             Text("Klippet bliver kortere eller længere, så den samme del af optagelsen vises. Op til 1000 % kan skrives i feltet.")
-                .font(.caption).foregroundStyle(.secondary)
+                .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
         }
     }
 
@@ -293,7 +297,7 @@ private struct ClipInspector: View {
                 Toggle("Spejl vandret", isOn: editor.binding(clip.id, \.flipH, fallback: false))
                 Toggle("Spejl lodret", isOn: editor.binding(clip.id, \.flipV, fallback: false))
             }
-            Text("Tip: træk i preview for at flytte billedet.").font(.caption).foregroundStyle(.secondary)
+            Text("Tip: træk i preview for at flytte billedet.").ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
         }
         Section("Beskæring") {
             slider("Venstre", \.cropLeft, 0...0.5, percent: true)
@@ -352,8 +356,9 @@ private struct ClipInspector: View {
             HStack {
                 Slider(value: value, in: range)
                 Text(percent ? "\(Int((value.wrappedValue * 100).rounded())) %" : String(format: "%.1f \(unit)", value.wrappedValue))
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .ijFont(.xs)
+                    .monospacedDigit()
+                    .foregroundStyle(Tokens.Palette.Text.secondary)
                     .frame(width: 50, alignment: .trailing)
             }
         }

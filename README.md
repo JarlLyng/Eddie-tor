@@ -47,6 +47,10 @@ En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. Den
 
 Farvefiltre, hastighed for kun en del af et klip (ramp), animerede tekstskabeloner, pan & zoom, auto reframe, auto-ducking, støjreduktion og optagelse af voiceover.
 
+## Design
+
+Eddie bruger [IAMJARL-designsystemet](https://github.com/JarlLyng/iamjarl-design) (Swift-pakken `IAMJARLDesignTokens`): alle farver, afstande, hjørner og skriftstørrelser i brugerfladen kommer derfra, og appen følger systemets lyse eller mørke tilstand. `Sources/Eddie/Theme.swift` samler det, Eddie selv udleder af tokens (klippenes neutrale fyld og knapstilene). Farverne i selve videoen, som tekstfarver og baggrund, er brugerens indhold og ikke en del af designsystemet.
+
 ## Byg
 
 Kræver kun Xcode Command Line Tools (`xcode-select --install`), ikke hele Xcode.

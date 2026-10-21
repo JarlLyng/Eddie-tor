@@ -1,3 +1,4 @@
+import IAMJARLDesignTokens
 import SwiftUI
 
 struct ExportSheet: View {
@@ -15,21 +16,21 @@ struct ExportSheet: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Eksporter video").font(.title2.bold())
+        VStack(alignment: .leading, spacing: Tokens.Spacing.lg) {
+            Text("Eksporter video").ijFont(.xl, weight: .semibold)
 
             let size = editor.project.aspect.renderSize
-            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
-                GridRow { Text("Format").foregroundStyle(.secondary); Text("\(editor.project.aspect.label) · \(Int(size.width))×\(Int(size.height)) · \(editor.project.fps) fps") }
-                GridRow { Text("Varighed").foregroundStyle(.secondary); Text(timecode(exportRange.map { $0.upperBound - $0.lowerBound } ?? editor.project.duration, fps: editor.project.fps)) }
+            Grid(alignment: .leading, horizontalSpacing: Tokens.Spacing.lg, verticalSpacing: Tokens.Spacing.sm) {
+                GridRow { Text("Format").foregroundStyle(Tokens.Palette.Text.secondary); Text("\(editor.project.aspect.label) · \(Int(size.width))×\(Int(size.height)) · \(editor.project.fps) fps") }
+                GridRow { Text("Varighed").foregroundStyle(Tokens.Palette.Text.secondary); Text(timecode(exportRange.map { $0.upperBound - $0.lowerBound } ?? editor.project.duration, fps: editor.project.fps)) }
                 if hasInOut {
                     GridRow {
-                        Text("Område").foregroundStyle(.secondary)
+                        Text("Område").foregroundStyle(Tokens.Palette.Text.secondary)
                         Toggle("Kun mellem ind- og udpunkt", isOn: $onlyInOut).disabled(isExporting)
                     }
                 }
                 GridRow {
-                    Text("Codec").foregroundStyle(.secondary)
+                    Text("Codec").foregroundStyle(Tokens.Palette.Text.secondary)
                     Picker("", selection: $codec) {
                         ForEach(Exporter.Codec.allCases) { Text($0.rawValue).tag($0) }
                     }
@@ -45,27 +46,30 @@ struct ExportSheet: View {
             case .exporting(let progress):
                 ProgressView(value: progress) { Text("Eksporterer… \(Int(progress * 100)) %") }
             case .done(let url):
-                Label("Færdig: \(url.lastPathComponent)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                Label("Færdig: \(url.lastPathComponent)", systemImage: "checkmark.circle.fill").foregroundStyle(Tokens.Palette.State.success)
             case .failed(let message):
-                Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(Tokens.Palette.State.error)
             }
 
             HStack {
                 if case .done(let url) = state {
                     Button("Vis i Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+                        .buttonStyle(SecondaryButtonStyle())
                 }
                 Spacer()
                 Button(isDone ? "Luk" : "Annuller") { dismiss() }
                     .keyboardShortcut(.cancelAction)
+                    .buttonStyle(SecondaryButtonStyle())
                     .disabled(isExporting)
                 if !isDone {
                     Button("Eksporter…") { chooseAndExport() }
                         .keyboardShortcut(.defaultAction)
+                        .buttonStyle(PrimaryButtonStyle())
                         .disabled(isExporting || editor.project.clips.isEmpty)
                 }
             }
         }
-        .padding(24)
+        .padding(Tokens.Spacing.xxl)
         .frame(width: 460)
     }
 

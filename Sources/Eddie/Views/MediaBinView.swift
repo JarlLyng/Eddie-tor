@@ -1,3 +1,4 @@
+import IAMJARLDesignTokens
 import SwiftUI
 
 struct MediaBinView: View {
@@ -7,25 +8,26 @@ struct MediaBinView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Medier").font(.headline)
+                Text("Medier").ijFont(.base, weight: .semibold)
                 Spacer()
                 Button { editor.showImportPanel() } label: { Image(systemName: "plus") }
                     .buttonStyle(.borderless)
+                    .foregroundStyle(Tokens.Palette.Text.primary)
                     .help("Importer medier")
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Tokens.Spacing.md)
+            .padding(.vertical, Tokens.Spacing.sm)
             Divider()
 
             if editor.project.media.isEmpty {
                 VStack(spacing: 10) {
-                    Image(systemName: "film.stack").font(.system(size: 34)).foregroundStyle(.secondary)
-                    Text("Træk video, lyd eller billeder hertil").multilineTextAlignment(.center)
-                    Button("Importer…") { editor.showImportPanel() }
+                    Image(systemName: "film.stack").font(.largeTitle).foregroundStyle(Tokens.Palette.Text.secondary)
+                    Text("Træk video, lyd eller billeder hertil").ijFont(.sm).multilineTextAlignment(.center)
+                    Button("Importer…") { editor.showImportPanel() }.buttonStyle(PrimaryButtonStyle())
                 }
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.Palette.Text.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding()
+                .padding(Tokens.Spacing.lg)
             } else {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 10) {
@@ -33,14 +35,14 @@ struct MediaBinView: View {
                             MediaTile(media: media)
                         }
                     }
-                    .padding(10)
+                    .padding(Tokens.Spacing.sm)
                 }
                 Text("Dobbeltklik eller træk ned på tidslinjen")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .padding(.vertical, 6)
+                    .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
+                    .padding(.vertical, Tokens.Spacing.xs)
             }
         }
-        .background(dropTargeted ? Color.accentColor.opacity(0.15) : Color.clear)
+        .background(dropTargeted ? Tokens.Palette.primarySubtle : Color.clear)
         .dropDestination(for: URL.self) { urls, _ in
             editor.importMedia(urls)
             return true
@@ -53,29 +55,31 @@ private struct MediaTile: View {
     let media: MediaItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
             ZStack(alignment: .bottomTrailing) {
                 thumbnail
                     .frame(height: 64)
                     .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.sm))
                 if media.kind != .image {
                     Text(timecode(media.duration, fps: editor.project.fps))
-                        .font(.system(size: 9).monospacedDigit())
-                        .padding(.horizontal, 4).padding(.vertical, 1)
-                        .background(.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 3))
-                        .padding(3)
+                        .ijFont(.xs)
+                        .monospacedDigit()
+                        .foregroundStyle(Tokens.Palette.Text.primary)
+                        .padding(.horizontal, Tokens.Spacing.xs)
+                        .background(Tokens.Palette.Background.app.opacity(0.75), in: RoundedRectangle(cornerRadius: Tokens.Radius.sm))
+                        .padding(Tokens.Spacing.xs)
                 }
             }
             Text(media.name)
-                .font(.caption)
+                .ijFont(.xs)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .foregroundStyle(FileManager.default.fileExists(atPath: media.url.path) ? .primary : Color.red)
+                .foregroundStyle(FileManager.default.fileExists(atPath: media.url.path) ? Tokens.Palette.Text.primary : Tokens.Palette.State.error)
         }
         .contentShape(Rectangle())
         .draggable(media.id.uuidString) {
-            thumbnail.frame(width: 80, height: 50).clipShape(RoundedRectangle(cornerRadius: 4))
+            thumbnail.frame(width: 80, height: 50).clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.sm))
         }
         .onTapGesture(count: 2) { editor.add(media) }
         .contextMenu {
@@ -93,9 +97,9 @@ private struct MediaTile: View {
             Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
         } else {
             ZStack {
-                Rectangle().fill(media.kind == .audio ? Color.green.opacity(0.25) : Color.gray.opacity(0.25))
+                Rectangle().fill(Tokens.clipFill)
                 Image(systemName: media.kind == .audio ? "waveform" : media.kind == .image ? "photo" : "film")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.Palette.Text.secondary)
             }
         }
     }

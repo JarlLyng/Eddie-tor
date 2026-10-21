@@ -1,3 +1,4 @@
+import IAMJARLDesignTokens
 import SwiftUI
 import AVFoundation
 
@@ -22,7 +23,7 @@ struct EddieApp: App {
         Window("Eddie", id: "main") {
             ContentView()
                 .environment(editor)
-                .preferredColorScheme(.dark)
+                .tint(Tokens.Palette.primary)
                 .onAppear { delegate.editor = editor }
         }
         .defaultSize(width: 1400, height: 900)
@@ -38,6 +39,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Debug aid: EDDIE_SNAPSHOT=/path.png saves a picture of the window a few seconds after launch.
         guard let path = ProcessInfo.processInfo.environment["EDDIE_SNAPSHOT"] else { return }
+        if let appearance = ProcessInfo.processInfo.environment["EDDIE_APPEARANCE"] {
+            NSApp.appearance = NSAppearance(named: appearance == "dark" ? .darkAqua : .aqua)
+        }
         if let project = ProcessInfo.processInfo.environment["EDDIE_OPEN"] {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 guard let editor = self.editor else { return }
