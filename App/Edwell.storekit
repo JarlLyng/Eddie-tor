@@ -1,0 +1,48 @@
+{
+  "identifier" : "EDWELL-STOREKIT-CONFIG",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.00",
+      "familyShareable" : false,
+      "internalID" : "EDWELL-TRIAL-0001",
+      "localizations" : [
+        {
+          "description" : "Everything in Edwell for 14 days, export included.",
+          "displayName" : "14-day Trial",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.iamjarl.edwell.trial",
+      "referenceName" : "14-day Trial",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "EDWELL-UNLOCK-0001",
+      "localizations" : [
+        {
+          "description" : "Edwell for good, export included. A one-time purchase, with no subscription.",
+          "displayName" : "Edwell",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.iamjarl.edwell.unlock",
+      "referenceName" : "Edwell Unlock",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
