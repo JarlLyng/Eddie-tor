@@ -3,7 +3,14 @@ import AppKit
 import UniformTypeIdentifiers
 
 enum MediaLoader {
+    /// Reads a picked or dropped file and bookmarks it while the app has access (`MediaAccess`).
     static func load(_ url: URL) async -> MediaItem? {
+        guard var item = await read(url) else { return nil }
+        item.bookmark = MediaAccess.bookmark(for: url)
+        return item
+    }
+
+    private static func read(_ url: URL) async -> MediaItem? {
         guard let type = UTType(filenameExtension: url.pathExtension.lowercased()) else { return nil }
 
         if type.conforms(to: .image) {

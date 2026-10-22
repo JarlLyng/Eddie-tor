@@ -17,6 +17,7 @@ struct PreviewPanel: View {
                     .position(x: geo.size.width / 2, y: geo.size.height / 2)
             }
             .background(Tokens.Palette.Background.muted)
+            .overlay(alignment: .top) { missingMedia }
 
             HStack(spacing: Tokens.Spacing.lg) {
                 Button { editor.seek(0) } label: { Image(systemName: "backward.end.fill") }
@@ -30,6 +31,24 @@ struct PreviewPanel: View {
             .buttonStyle(.borderless)
             .foregroundStyle(Tokens.Palette.Text.primary)
             .padding(.vertical, Tokens.Spacing.sm)
+        }
+    }
+
+    /// Media that can't be read is left out of the preview, so say so and offer to find it.
+    @ViewBuilder private var missingMedia: some View {
+        let count = editor.unreadableMedia.count
+        if count > 0 {
+            HStack(spacing: Tokens.Spacing.sm) {
+                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Tokens.Palette.State.error)
+                Text(count == 1 ? "1 mediefil kan ikke læses" : "\(count) mediefiler kan ikke læses").ijFont(.sm)
+                Button("Find…") { editor.locateMedia() }.buttonStyle(SecondaryButtonStyle())
+            }
+            .foregroundStyle(Tokens.Palette.Text.primary)
+            .padding(.horizontal, Tokens.Spacing.md)
+            .padding(.vertical, Tokens.Spacing.sm)
+            .background(Tokens.Palette.Background.card, in: RoundedRectangle(cornerRadius: Tokens.Radius.md))
+            .overlay(RoundedRectangle(cornerRadius: Tokens.Radius.md).strokeBorder(Tokens.Palette.Border.default))
+            .padding(Tokens.Spacing.sm)
         }
     }
 

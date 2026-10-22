@@ -59,6 +59,10 @@ struct MediaItem: Identifiable, Codable, Hashable, Sendable {
     var width: Double
     var height: Double
     var hasAudio: Bool
+    /// A security-scoped bookmark, so the sandboxed app can read the file again after a relaunch (`MediaAccess`).
+    var bookmark: Data? = nil
+    /// Where the file was relative to the project file's folder when it was saved, for media moved with it.
+    var relativePath: String? = nil
 
     var name: String { url.lastPathComponent }
 }
