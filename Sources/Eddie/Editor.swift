@@ -48,6 +48,8 @@ final class Editor {
     /// Timeline zoom in points per second.
     var pps: Double = 60
     private(set) var fileURL: URL?
+    /// The name offered when an unsaved project is saved or exported.
+    private(set) var suggestedName: String?
     private(set) var isDirty = false
     var showExport = false
     var errorMessage: String?
@@ -57,6 +59,8 @@ final class Editor {
     var loopPlayback = false
     var showMedia = true
     var monitorMaximized = false
+    /// The part of the timeline in view, in points. Clips draw their frames and waveform only here.
+    var viewport: ClosedRange<Double> = 0...2000
     /// Bumped to ask the timeline to zoom so the whole sequence fits.
     var zoomToFitRequest = 0
     /// The main-track clip being dragged; it keeps the mouse position while the others make room.
@@ -700,6 +704,33 @@ final class Editor {
         replaceProject(Project(), url: nil)
     }
 
+    /// Starts a new project from an Ambient Session recording, set up as in Rush.
+    func newAmbientSession() {
+        guard confirmDiscard() else { return }
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.movie]
+        panel.message = "Vælg optagelsen af sessionen"
+        if FileManager.default.fileExists(atPath: AmbientSession.recordingsFolder.path) {
+            panel.directoryURL = AmbientSession.recordingsFolder
+        }
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        Task {
+            guard let recording = await MediaLoader.load(url), recording.kind == .video else {
+                errorMessage = "\(url.lastPathComponent) kunne ikke åbnes som video."
+                return
+            }
+            startAmbientSession(with: recording)
+        }
+    }
+
+    func startAmbientSession(with recording: MediaItem) {
+        pause()
+        replaceProject(AmbientSession.project(for: recording), url: nil)
+        suggestedName = AmbientSession.displayName(AmbientSession.number(from: recording.url))
+        isDirty = true
+        selection = project.clips.first { $0.kind == .video }?.id
+    }
+
     func open() {
         guard confirmDiscard() else { return }
         let panel = NSOpenPanel()
@@ -728,7 +759,7 @@ final class Editor {
     func saveAs() -> Bool {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [Self.projectType]
-        panel.nameFieldStringValue = fileURL?.lastPathComponent ?? "Mit projekt.eddie"
+        panel.nameFieldStringValue = fileURL?.lastPathComponent ?? "\(suggestedName ?? "Mit projekt").eddie"
         guard panel.runModal() == .OK, let url = panel.url else { return false }
         return write(to: url)
     }
@@ -766,6 +797,7 @@ final class Editor {
         project = new
         Self.packMain(&project)
         fileURL = url
+        suggestedName = nil
         isDirty = false
         selection = nil
         undoStack.removeAll()

@@ -5,7 +5,10 @@ import AVFoundation
 @main
 enum Main {
     static func main() {
-        if let i = CommandLine.arguments.firstIndex(of: "--selftest") {
+        BundledFonts.register()
+        if let i = CommandLine.arguments.firstIndex(of: "--session-test") {
+            SessionTest.run(arguments: Array(CommandLine.arguments.dropFirst(i + 1)))
+        } else if let i = CommandLine.arguments.firstIndex(of: "--selftest") {
             let dir = CommandLine.arguments.dropFirst(i + 1).first ?? NSTemporaryDirectory()
             SelfTest.run(outputDirectory: URL(fileURLWithPath: dir))
         } else {
@@ -87,6 +90,7 @@ struct EddieCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
             Button("Nyt projekt") { editor.newProject() }.keyboardShortcut("n")
+            Button("Ny Ambient Session…") { editor.newAmbientSession() }.keyboardShortcut("n", modifiers: [.command, .shift])
             Button("Åbn…") { editor.open() }.keyboardShortcut("o")
         }
         CommandGroup(replacing: .saveItem) {

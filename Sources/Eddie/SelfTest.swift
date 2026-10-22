@@ -97,6 +97,9 @@ enum SelfTest {
 
         try await renderTests(dir, media: m)
         print("render tests ok")
+
+        try await titleAndSessionTests(dir, media: m)
+        print("title and session tests ok")
     }
 
     /// Magnetic main track, ripple trims, transitions, speed, track flags, copy/paste and in/out.
@@ -257,6 +260,72 @@ enum SelfTest {
         guard near(plain, red), try await hidden.loadTracks(withMediaType: .audio).isEmpty else { throw err("skjult/stum \(plain)") }
         let rangeDuration = try await hidden.load(.duration).seconds
         guard abs(rangeDuration - 1) < 0.05 else { throw err("ind/ud-eksport \(rangeDuration)") }
+    }
+
+    /// Left- and right-aligned titles land where `x` says, the session template is set up as in Rush,
+    /// and a version 1 title (with a bold switch) still opens.
+    private static func titleAndSessionTests(_ dir: URL, media m: [MediaItem]) async throws {
+        var project = Project()
+        project.aspect = .landscape
+        project.background = .black
+        project.clips = [
+            Clip(kind: .title, track: 0, start: 0, duration: 1,
+                 title: TitleStyle(text: "Venstre", fontFamily: BundledFonts.outfit, weight: 800, size: 120, shadow: false, align: .left, x: 0.1, y: 0.25)),
+            Clip(kind: .title, track: 1, start: 0, duration: 1,
+                 title: TitleStyle(text: "Højre", fontFamily: BundledFonts.outfit, weight: 800, size: 120, shadow: false, align: .right, x: 0.9, y: 0.75)),
+        ]
+        let url = dir.appendingPathComponent("align.mp4")
+        try await Exporter.export(project, to: url, codec: .h264) { _ in }
+        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+        let (image, _) = try await generator.image(at: CMTime(seconds: 0.5, preferredTimescale: 600))
+        try saveFrame(image, to: dir.appendingPathComponent("align.png"))
+        let (topLeft, topRight) = inkColumns(image, rows: 0..<image.height / 2)
+        let (bottomLeft, bottomRight) = inkColumns(image, rows: image.height / 2..<image.height)
+        print("align: left text \(topLeft)–\(topRight), right text \(bottomLeft)–\(bottomRight)")
+        guard abs(topLeft - 192) < 25, abs(bottomRight - 1728) < 25 else { throw err("justering") }
+
+        // The template.
+        let recording = MediaItem(url: URL(fileURLWithPath: "/tmp/Ambient session 012 - RAW.mov"), kind: .video,
+                                  duration: 3600, width: 1920, height: 1080, hasAudio: true)
+        guard AmbientSession.number(from: recording.url) == 12,
+              AmbientSession.number(from: URL(fileURLWithPath: "Ambient Session 004 - RAW.mov")) == 4,
+              AmbientSession.color(for: 11) == AmbientSession.colors[10],
+              AmbientSession.color(for: 12) != AmbientSession.colors[10],
+              AmbientSession.color(for: 13) != AmbientSession.color(for: 12) else { throw err("sessionsnummer og farve") }
+        let session = AmbientSession.project(for: recording)
+        guard let video = session.clips.first(where: { $0.kind == .video }),
+              let title = session.clips.first(where: { $0.kind == .title }),
+              video.transitionIn?.kind == .dipToBlack, video.transitionIn?.duration == 0.5,
+              video.transitionOut?.kind == .dipToBlack, video.fadeIn == 0.5, video.fadeOut == 0.5,
+              abs(title.start - 11.233) < 1e-9, abs(title.end - 50.767) < 1e-9,
+              title.title?.text == "Ambient\nSession 012", title.title?.align == .left,
+              session.aspect == .landscape else { throw err("sessionsskabelon") }
+
+        let old = #"{"text":"Hej","fontFamily":"Helvetica Neue","bold":false,"size":90,"color":{"r":1,"g":1,"b":1,"a":1},"shadow":true,"background":false,"backgroundColor":{"r":0,"g":0,"b":0,"a":0.6},"x":0.5,"y":0.8}"#
+        let decoded = try JSONDecoder().decode(TitleStyle.self, from: Data(old.utf8))
+        guard decoded.weight == 400, decoded.align == .center else { throw err("gammel tekststil") }
+    }
+
+    /// The leftmost and rightmost columns with bright pixels in the given rows.
+    private static func inkColumns(_ image: CGImage, rows: Range<Int>) -> (Int, Int) {
+        let w = image.width, h = image.height
+        var data = [UInt8](repeating: 0, count: w * h * 4)
+        let ctx = CGContext(data: &data, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+                            space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
+        var low = w, high = 0
+        for y in rows {
+            for x in 0..<w where data[(y * w + x) * 4] > 128 {
+                low = min(low, x); high = max(high, x)
+            }
+        }
+        return (low, high)
+    }
+
+    private static func saveFrame(_ image: CGImage, to url: URL) throws {
+        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else { return }
+        CGImageDestinationAddImage(dest, image, nil)
+        CGImageDestinationFinalize(dest)
     }
 
     private static func pixel(_ asset: AVAsset, at seconds: Double, x: Double, y: Double) async throws -> (Double, Double, Double) {

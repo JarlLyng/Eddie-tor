@@ -87,6 +87,10 @@ private struct ClipInspector: View {
     let clip: Clip
 
     private static let fontFamilies = NSFontManager.shared.availableFontFamilies
+    private static let weights: [(Double, String)] = [
+        (100, "Tynd"), (200, "Ekstra let"), (300, "Let"), (400, "Normal"), (500, "Medium"),
+        (600, "Halvfed"), (700, "Fed"), (800, "Ekstra fed"), (900, "Sort"),
+    ]
 
     var body: some View {
         let current = editor.selectedClip ?? clip
@@ -155,10 +159,19 @@ private struct ClipInspector: View {
                 .padding(Tokens.Spacing.xs)
                 .background(Tokens.Palette.Background.muted, in: RoundedRectangle(cornerRadius: Tokens.Radius.sm))
             Picker("Skrifttype", selection: editor.binding(clip.id, \Clip.title!.fontFamily, fallback: "Helvetica Neue")) {
-                ForEach(Self.fontFamilies, id: \.self) { Text($0).tag($0) }
+                ForEach(Self.fontFamilies, id: \.self) { Text(BundledFonts.displayName($0)).tag($0) }
             }
-            Toggle("Fed", isOn: editor.binding(clip.id, \Clip.title!.bold, fallback: true))
+            Picker("Vægt", selection: editor.binding(clip.id, \Clip.title!.weight, fallback: 700)) {
+                ForEach(Self.weights, id: \.0) { Text($0.1).tag($0.0) }
+            }
             slider("Størrelse", \Clip.title!.size, 20...300, unit: "px")
+            Picker("Justering", selection: editor.binding(clip.id, \Clip.title!.align, fallback: .center)) {
+                Image(systemName: "text.alignleft").help("Venstre").tag(TextAlign.left)
+                Image(systemName: "text.aligncenter").help("Midt").tag(TextAlign.center)
+                Image(systemName: "text.alignright").help("Højre").tag(TextAlign.right)
+            }
+            .pickerStyle(.segmented)
+            slider("Linjeafstand", \Clip.title!.lineHeight, 0.6...2, percent: true)
             ColorPicker("Farve", selection: colorBinding(\Clip.title!.color))
             Toggle("Skygge", isOn: editor.binding(clip.id, \Clip.title!.shadow, fallback: true))
             Toggle("Baggrund", isOn: editor.binding(clip.id, \Clip.title!.background, fallback: false))
@@ -174,6 +187,8 @@ private struct ClipInspector: View {
                 Button("Midt") { setTitleY(0.5) }
                 Button("Bund") { setTitleY(0.82) }
             }
+            Text("Vandret er tekstens venstre kant, midte eller højre kant, alt efter justeringen.")
+                .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
             Text("Tip: træk i preview for at flytte teksten.").ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
         }
     }
@@ -329,7 +344,11 @@ private struct ClipInspector: View {
     }
 
     private func setTitleY(_ y: Double) {
-        editor.updateClip(clip.id) { $0.title?.x = 0.5; $0.title?.y = y }
+        editor.updateClip(clip.id) { c in
+            guard let align = c.title?.align else { return }
+            c.title?.x = align == .left ? 0.05 : align == .right ? 0.95 : 0.5
+            c.title?.y = y
+        }
     }
 
     private var startBinding: Binding<Double> {

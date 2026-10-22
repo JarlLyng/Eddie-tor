@@ -24,6 +24,8 @@ struct MediaBinView: View {
                     Image(systemName: "film.stack").font(.largeTitle).foregroundStyle(Tokens.Palette.Text.secondary)
                     Text("Træk video, lyd eller billeder hertil").ijFont(.sm).multilineTextAlignment(.center)
                     Button("Importer…") { editor.showImportPanel() }.buttonStyle(PrimaryButtonStyle())
+                    Button("Ny Ambient Session…") { editor.newAmbientSession() }.buttonStyle(SecondaryButtonStyle())
+                        .help("Vælg optagelsen; fades og titel sættes op som i Rush (⇧⌘N)")
                 }
                 .foregroundStyle(Tokens.Palette.Text.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
