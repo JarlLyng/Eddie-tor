@@ -27,7 +27,10 @@ struct EddieApp: App {
             ContentView()
                 .environment(editor)
                 .tint(Tokens.Palette.primary)
-                .onAppear { delegate.editor = editor }
+                .onAppear {
+                    delegate.editor = editor
+                    delegate.openPending()
+                }
         }
         .defaultSize(width: 1400, height: 900)
         .commands { EddieCommands(editor: editor) }
@@ -78,9 +81,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Files from Finder or the Dock: a project opens, media is imported. On a cold launch they can
+    /// arrive before the window has handed over the editor, so they wait for it.
     func application(_ application: NSApplication, open urls: [URL]) {
-        guard let url = urls.first else { return }
-        Task { @MainActor in editor?.open(url) }
+        pendingURLs += urls
+        Task { @MainActor in openPending() }
+    }
+
+    private var pendingURLs: [URL] = []
+
+    @MainActor func openPending() {
+        guard let editor, !pendingURLs.isEmpty else { return }
+        let urls = pendingURLs
+        pendingURLs = []
+        if let project = urls.first(where: { Editor.projectExtensions.contains($0.pathExtension.lowercased()) }) {
+            editor.open(project)
+        } else {
+            editor.importMedia(urls)
+        }
     }
 }
 

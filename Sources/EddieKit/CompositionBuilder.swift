@@ -145,11 +145,11 @@ enum CompositionBuilder {
 
             case .image:
                 guard !flags.hidden, let media = project.media(clip.mediaID),
-                      FileManager.default.fileExists(atPath: media.url.path) else { continue }
+                      MediaAccess.canRead(media.url) else { continue }
                 layers.append(layer(clip, content: .image(media.url), start: start, duration: duration))
 
             case .video, .audio:
-                guard let media = project.media(clip.mediaID), FileManager.default.fileExists(atPath: media.url.path) else { continue }
+                guard let media = project.media(clip.mediaID), MediaAccess.canRead(media.url) else { continue }
                 let asset = AssetCache.asset(media.url)
                 let assetDuration = try await asset.load(.duration)
                 let speed = max(clip.speed, 0.05)
@@ -231,6 +231,12 @@ enum AssetCache {
         let asset = AVURLAsset(url: url, options: [AVURLAssetPreferPreciseDurationAndTimingKey: true])
         assets[url] = asset
         return asset
+    }
+
+    /// Drops an asset that may have failed to load, after the user gave access to its file.
+    static func forget(_ url: URL) {
+        lock.lock(); defer { lock.unlock() }
+        assets[url] = nil
     }
 }
 
