@@ -27,6 +27,8 @@ EDDIE_SNAPSHOT=/tmp/ui.png EDDIE_OPEN=/path/project.eddie EDDIE_APPEARANCE=dark 
 
 It opens the project, selects the first image clip, writes the window to `ui.png` after 4 s and a frame from the preview player to `ui.png.preview.png`. With `EDDIE_SNAPSHOT` set the app never touches the owner's autosave. The same hook works on `build/Edwell.app/Contents/MacOS/Edwell`, but the sandbox only lets it write inside `~/Library/Containers/com.iamjarl.edwell/Data`.
 
+The window is captured through ScreenCaptureKit, as the window server shows it (an app may capture its own windows without permission). Drawing the views with `cacheDisplay` can't show Liquid Glass and painted the toolbar picker's selection as a blank white pill. Two things the picture won't tell you: `.build/debug/Eddie` is stamped as built with the macOS 15 SDK, so AppKit gives it the controls from before macOS 26 (snapshot `build/Edwell.app` to see what ships), and the window is never key, so tinted selections show their inactive look.
+
 ## Gotchas
 
 - **App Sandbox.** Edwell has two entitlements: the sandbox, and read-write access to files the user picks (open and save panels, drag and drop, Finder opening a project). App Review rejects entitlements nothing uses, and the self test fails on any other. Inside the sandbox `homeDirectoryForCurrentUser` and the standard folders point into the app's container; start panels from `FileManager.default.userHomeDirectory`.
