@@ -103,6 +103,46 @@
     "%lld %%" : {
       "shouldTranslate" : false
     },
+    "%lld days left of your trial" : {
+      "localizations" : {
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld dag tilbage af din prøveperiode"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld dage tilbage af din prøveperiode"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day left of your trial"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days left of your trial"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld media files can't be read" : {
       "localizations" : {
         "da" : {
@@ -249,6 +289,26 @@
         }
       }
     },
+    "After that your projects still open and edit as before, and exporting needs a one-time purchase of %@, with no subscription." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Derefter kan dine projekter stadig åbnes og redigeres som før, og eksport kræver et engangskøb på %@, uden abonnement."
+          }
+        }
+      }
+    },
+    "After that your projects still open and edit as before, and exporting needs a one-time purchase, with no subscription." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Derefter kan dine projekter stadig åbnes og redigeres som før, og eksport kræver et engangskøb, uden abonnement."
+          }
+        }
+      }
+    },
     "Alignment" : {
       "localizations" : {
         "da" : {
@@ -375,6 +435,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bund"
+          }
+        }
+      }
+    },
+    "Buy Edwell…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Køb Edwell…"
+          }
+        }
+      }
+    },
+    "Buy for %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Køb for %@"
           }
         }
       }
@@ -769,12 +849,42 @@
         }
       }
     },
+    "Edwell is yours" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edwell er din"
+          }
+        }
+      }
+    },
     "End" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Slut"
+          }
+        }
+      }
+    },
+    "Everything works for 14 days, export included." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alt virker i 14 dage, også eksport."
+          }
+        }
+      }
+    },
+    "Everything works until then, export included. After that your projects still open and edit as before, and exporting needs the one-time purchase." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alt virker indtil da, også eksport. Derefter kan dine projekter stadig åbnes og redigeres som før, og eksport kræver engangskøbet."
           }
         }
       }
@@ -1085,6 +1195,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vandret er tekstens venstre kant, midte eller højre kant, alt efter justeringen."
+          }
+        }
+      }
+    },
+    "I make Edwell on my own, and buying it is what keeps it going." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeg laver Edwell selv, og købet er det, der holder den i gang."
           }
         }
       }
@@ -1409,6 +1529,16 @@
         }
       }
     },
+    "Not Now" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikke nu"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "da" : {
@@ -1655,6 +1785,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nulstil størrelse, placering og beskæring"
+          }
+        }
+      }
+    },
+    "Restore Purchases" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gendan køb"
           }
         }
       }
@@ -1969,12 +2109,82 @@
         }
       }
     },
+    "Start 14-day Trial" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start 14 dages prøveperiode"
+          }
+        }
+      }
+    },
     "Text" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tekst"
+          }
+        }
+      }
+    },
+    "Thank you for buying it. Everything works, on every Mac signed in to your Apple Account." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tak, fordi du købte den. Alt virker, på alle Mac'er, der er logget ind med din Apple-konto."
+          }
+        }
+      }
+    },
+    "That's %@ once, with no subscription. Pay once and it's yours." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det koster %@ én gang, uden abonnement. Betal én gang, så er den din."
+          }
+        }
+      }
+    },
+    "The App Store can't be reached right now, so the price can't be shown. Check your connection and try again." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store kan ikke nås lige nu, så prisen kan ikke vises. Tjek din forbindelse, og prøv igen."
+          }
+        }
+      }
+    },
+    "The App Store can't be reached right now. Check your connection and try again." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store kan ikke nås lige nu. Tjek din forbindelse, og prøv igen."
+          }
+        }
+      }
+    },
+    "The App Store can't be reached to restore your purchase. Check your connection and try again." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store kan ikke nås, så dit køb kan ikke gendannes. Tjek din forbindelse, og prøv igen."
+          }
+        }
+      }
+    },
+    "The App Store couldn't confirm the purchase. If you were charged, choose Restore Purchases." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store kunne ikke bekræfte købet. Hvis du er blevet trukket, så vælg Gendan køb."
           }
         }
       }
@@ -2005,6 +2215,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Projektet kunne ikke gemmes: %@"
+          }
+        }
+      }
+    },
+    "The purchase didn't go through. Check your connection and try again." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Købet gik ikke igennem. Tjek din forbindelse, og prøv igen."
+          }
+        }
+      }
+    },
+    "The purchase is waiting for approval. Edwell unlocks as soon as it's approved." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Købet venter på godkendelse. Edwell låses op, så snart det er godkendt."
+          }
+        }
+      }
+    },
+    "There's no purchase of Edwell to restore for this Apple Account." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der er intet køb af Edwell at gendanne for denne Apple-konto."
           }
         }
       }
@@ -2139,6 +2379,26 @@
         }
       }
     },
+    "Try Again" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prøv igen"
+          }
+        }
+      }
+    },
+    "Try Edwell for 14 days" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prøv Edwell i 14 dage"
+          }
+        }
+      }
+    },
     "Type" : {
       "localizations" : {
         "da" : {
@@ -2225,6 +2485,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vægt"
+          }
+        }
+      }
+    },
+    "Your 14 days are over" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dine 14 dage er gået"
+          }
+        }
+      }
+    },
+    "Your projects still open and edit as before. To export, buy Edwell once." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dine projekter kan stadig åbnes og redigeres som før. For at eksportere skal du købe Edwell én gang."
           }
         }
       }
