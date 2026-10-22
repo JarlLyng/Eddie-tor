@@ -1,91 +1,99 @@
 # Eddie
 
-En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. I Mac App Store hedder den **Edwell**. Den har kun de funktioner, der faktisk bruges.
+A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Mac App Store it's called **Edwell**. It has only the features that actually get used. The interface is in English and Danish.
 
-## Funktioner
+## Features
 
-- **Ny Ambient Session** (⇧⌘N, eller knappen i Medier): vælg optagelsen, og Eddie sætter den op som i Rush: hele optagelsen på V1 med 0,5 s dyk til sort og lydfade i begge ender, og titlen "Ambient / Session NNN" fra 11,2 til 50,8 s, venstrestillet i Outfit ExtraBold 177 px, i sessionens egen farve. Sæt så afspilningshovedet, hvor sessionen begynder, og tryk **Q**; hvor den slutter, og tryk **W**. Titlen bliver stående ved 11,2 s
-- **Import** af video, lyd og billeder (knappen **+**, ⌘I eller træk filer ind i Medier)
-- **Magnetisk hovedspor** som i Rush: klip på V1 ligger altid i forlængelse af hinanden, så sletning og trim lukker hullet. Træk et klip for at flytte det til en ny plads
-- **Flere spor**: 3 videospor, 2 tekstspor og 2 lydspor, og du kan tilføje flere. Hvert spor kan skjules, have lyden slået fra og låses
-- **Klip**: flyt (også mellem spor), trim i kanterne, del (S), ripple-trim til afspilningshovedet (Q/W), dupliker (D), kopiér/klip ud/sæt ind og adskil lyden fra videoen (E)
-- **Overgange**: krydsfade, dyk til sort/hvid og skub i fire retninger, ved start og slut af et klip. Mellem to klip på hovedsporet overlapper de, og lyden krydsfades også
-- **Hastighed**: 10–1000 % pr. klip, med eller uden bevaret tonehøjde
-- **Størrelse og placering**: udfyld eller vis hele billedet, størrelse, placering, rotation, opacitet, spejling og beskæring med blød kant
-- **Tekster**: skrifttype, vægt (100–900), størrelse, farve, venstre-/midt-/højrestilling, linjeafstand, skygge, baggrundsboks, placering og fade. Træk teksten direkte i preview. Outfit følger med appen (OFL, fra designsystemet), så projekter ser ens ud på alle Mac'er
-- **Lyd**: lydstyrke pr. klip (0–200 %), slå lyd fra, fade ind og ud
-- **Format**: 16:9, 9:16, 1:1 og 4:5
-- **Eksport** til MP4 (H.264 eller HEVC) i 1080p, hele projektet eller kun mellem ind- og udpunkt
-- Fortryd/gentag, autogem og projekter gemt som `.edwell`-filer (gamle `.eddie`-filer kan stadig åbnes)
+- **New Ambient Session** (⇧⌘N, or the button in Media): choose the recording, and the app sets it up as it was done in Rush: the whole recording on V1 with a 0.5 s dip to black and a sound fade at both ends, and the title "Ambient / Session NNN" from 11.2 to 50.8 s, left-aligned in Outfit ExtraBold 177 px, in the session's own color. Then put the playhead where the session starts and press **Q**, and where it ends and press **W**. The title stays at 11.2 s
+- **Import** video, audio and images (the **+** button, ⌘I, or drag files into Media)
+- **Magnetic main track**: clips on V1 always follow each other, so deleting and trimming close the gap. Drag a clip to move it to a new place
+- **More tracks**: 3 video tracks, 2 title tracks and 2 audio tracks, and you can add more. Each track can be hidden, muted and locked
+- **Clips**: move (also between tracks), trim at the edges, split (S), ripple trim to the playhead (Q/W), duplicate (D), copy/cut/paste and separate the audio from the video (E)
+- **Transitions**: cross dissolve, dip to black or white, and push in four directions, at the start and end of a clip. Between two clips on the main track they overlap, and the sound cross-fades too
+- **Speed**: 10–1000 % per clip, with or without preserved pitch
+- **Size and position**: fill the frame or show the whole picture, size, position, rotation, opacity, flipping, and crop with a soft edge
+- **Titles**: font, weight (100–900), size, color, left/center/right alignment, line spacing, shadow, background box, position and fade. Drag the text directly in the preview. Outfit ships with the app (OFL, from the design system), so projects look the same on every Mac
+- **Audio**: volume per clip (0–200 %), mute, fade in and out
+- **Format**: 16:9, 9:16, 1:1 and 4:5
+- **Export** to MP4 (H.264 or HEVC) in 1080p, the whole project or only between the in and out points
+- Undo/redo, autosave, and projects saved as `.edwell` files (old `.eddie` files still open)
+- **Media that moves**: the app remembers each file it's given, follows it when it's renamed or moved, and asks with **Find…** when it can't be read
 
-## Genveje (som i Rush)
+## Shortcuts
 
-| Tast | Handling |
+| Key | Action |
 |---|---|
-| Mellemrum | Afspil / pause |
-| J K L | Spol tilbage / stop / frem (tryk flere gange for hurtigere) |
-| ← → | Et billede tilbage / frem (med ⇧: et sekund) |
-| ↑ ↓ | Forrige / næste klipkant |
-| S | Del klip ved afspilningshovedet |
-| Q W | Trim start / slut til afspilningshovedet |
-| D | Dupliker |
-| G | Ny tekst |
-| E | Adskil lyd |
-| ⌫ | Slet |
-| ⌘D | Tilføj standardovergang (krydsfade) |
-| ⌘C ⌘X ⌘V | Kopiér / klip ud / sæt ind ved afspilningshovedet |
-| I O | Sæt ind- / udpunkt (⇧ går dertil, ⌥ rydder, ⌥X rydder begge) |
-| = − \ | Zoom ind / ud / hele tidslinjen |
-| ⌘Y | Snap til/fra |
-| ⌘L | Gentag afspilning |
-| ⌘1 ⌘2 ⌘4 ⌘5 ⌘6 | Tekst, overgange, hastighed, lyd, placering |
-| \` | Stort preview |
-| Y | Vis/skjul medier |
-| ⌘Z / ⇧⌘Z | Fortryd / gentag |
-| ⌘S, ⌘O, ⌘E | Gem, åbn, eksporter |
+| Space | Play / pause |
+| J K L | Rewind / stop / forward (press again to go faster) |
+| ← → | One frame back / forward (with ⇧: one second) |
+| ↑ ↓ | Previous / next clip edge |
+| S | Split the clip at the playhead |
+| Q W | Trim the start / end to the playhead |
+| D | Duplicate |
+| G | New title |
+| E | Separate audio |
+| ⌫ | Delete |
+| ⌘D | Add the default transition (cross dissolve) |
+| ⌘C ⌘X ⌘V | Copy / cut / paste at the playhead |
+| I O | Set the in / out point (⇧ goes there, ⌥ clears it, ⌥X clears both) |
+| = − \ | Zoom in / out / the whole timeline |
+| ⌘Y | Snap on/off |
+| ⌘L | Loop playback |
+| ⌘1 ⌘2 ⌘4 ⌘5 ⌘6 | Text, transitions, speed, audio, position |
+| \` | Large preview |
+| Y | Show/hide media |
+| ⌘Z / ⇧⌘Z | Undo / redo |
+| ⌘S, ⌘O, ⌘E | Save, open, export |
 
-## Endnu ikke med
+## Not there yet
 
-Se også [docs/rush-reference.md](docs/rush-reference.md): alt, hvad Rush kunne, hvordan det blev brugt til Ambient Sessions, og hvad Eddie mangler.
+See also [docs/rush-reference.md](docs/rush-reference.md): everything Rush could do, how it was used for the Ambient Sessions, and what is still missing.
 
-Farvefiltre, hastighed for kun en del af et klip (ramp), animerede tekstskabeloner, pan & zoom, auto reframe, auto-ducking, støjreduktion og optagelse af voiceover.
+Color filters, speed for only part of a clip (ramps), animated title templates, pan and zoom, auto reframe, auto ducking, noise reduction and voice-over recording.
 
 ## Design
 
-Eddie bruger [IAMJARL-designsystemet](https://github.com/JarlLyng/iamjarl-design) (Swift-pakken `IAMJARLDesignTokens`): alle farver, afstande, hjørner og skriftstørrelser i brugerfladen kommer derfra, og appen følger systemets lyse eller mørke tilstand. `Sources/EddieKit/Theme.swift` samler det, Eddie selv udleder af tokens (klippenes neutrale fyld og knapstilene). Farverne i selve videoen, som tekstfarver og baggrund, er brugerens indhold og ikke en del af designsystemet.
+The app uses the [IAMJARL design system](https://github.com/JarlLyng/iamjarl-design) (the Swift package `IAMJARLDesignTokens`): every color, spacing, radius and type size in the interface comes from there, and the app follows the system's light or dark mode. `Sources/EddieKit/Theme.swift` holds what the app derives from the tokens (the clips' neutral fill and the button styles). The colors in the video itself, such as title colors and the background, are the user's content and not part of the design system.
 
-## Byg
+## Build
 
-Appen bygges med Xcode fra `App/Edwell.xcodeproj` (lavet af `App/project.yml` med [XcodeGen](https://github.com/yonaskolb/XcodeGen)) og kører i App Sandbox som App Store-versionen. Selvtesten og `swift build` kræver kun Xcode Command Line Tools (`xcode-select --install`).
-
-```bash
-./build.sh            # bygger build/Edwell.app
-./build.sh --open     # bygger og åbner
-./build.sh --install  # bygger og kopierer til /Programmer
-```
-
-App Store-versionen bygges af Xcode Cloud fra grenen `release`; se [XCODE_CLOUD.md](XCODE_CLOUD.md).
-
-Test med en rigtig session (bygger skabelonen, trimmer som Rush gjorde for session 011, eksporterer og sammenligner med Rush' video; `--full` eksporterer hele timen):
+The app is built with Xcode from `App/Edwell.xcodeproj` (generated from `App/project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen)) and runs in the App Sandbox like the App Store version. The self test and `swift build` need only the Xcode Command Line Tools (`xcode-select --install`).
 
 ```bash
-.build/debug/Eddie --session-test "<optagelse>.mov" /tmp/eddie-session "<Rush' færdige video>.mp4"
+./build.sh            # builds build/Edwell.app
+./build.sh --open     # builds and opens it
+./build.sh --install  # builds and copies it to /Applications
 ```
 
-Selvtest (laver testvideoer, eksporterer et projekt med alle typer klip og tester redigeringsfunktionerne):
+The App Store version is built by Xcode Cloud from the `release` branch; see [XCODE_CLOUD.md](XCODE_CLOUD.md).
+
+English is the development language and Danish a localization, both in `App/Edwell/Localizable.xcstrings`. After adding or changing text in the interface, update the catalog from the code, then add the Danish translation the script lists:
+
+```bash
+scripts/sync-strings.sh
+```
+
+Test with a real session (builds the template, trims as Rush did for session 011, exports and compares with Rush's video; `--full` exports the whole hour):
+
+```bash
+.build/debug/Eddie --session-test "<recording>.mov" /tmp/eddie-session "<Rush's finished video>.mp4"
+```
+
+Self test (makes test videos, exports a project with every kind of clip, and tests the editing, media access, the store build and the translations):
 
 ```bash
 swift build && .build/debug/Eddie --selftest /tmp/eddie-test
 ```
 
-## Opbygning
+## Layout
 
-| Fil | Indhold |
+| File | Contents |
 |---|---|
-| `Sources/EddieKit/` | Hele appen; `App/` er App Store-målet rundt om den |
-| `Model.swift` | Projekt, klip, medier og tekststil (gemmes som JSON) |
-| `Editor.swift` | Tilstand, redigering, fortryd, afspilning, gem og åbn |
-| `CompositionBuilder.swift` | Omsætter projektet til en AVFoundation-komposition |
-| `Compositor.swift` | Tegner hvert billede: skalering, lag og tekster. Bruges af både preview og eksport |
-| `Exporter.swift` | MP4-eksport |
-| `Views/` | Mediebibliotek, preview, tidslinje, inspektør og eksport |
+| `Sources/EddieKit/` | The whole app; `App/` is the App Store target around it |
+| `Model.swift` | Project, clips, media and title style (saved as JSON) |
+| `Editor.swift` | State, editing, undo, playback, save and open |
+| `CompositionBuilder.swift` | Turns the project into an AVFoundation composition |
+| `Compositor.swift` | Draws every frame: scaling, layers and titles. Used by both preview and export |
+| `Exporter.swift` | MP4 export |
+| `Sandbox.swift` | Media access under the App Sandbox: bookmarks and Find… |
+| `Views/` | Media bin, preview, timeline, inspector and export |

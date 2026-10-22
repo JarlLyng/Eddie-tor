@@ -10,7 +10,7 @@
 	<array>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>Edwell-projekt</string>
+			<string>Edwell Project</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
@@ -51,7 +51,7 @@
 				<string>public.json</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Edwell-projekt</string>
+			<string>Edwell Project</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.iamjarl.edwell.project</string>
 			<key>UTTypeTagSpecification</key>

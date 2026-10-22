@@ -1,6 +1,6 @@
 # Eddie
 
-A small macOS video editor that replaces Adobe Premiere Rush (discontinued; support ended 2026-09-30). The owner uses it for one job above all: cutting hour-long Ambient Session recordings (see `docs/rush-reference.md`, *How Rush was used*). The UI is in Danish; code, comments and commit messages are in English.
+A small macOS video editor that replaces Adobe Premiere Rush (discontinued; support ended 2026-09-30). The owner uses it for one job above all: cutting hour-long Ambient Session recordings (see `docs/rush-reference.md`, *How Rush was used*). The UI is in English with Danish as a localization; code, comments and commit messages are in English.
 
 It ships on the Mac App Store as **Edwell** ("Edwell: Video Editor", bundle id `com.iamjarl.edwell`); Eddie stays the repo and working name. The road there is tracked in #10.
 
@@ -31,6 +31,7 @@ It opens the project, selects the first image clip, writes the window to `ui.png
 
 - **App Sandbox.** Edwell has two entitlements: the sandbox, and read-write access to files the user picks (open and save panels, drag and drop, Finder opening a project). App Review rejects entitlements nothing uses, and the self test fails on any other. Inside the sandbox `homeDirectoryForCurrentUser` and the standard folders point into the app's container; start panels from `FileManager.default.userHomeDirectory`.
 - **Media under the sandbox** (`MediaAccess` in `Sandbox.swift`). The app may read a file only in the launch the user picked it in, so `MediaLoader.load` gives every item a security-scoped bookmark, and opening a project or the autosave resolves them (`MediaAccess.reach`) and holds their access until the project closes. Saving adds each file's path relative to the project. Inside the sandbox `fileExists` is true for files the app can't read, so test with `MediaAccess.canRead`. Media that can't be read is left out of preview and export and shown in red, with **Find…** (`Editor.locateMedia`), which takes the file or a folder to search. To check it for real, open a file in `build/Edwell.app` with `open -a`, then open the autosave from a fresh process with `EDDIE_OPEN` (both inside the container).
+- **Every string in the UI goes through `App/Edwell/Localizable.xcstrings`** (English source, Danish translation). SwiftUI literals (`Text("…")`, `Button("…")`, `.help("…")`) are looked up in the app's main bundle by themselves; a helper that passes a title on takes `LocalizedStringKey`, and any other `String` shown to the user (alerts, errors, panel messages, enum labels) is `String(localized:)`. After changing UI text run `scripts/sync-strings.sh` (needs Xcode): the compiler lists the strings, the catalog is updated, and the script names those without Danish. The self test fails on a missing translation and on Danish letters in a string literal. `.build/debug/Eddie` has no bundle, so it always shows English; try Danish with `build/Edwell.app/Contents/MacOS/Edwell -AppleLanguages '(da)'`.
 - **Project type** `com.iamjarl.edwell.project` (`Editor.projectType`), declared in `App/project.yml`. Projects are saved as `.edwell`; `.eddie` files from before the rename open as the same type.
 
 - **Fonts that ship with the app** live in `Resources/Fonts` (Outfit, OFL-1.1, with its licence), are copied into the app by the Xcode target and are registered at launch by `BundledFonts`. Outfit's variable font is called "Outfit Thin" by CoreText; the UI shows it as "Outfit". Weights go through the `wght` axis.
@@ -54,6 +55,6 @@ The UI follows the IAMJARL design system (`iamjarl-design`, Swift package `IAMJA
 
 ## Open work, roughly in order
 
-1. **The Ambient Session workflow** is in place: `AmbientSession.swift` (File › Ny Ambient Session, ⇧⌘N), checked against Rush's own video by `--session-test` (see README). Left: export bitrate is ~10.5 Mbit/s against Rush's ~19 (Apple's preset; a fixed bitrate needs an AVAssetReader/AVAssetWriter export); scrubbing and playback of an hour-long clip haven't been tried by hand.
+1. **The Ambient Session workflow** is in place: `AmbientSession.swift` (File › New Ambient Session, ⇧⌘N), checked against Rush's own video by `--session-test` (see README). Left: export bitrate is ~10.5 Mbit/s against Rush's ~19 (Apple's preset; a fixed bitrate needs an AVAssetReader/AVAssetWriter export); scrubbing and playback of an hour-long clip haven't been tried by hand.
 2. Colour looks and adjustments, speed ramps over part of a clip, pan and zoom on stills, animated titles.
 3. Auto volume (−23 LUFS dialogue, −25 LUFS music), auto ducking (−18 dB, 800 ms fades), noise reduction, voice-over recording, Auto Reframe.

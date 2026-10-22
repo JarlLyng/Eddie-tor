@@ -40,7 +40,7 @@ struct PreviewPanel: View {
         if count > 0 {
             HStack(spacing: Tokens.Spacing.sm) {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Tokens.Palette.State.error)
-                Text(count == 1 ? "1 mediefil kan ikke læses" : "\(count) mediefiler kan ikke læses").ijFont(.sm)
+                Text("\(count) media files can't be read").ijFont(.sm)
                 Button("Find…") { editor.locateMedia() }.buttonStyle(SecondaryButtonStyle())
             }
             .foregroundStyle(Tokens.Palette.Text.primary)

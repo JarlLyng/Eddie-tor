@@ -11,11 +11,11 @@ enum InspectorTab: Int, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .text: "Tekst"
-        case .transitions: "Overgange"
-        case .speed: "Hastighed"
-        case .audio: "Lyd"
-        case .position: "Placering"
+        case .text: String(localized: "Text")
+        case .transitions: String(localized: "Transitions")
+        case .speed: String(localized: "Speed")
+        case .audio: String(localized: "Audio")
+        case .position: String(localized: "Position")
         }
     }
 
@@ -117,8 +117,8 @@ final class Editor {
     }
 
     var windowTitle: String {
-        let name = fileURL?.deletingPathExtension().lastPathComponent ?? "Uden navn"
-        return isDirty ? "\(name) — redigeret" : name
+        let name = fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Untitled")
+        return isDirty ? String(localized: "\(name) (edited)") : name
     }
 
     /// Sorted by start so a clip that overlaps its neighbour in a transition is drawn on top.
@@ -324,7 +324,7 @@ final class Editor {
         }
         var clip = Clip(kind: kind, track: track, start: 0, duration: media.kind == .image ? 4 : media.duration, mediaID: media.id)
         guard !isLocked(clip) else {
-            errorMessage = "Sporet \(TrackRow(group: clip.group, index: track).label) er låst."
+            errorMessage = String(localized: "Track \(TrackRow(group: clip.group, index: track).label) is locked.")
             return
         }
         clip.start = placement(for: clip, at: time)
@@ -353,7 +353,7 @@ final class Editor {
             let start = freeStart(.title, track: track, desired: currentTime, duration: duration)
             if best == nil || start < best!.start - 0.01 { best = (track, start) }
         }
-        guard let best else { errorMessage = "Alle tekstspor er låst."; return }
+        guard let best else { errorMessage = String(localized: "All title tracks are locked."); return }
         let clip = Clip(kind: .title, track: best.track, start: best.start, duration: duration,
                         fadeIn: 0.25, fadeOut: 0.25, title: TitleStyle())
         edit { $0.clips.append(clip) }
@@ -567,7 +567,7 @@ final class Editor {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.allowedContentTypes = [.movie, .audio, .image]
-        panel.message = "Vælg video, lyd eller billeder"
+        panel.message = String(localized: "Choose video, audio or images")
         guard panel.runModal() == .OK else { return }
         importMedia(panel.urls)
     }
@@ -587,7 +587,7 @@ final class Editor {
             cache.prepare(new)
             if thenAddToTimeline { added.forEach { add($0) } }
             if added.count < urls.count {
-                errorMessage = "Nogle filer kunne ikke åbnes. Edwell kan bruge video, lyd og billeder."
+                errorMessage = String(localized: "Some files couldn't be opened. Edwell works with video, audio and images.")
             }
         }
     }
@@ -679,7 +679,7 @@ final class Editor {
                 guard !Task.isCancelled else { return }
                 self?.install(result)
             } catch {
-                NSLog("Eddie: kunne ikke bygge preview: \(error)")
+                NSLog("Edwell: couldn't build the preview: \(error)")
             }
         }
     }
@@ -717,13 +717,13 @@ final class Editor {
         guard confirmDiscard() else { return }
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.movie]
-        panel.message = "Vælg optagelsen af sessionen"
+        panel.message = String(localized: "Choose the session recording")
         // The sandbox hides the folder from fileExists; the panel itself falls back when it isn't there.
         panel.directoryURL = AmbientSession.recordingsFolder
         guard panel.runModal() == .OK, let url = panel.url else { return }
         Task {
             guard let recording = await MediaLoader.load(url), recording.kind == .video else {
-                errorMessage = "\(url.lastPathComponent) kunne ikke åbnes som video."
+                errorMessage = String(localized: "\(url.lastPathComponent) couldn't be opened as a video.")
                 return
             }
             startAmbientSession(with: recording)
@@ -756,7 +756,7 @@ final class Editor {
                 DispatchQueue.main.async { self.askForMissingMedia() }
             }
         } catch {
-            errorMessage = "Projektet kunne ikke åbnes: \(error.localizedDescription)"
+            errorMessage = String(localized: "The project couldn't be opened: \(error.localizedDescription)")
         }
     }
 
@@ -773,11 +773,11 @@ final class Editor {
         guard !missing.isEmpty else { return }
         let alert = NSAlert()
         alert.messageText = missing.count == 1
-            ? "Edwell kan ikke læse \(missing[0].name)"
-            : "Edwell kan ikke læse \(missing.count) af projektets medier"
-        alert.informativeText = "De er flyttet, slettet eller ligger på et drev, der ikke er tilsluttet, eller Edwell har ikke fået lov at åbne dem på denne Mac. Find dem én gang, så husker projektet dem, når du gemmer."
-        alert.addButton(withTitle: "Find…")
-        alert.addButton(withTitle: "Senere")
+            ? String(localized: "Edwell can't read \(missing[0].name)")
+            : String(localized: "Edwell can't read \(missing.count) of the project's media files")
+        alert.informativeText = String(localized: "They have been moved or deleted, are on a drive that isn't connected, or Edwell hasn't been allowed to open them on this Mac. Find them once and the project remembers them when you save.")
+        alert.addButton(withTitle: String(localized: "Find…"))
+        alert.addButton(withTitle: String(localized: "Later"))
         if alert.runModal() == .alertFirstButtonReturn { locateMedia() }
     }
 
@@ -789,10 +789,10 @@ final class Editor {
         panel.canChooseFiles = true
         panel.canChooseDirectories = items.count > 1
         panel.allowedContentTypes = [.audiovisualContent, .image]
-        panel.prompt = "Find"
+        panel.prompt = String(localized: "Find")
         panel.message = items.count == 1
-            ? "Find \(first.name)"
-            : "Vælg mappen med projektets medier. Edwell finder dem, der ligger i den."
+            ? String(localized: "Find \(first.name)")
+            : String(localized: "Choose the folder with the project's media. Edwell finds the ones inside it.")
         panel.directoryURL = first.url.deletingLastPathComponent()
         guard panel.runModal() == .OK, let picked = panel.url else { return }
         relink(items, in: picked)
@@ -805,8 +805,8 @@ final class Editor {
         let left = items.count - found.count
         if left > 0 {
             errorMessage = left == 1 && items.count == 1
-                ? "\(items[0].name) blev ikke fundet i \(picked.lastPathComponent)."
-                : "\(left) af \(items.count) medier blev ikke fundet i \(picked.lastPathComponent)."
+                ? String(localized: "\(items[0].name) wasn't found in \(picked.lastPathComponent).")
+                : String(localized: "\(left) of \(items.count) media files weren't found in \(picked.lastPathComponent).")
         }
         guard !found.isEmpty else { return }
         found.forEach { AssetCache.forget($0.url) }
@@ -835,7 +835,7 @@ final class Editor {
 
     /// What Save As suggests: always `.edwell`, also for a project opened from an old `.eddie` file.
     var suggestedFileName: String {
-        let name = fileURL?.deletingPathExtension().lastPathComponent ?? suggestedName ?? "Mit projekt"
+        let name = fileURL?.deletingPathExtension().lastPathComponent ?? suggestedName ?? String(localized: "My Project")
         return "\(name).\(Self.projectExtensions[0])"
     }
 
@@ -856,7 +856,7 @@ final class Editor {
             UserDefaults.standard.set(url.path, forKey: "lastProjectPath")
             return true
         } catch {
-            errorMessage = "Projektet kunne ikke gemmes: \(error.localizedDescription)"
+            errorMessage = String(localized: "The project couldn't be saved: \(error.localizedDescription)")
             return false
         }
     }
@@ -864,10 +864,11 @@ final class Editor {
     private func confirmDiscard() -> Bool {
         guard isDirty, !project.clips.isEmpty || !project.media.isEmpty else { return true }
         let alert = NSAlert()
-        alert.messageText = "Vil du gemme ændringerne i \(fileURL?.lastPathComponent ?? "projektet")?"
-        alert.addButton(withTitle: "Gem")
-        alert.addButton(withTitle: "Annuller")
-        alert.addButton(withTitle: "Gem ikke")
+        let name = fileURL?.lastPathComponent ?? String(localized: "the project")
+        alert.messageText = String(localized: "Do you want to save the changes to \(name)?")
+        alert.addButton(withTitle: String(localized: "Save"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
+        alert.addButton(withTitle: String(localized: "Don't Save"))
         switch alert.runModal() {
         case .alertFirstButtonReturn: return save()
         case .alertThirdButtonReturn: return true

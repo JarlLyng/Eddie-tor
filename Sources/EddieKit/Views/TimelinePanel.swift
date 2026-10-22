@@ -60,55 +60,55 @@ struct TimelinePanel: View {
         @Bindable var editor = editor
         return HStack(spacing: Tokens.Spacing.md) {
             Button { editor.togglePlay() } label: { Image(systemName: editor.isPlaying ? "pause.fill" : "play.fill") }
-                .help("Afspil / pause (mellemrum, J K L)")
+                .help("Play / pause (Space, J K L)")
             Text("\(timecode(editor.currentTime, fps: editor.project.fps))  /  \(timecode(editor.project.duration, fps: editor.project.fps))")
                 .ijFont(.sm, design: .monospaced)
                 .foregroundStyle(Tokens.Palette.Text.secondary)
             Divider().frame(height: 18)
             Button { editor.splitAtPlayhead() } label: { Image(systemName: "scissors") }
-                .help("Del klip ved afspilningshovedet (S)")
+                .help("Split the clip at the playhead (S)")
             Button { editor.duplicateSelection() } label: { Image(systemName: "plus.square.on.square") }
-                .help("Dupliker (D)")
+                .help("Duplicate (D)")
                 .disabled(editor.selection == nil)
             Button { editor.deleteSelection() } label: { Image(systemName: "trash") }
-                .help("Slet valgt klip (⌫)")
+                .help("Delete the selected clip (⌫)")
                 .disabled(editor.selection == nil)
             Button { editor.addTitle() } label: { Image(systemName: "textformat") }
-                .help("Tilføj tekst (G)")
+                .help("Add a title (G)")
             Button { editor.applyDefaultTransition() } label: { Image(systemName: "rectangle.righthalf.inset.filled.arrow.right") }
-                .help("Tilføj overgang (⌘D)")
+                .help("Add a transition (⌘D)")
             Menu {
-                Button("Videospor") { editor.addTrack(.visual) }
-                Button("Lydspor") { editor.addTrack(.audio) }
-                Button("Tekstspor") { editor.addTrack(.title) }
+                Button("Video Track") { editor.addTrack(.visual) }
+                Button("Audio Track") { editor.addTrack(.audio) }
+                Button("Title Track") { editor.addTrack(.title) }
             } label: { Image(systemName: "rectangle.stack.badge.plus").foregroundStyle(Tokens.Palette.Text.primary) }
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .help("Tilføj spor")
+                .help("Add a track")
             Divider().frame(height: 18)
             Button { editor.undo() } label: { Image(systemName: "arrow.uturn.backward") }
-                .help("Fortryd (⌘Z)").disabled(!editor.canUndo)
+                .help("Undo (⌘Z)").disabled(!editor.canUndo)
             Button { editor.redo() } label: { Image(systemName: "arrow.uturn.forward") }
-                .help("Annuller fortryd (⇧⌘Z)").disabled(!editor.canRedo)
+                .help("Redo (⇧⌘Z)").disabled(!editor.canRedo)
             Divider().frame(height: 18)
             Toggle(isOn: $editor.snapping) { activeIcon("arrow.right.and.line.vertical.and.arrow.left", editor.snapping) }
                 .toggleStyle(.button)
-                .help("Snap til kanter og afspilningshoved (⌘Y)")
+                .help("Snap to edges and the playhead (⌘Y)")
             Toggle(isOn: $editor.loopPlayback) { activeIcon("repeat", editor.loopPlayback) }
                 .toggleStyle(.button)
-                .help("Gentag afspilning, inden for ind/ud hvis de er sat (⌘L)")
+                .help("Loop playback, between in and out if they're set (⌘L)")
             Toggle(isOn: editor.projectBinding(\.magneticMain)) { activeIcon("rectangle.compress.vertical", editor.project.magneticMain) }
                 .toggleStyle(.button)
-                .help("Magnetisk hovedspor: klip på V1 ligger altid uden huller")
+                .help("Magnetic main track: clips on V1 always sit without gaps")
             Spacer()
             Button { editor.pps = max(editor.pps / 1.4, 4) } label: { Image(systemName: "minus.magnifyingglass") }
-                .help("Zoom ud (−)")
+                .help("Zoom out (−)")
             Slider(value: Binding(get: { log(editor.pps) }, set: { editor.pps = exp($0) }), in: log(4)...log(600))
                 .frame(width: 140)
             Button { editor.pps = min(editor.pps * 1.4, 600) } label: { Image(systemName: "plus.magnifyingglass") }
-                .help("Zoom ind (=)")
-            Button("Tilpas") { zoomToFit() }
-                .help("Vis hele tidslinjen (\\)")
+                .help("Zoom in (=)")
+            Button("Fit") { zoomToFit() }
+                .help("Show the whole timeline (\\)")
         }
         .buttonStyle(.borderless)
         .foregroundStyle(Tokens.Palette.Text.primary)
@@ -144,22 +144,22 @@ private struct TrackHeader: View {
                 .ijFont(.xs, weight: .semibold)
                 .foregroundStyle(row.group == .visual && row.index == 0 && editor.project.magneticMain ? Tokens.Palette.primary : Tokens.Palette.Text.secondary)
                 .frame(width: 22, alignment: .leading)
-                .help(row.group == .visual && row.index == 0 ? "Hovedspor" : "")
+                .help(row.group == .visual && row.index == 0 ? "Main track" : "")
             Spacer(minLength: 0)
             if row.group != .audio {
-                flagButton(\.hidden, active: flags.hidden, on: "eye.slash.fill", off: "eye", help: "Skjul spor")
+                flagButton(\.hidden, active: flags.hidden, on: "eye.slash.fill", off: "eye", help: "Hide track")
             }
             if row.group != .title {
-                flagButton(\.muted, active: flags.muted, on: "speaker.slash.fill", off: "speaker.wave.2", help: "Slå lyd fra")
+                flagButton(\.muted, active: flags.muted, on: "speaker.slash.fill", off: "speaker.wave.2", help: "Mute track")
             }
-            flagButton(\.locked, active: flags.locked, on: "lock.fill", off: "lock.open", help: "Lås spor")
+            flagButton(\.locked, active: flags.locked, on: "lock.fill", off: "lock.open", help: "Lock track")
         }
         .padding(.horizontal, Tokens.Spacing.xs)
         .background(Tokens.Palette.Background.card)
         .overlay(alignment: .bottom) { Rectangle().fill(Tokens.Palette.Border.subtle).frame(height: 1) }
     }
 
-    private func flagButton(_ flag: WritableKeyPath<TrackFlags, Bool>, active: Bool, on: String, off: String, help: String) -> some View {
+    private func flagButton(_ flag: WritableKeyPath<TrackFlags, Bool>, active: Bool, on: String, off: String, help: LocalizedStringKey) -> some View {
         Button { editor.toggleFlag(row, flag) } label: {
             Image(systemName: active ? on : off)
                 .font(.caption)
@@ -233,7 +233,7 @@ private struct RulerView: View {
             if editor.isPlaying { editor.pause() }
             editor.seek(value.location.x / pps)
         })
-        .help("Ind- og udpunkt: I og O")
+        .help("In and out points: I and O")
     }
 }
 
@@ -341,18 +341,18 @@ private struct ClipView: View {
                 Button("Find \(media.name)…") { editor.locateMedia(media) }
                 Divider()
             }
-            Button("Del ved afspilningshoved  (S)") { editor.selection = clip.id; editor.splitAtPlayhead() }
-            Button("Dupliker  (D)") { editor.selection = clip.id; editor.duplicateSelection() }
-            Button("Kopiér  (⌘C)") { editor.selection = clip.id; editor.copySelection() }
-            Button("Klip ud  (⌘X)") { editor.selection = clip.id; editor.cutSelection() }
+            Button("Split at Playhead  (S)") { editor.selection = clip.id; editor.splitAtPlayhead() }
+            Button("Duplicate  (D)") { editor.selection = clip.id; editor.duplicateSelection() }
+            Button("Copy  (⌘C)") { editor.selection = clip.id; editor.copySelection() }
+            Button("Cut  (⌘X)") { editor.selection = clip.id; editor.cutSelection() }
             if clip.kind != .audio {
-                Button("Tilføj overgang  (⌘D)") { editor.selection = clip.id; editor.applyDefaultTransition() }
+                Button("Add Transition  (⌘D)") { editor.selection = clip.id; editor.applyDefaultTransition() }
             }
             if clip.kind == .video, !clip.audioDetached, media?.hasAudio == true {
-                Button("Adskil lyd  (E)") { editor.selection = clip.id; editor.separateAudio() }
+                Button("Separate Audio  (E)") { editor.selection = clip.id; editor.separateAudio() }
             }
             Divider()
-            Button("Slet", role: .destructive) { editor.selection = clip.id; editor.deleteSelection() }
+            Button("Delete", role: .destructive) { editor.selection = clip.id; editor.deleteSelection() }
         }
         .help(name)
     }
@@ -360,8 +360,8 @@ private struct ClipView: View {
     private var media: MediaItem? { editor.project.media(clip.mediaID) }
 
     private var name: String {
-        if clip.kind == .title { return clip.title?.text ?? "Tekst" }
-        return media?.name ?? "Mangler fil"
+        if clip.kind == .title { return clip.title?.text ?? String(localized: "Title") }
+        return media?.name ?? String(localized: "Missing file")
     }
 
     private var isMissing: Bool {

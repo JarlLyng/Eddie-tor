@@ -8,12 +8,12 @@ struct MediaBinView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Medier").ijFont(.base, weight: .semibold)
+                Text("Media").ijFont(.base, weight: .semibold)
                 Spacer()
                 Button { editor.showImportPanel() } label: { Image(systemName: "plus") }
                     .buttonStyle(.borderless)
                     .foregroundStyle(Tokens.Palette.Text.primary)
-                    .help("Importer medier")
+                    .help("Import media")
             }
             .padding(.horizontal, Tokens.Spacing.md)
             .padding(.vertical, Tokens.Spacing.sm)
@@ -22,10 +22,10 @@ struct MediaBinView: View {
             if editor.project.media.isEmpty {
                 VStack(spacing: 10) {
                     Image(systemName: "film.stack").font(.largeTitle).foregroundStyle(Tokens.Palette.Text.secondary)
-                    Text("Træk video, lyd eller billeder hertil").ijFont(.sm).multilineTextAlignment(.center)
-                    Button("Importer…") { editor.showImportPanel() }.buttonStyle(PrimaryButtonStyle())
-                    Button("Ny Ambient Session…") { editor.newAmbientSession() }.buttonStyle(SecondaryButtonStyle())
-                        .help("Vælg optagelsen; fades og titel sættes op som i Rush (⇧⌘N)")
+                    Text("Drag video, audio or images here").ijFont(.sm).multilineTextAlignment(.center)
+                    Button("Import…") { editor.showImportPanel() }.buttonStyle(PrimaryButtonStyle())
+                    Button("New Ambient Session…") { editor.newAmbientSession() }.buttonStyle(SecondaryButtonStyle())
+                        .help("Choose the recording; the fades and title are set up for you (⇧⌘N)")
                 }
                 .foregroundStyle(Tokens.Palette.Text.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -39,7 +39,7 @@ struct MediaBinView: View {
                     }
                     .padding(Tokens.Spacing.sm)
                 }
-                Text("Dobbeltklik eller træk ned på tidslinjen")
+                Text("Double-click or drag onto the timeline")
                     .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
                     .padding(.vertical, Tokens.Spacing.xs)
             }
@@ -94,13 +94,13 @@ private struct MediaTile: View {
                 Button("Find…") { editor.locateMedia(media) }
                 Divider()
             }
-            Button("Tilføj til tidslinjen") { editor.add(media) }
-            Button("Tilføj ved afspilningshoved") { editor.add(media, at: editor.currentTime) }
-            Button("Vis i Finder") { NSWorkspace.shared.activateFileViewerSelecting([media.url]) }
+            Button("Add to Timeline") { editor.add(media) }
+            Button("Add at Playhead") { editor.add(media, at: editor.currentTime) }
+            Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([media.url]) }
             Divider()
-            Button("Fjern fra projektet", role: .destructive) { editor.removeMedia(media.id) }
+            Button("Remove from Project", role: .destructive) { editor.removeMedia(media.id) }
         }
-        .help(missing ? "\(media.url.path)\nKan ikke læses. Højreklik og vælg Find…" : media.url.path)
+        .help(missing ? String(localized: "\(media.url.path)\nCan't be read. Right-click and choose Find…") : media.url.path)
     }
 
     private var missing: Bool { !MediaAccess.canRead(media.url) }
