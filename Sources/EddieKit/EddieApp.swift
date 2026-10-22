@@ -2,9 +2,9 @@ import IAMJARLDesignTokens
 import SwiftUI
 import AVFoundation
 
-@main
-enum Main {
-    static func main() {
+/// The entry point, shared by the Edwell app and the `Eddie` executable that `swift build` makes.
+public enum Launcher {
+    public static func run() {
         BundledFonts.register()
         if let i = CommandLine.arguments.firstIndex(of: "--session-test") {
             SessionTest.run(arguments: Array(CommandLine.arguments.dropFirst(i + 1)))
@@ -23,7 +23,7 @@ struct EddieApp: App {
     @NSApplicationDelegateAdaptor private var delegate: AppDelegate
 
     var body: some Scene {
-        Window("Eddie", id: "main") {
+        Window("Edwell", id: "main") {
             ContentView()
                 .environment(editor)
                 .tint(Tokens.Palette.primary)

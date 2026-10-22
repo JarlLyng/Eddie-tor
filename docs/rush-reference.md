@@ -76,7 +76,7 @@ So Rush was also used for music videos: a song's audio file under video, with a 
 | Tracks | 4 video, 3 audio; hide, mute, lock per track | ✓ 3 video, 2 title, 2 audio, more on demand; hide, mute, lock |
 | Main track | magnetic: clips close up | ✓ |
 | Editing | split, duplicate, copy/paste, ripple trim to playhead, in/out, separate audio, snapping | ✓ |
-| Titles | 27 animated templates (Adobe Stock motion graphics), Adobe Fonts, colour, background, size, position, eyedropper | Static titles: face, size, colour, shadow, box, position, fade. **No left/right alignment, no templates, no animation** |
+| Titles | 27 animated templates (Adobe Stock motion graphics), Adobe Fonts, colour, background, size, position, eyedropper | Static titles: face, weight, size, colour, left/centre/right alignment, line height, shadow, box, position, fade. **No templates, no animation** |
 | Transitions | Cross Dissolve, Dip to Black, Dip to White, Push; the engine also has Slide, Split, Wipe, Iris, Cross Zoom, Whip, Film Dissolve. Duration slider; ⌘D applies the default | ✓ Cross dissolve, dip to black/white, push in four directions |
 | Colour | 24 looks with an intensity slider, manual edit, saved presets | Missing |
 | Speed | whole clip or a range, ramp, keep pitch | ✓ whole clip and keep pitch. **No range or ramp** |

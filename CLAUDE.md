@@ -2,18 +2,22 @@
 
 A small macOS video editor that replaces Adobe Premiere Rush (discontinued; support ended 2026-09-30). The owner uses it for one job above all: cutting hour-long Ambient Session recordings (see `docs/rush-reference.md`, *How Rush was used*). The UI is in Danish; code, comments and commit messages are in English.
 
+It ships on the Mac App Store as **Edwell** ("Edwell: Video Editor", bundle id `com.iamjarl.edwell`); Eddie stays the repo and working name. The road there is tracked in #10.
+
 ## Build and test
 
-Only the Xcode Command Line Tools are needed, not Xcode. Swift package, one executable target.
+A Swift package: the library `EddieKit` (`Sources/EddieKit`, the whole app) and a one-line `Eddie` executable. `swift build` and the self test need only the Xcode Command Line Tools. The app itself is built by Xcode from `App/Edwell.xcodeproj`, a thin target around `EddieKit`.
 
 ```bash
 swift build                                   # debug build
 .build/debug/Eddie --selftest /tmp/eddie-test  # must end with SELFTEST OK
-./build.sh                                    # build/Eddie.app (release, ad-hoc signed)
+./build.sh                                    # build/Edwell.app (Xcode, release, sandboxed, ad-hoc signed)
 ./build.sh --open | --install
 ```
 
-The self test (`Sources/Eddie/SelfTest.swift`) generates test media, exports projects through the real pipeline and checks durations, sizes and pixels (dissolve, push, hidden and muted tracks, in/out export), then runs the editing logic (magnetic track, ripple trims, transitions, speed, copy/paste, separate audio, locks, old project files). Extend it with every feature; there is no other test suite.
+The self test (`Sources/EddieKit/SelfTest.swift`) generates test media, exports projects through the real pipeline and checks durations, sizes and pixels (dissolve, push, hidden and muted tracks, in/out export), then runs the editing logic (magnetic track, ripple trims, transitions, speed, copy/paste, separate audio, locks, old project files) and checks the store build's declarations (bundle id, project type, entitlements). Extend it with every feature; there is no other test suite. It also runs inside the sandboxed app: `build/Edwell.app/Contents/MacOS/Edwell --selftest` writes to the app's container.
+
+`App/Edwell.xcodeproj` is generated from `App/project.yml` with xcodegen and committed, because Xcode Cloud builds it. Run `cd App && xcodegen generate` after changing `project.yml`; new Swift files go in `Sources/EddieKit` and need no regeneration. Releases go through Xcode Cloud from the `release` branch (`XCODE_CLOUD.md`).
 
 There is no screen-recording permission for `screencapture`, so look at the UI through the app's own debug hook:
 
@@ -21,11 +25,14 @@ There is no screen-recording permission for `screencapture`, so look at the UI t
 EDDIE_SNAPSHOT=/tmp/ui.png EDDIE_OPEN=/path/project.eddie EDDIE_APPEARANCE=dark .build/debug/Eddie
 ```
 
-It opens the project, selects the first image clip, writes the window to `ui.png` after 4 s and a frame from the preview player to `ui.png.preview.png`. With `EDDIE_SNAPSHOT` set the app never touches the owner's autosave.
+It opens the project, selects the first image clip, writes the window to `ui.png` after 4 s and a frame from the preview player to `ui.png.preview.png`. With `EDDIE_SNAPSHOT` set the app never touches the owner's autosave. The same hook works on `build/Edwell.app/Contents/MacOS/Edwell`, but the sandbox only lets it write inside `~/Library/Containers/com.iamjarl.edwell/Data`.
 
 ## Gotchas
 
-- **Fonts that ship with the app** live in `Resources/Fonts` (Outfit, OFL-1.1, with its licence) and are registered at launch by `BundledFonts`. Outfit's variable font is called "Outfit Thin" by CoreText; the UI shows it as "Outfit". Weights go through the `wght` axis.
+- **App Sandbox.** Edwell has two entitlements: the sandbox, and read-write access to files the user picks (open and save panels, drag and drop, Finder opening a project). App Review rejects entitlements nothing uses, and the self test fails on any other. Inside the sandbox `homeDirectoryForCurrentUser` and the standard folders point into the app's container; start panels from `FileManager.default.userHomeDirectory`. A project's media is reachable only during the launch it was picked in, until #2 (security-scoped bookmarks) lands.
+- **Project type** `com.iamjarl.edwell.project` (`Editor.projectType`), declared in `App/project.yml`. Projects are saved as `.edwell`; `.eddie` files from before the rename open as the same type.
+
+- **Fonts that ship with the app** live in `Resources/Fonts` (Outfit, OFL-1.1, with its licence), are copied into the app by the Xcode target and are registered at launch by `BundledFonts`. Outfit's variable font is called "Outfit Thin" by CoreText; the UI shows it as "Outfit". Weights go through the `wght` axis.
 
 - **`@State` is a macro in the macOS 27 SDK** and its plugin ships only with Xcode. Use `@ViewState` (`typealias ViewState = SwiftUI.State` in `Model.swift`). Other SwiftUI macros (`#Preview`, `@Entry`) will fail the same way.
 - Swift 6 compiler in Swift 5 language mode (`swiftLanguageModes: [.v5]`), so concurrency warnings don't block the build.
@@ -33,6 +40,7 @@ It opens the project, selects the first image clip, writes the window to `ui.png
 
 ## How it fits together
 
+- `EddieApp.swift`: `Launcher.run()`, the entry point both executables call (`App/Edwell/main.swift`, `Sources/Eddie/main.swift`), then the SwiftUI app and its menus.
 - `Model.swift`: `Project`, `Clip`, `MediaItem`, `TitleStyle`, transitions, track flags. Times are seconds as `Double`; `Clip.duration` is timeline time, `sourceDuration = duration * speed`.
 - `Editor.swift`: all state and every edit. Edits go through `edit {}` (one undo step, coalesced by key) or `beginInteraction`/`interact`/`endInteraction` for drags. `packMain` keeps V1 magnetic after every change. The Rush single-key shortcuts live in the key monitor (`handleKey`), never as menu key equivalents, so they don't fire while typing.
 - `CompositionBuilder.swift`: project → `AVMutableComposition` + video composition + audio mix. Clips are packed onto as few composition tracks as possible; a stretched black filler track sets the length. Speed is `scaleTimeRange`; pitch per audio track via `audioTimePitchAlgorithm`.

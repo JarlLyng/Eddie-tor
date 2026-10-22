@@ -1,11 +1,10 @@
 # Eddie
 
-En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. Den har kun de funktioner, der faktisk bruges.
+En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. I Mac App Store hedder den **Edwell**. Den har kun de funktioner, der faktisk bruges.
 
 ## Funktioner
 
 - **Ny Ambient Session** (⇧⌘N, eller knappen i Medier): vælg optagelsen, og Eddie sætter den op som i Rush: hele optagelsen på V1 med 0,5 s dyk til sort og lydfade i begge ender, og titlen "Ambient / Session NNN" fra 11,2 til 50,8 s, venstrestillet i Outfit ExtraBold 177 px, i sessionens egen farve. Sæt så afspilningshovedet, hvor sessionen begynder, og tryk **Q**; hvor den slutter, og tryk **W**. Titlen bliver stående ved 11,2 s
-
 - **Import** af video, lyd og billeder (knappen **+**, ⌘I eller træk filer ind i Medier)
 - **Magnetisk hovedspor** som i Rush: klip på V1 ligger altid i forlængelse af hinanden, så sletning og trim lukker hullet. Træk et klip for at flytte det til en ny plads
 - **Flere spor**: 3 videospor, 2 tekstspor og 2 lydspor, og du kan tilføje flere. Hvert spor kan skjules, have lyden slået fra og låses
@@ -17,7 +16,7 @@ En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. Den
 - **Lyd**: lydstyrke pr. klip (0–200 %), slå lyd fra, fade ind og ud
 - **Format**: 16:9, 9:16, 1:1 og 4:5
 - **Eksport** til MP4 (H.264 eller HEVC) i 1080p, hele projektet eller kun mellem ind- og udpunkt
-- Fortryd/gentag, autogem og projekter gemt som `.eddie`-filer
+- Fortryd/gentag, autogem og projekter gemt som `.edwell`-filer (gamle `.eddie`-filer kan stadig åbnes)
 
 ## Genveje (som i Rush)
 
@@ -49,22 +48,23 @@ En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. Den
 
 Se også [docs/rush-reference.md](docs/rush-reference.md): alt, hvad Rush kunne, hvordan det blev brugt til Ambient Sessions, og hvad Eddie mangler.
 
-
 Farvefiltre, hastighed for kun en del af et klip (ramp), animerede tekstskabeloner, pan & zoom, auto reframe, auto-ducking, støjreduktion og optagelse af voiceover.
 
 ## Design
 
-Eddie bruger [IAMJARL-designsystemet](https://github.com/JarlLyng/iamjarl-design) (Swift-pakken `IAMJARLDesignTokens`): alle farver, afstande, hjørner og skriftstørrelser i brugerfladen kommer derfra, og appen følger systemets lyse eller mørke tilstand. `Sources/Eddie/Theme.swift` samler det, Eddie selv udleder af tokens (klippenes neutrale fyld og knapstilene). Farverne i selve videoen, som tekstfarver og baggrund, er brugerens indhold og ikke en del af designsystemet.
+Eddie bruger [IAMJARL-designsystemet](https://github.com/JarlLyng/iamjarl-design) (Swift-pakken `IAMJARLDesignTokens`): alle farver, afstande, hjørner og skriftstørrelser i brugerfladen kommer derfra, og appen følger systemets lyse eller mørke tilstand. `Sources/EddieKit/Theme.swift` samler det, Eddie selv udleder af tokens (klippenes neutrale fyld og knapstilene). Farverne i selve videoen, som tekstfarver og baggrund, er brugerens indhold og ikke en del af designsystemet.
 
 ## Byg
 
-Kræver kun Xcode Command Line Tools (`xcode-select --install`), ikke hele Xcode.
+Appen bygges med Xcode fra `App/Edwell.xcodeproj` (lavet af `App/project.yml` med [XcodeGen](https://github.com/yonaskolb/XcodeGen)) og kører i App Sandbox som App Store-versionen. Selvtesten og `swift build` kræver kun Xcode Command Line Tools (`xcode-select --install`).
 
 ```bash
-./build.sh            # bygger build/Eddie.app
+./build.sh            # bygger build/Edwell.app
 ./build.sh --open     # bygger og åbner
 ./build.sh --install  # bygger og kopierer til /Programmer
 ```
+
+App Store-versionen bygges af Xcode Cloud fra grenen `release`; se [XCODE_CLOUD.md](XCODE_CLOUD.md).
 
 Test med en rigtig session (bygger skabelonen, trimmer som Rush gjorde for session 011, eksporterer og sammenligner med Rush' video; `--full` eksporterer hele timen):
 
@@ -82,6 +82,7 @@ swift build && .build/debug/Eddie --selftest /tmp/eddie-test
 
 | Fil | Indhold |
 |---|---|
+| `Sources/EddieKit/` | Hele appen; `App/` er App Store-målet rundt om den |
 | `Model.swift` | Projekt, klip, medier og tekststil (gemmes som JSON) |
 | `Editor.swift` | Tilstand, redigering, fortryd, afspilning, gem og åbn |
 | `CompositionBuilder.swift` | Omsætter projektet til en AVFoundation-komposition |
