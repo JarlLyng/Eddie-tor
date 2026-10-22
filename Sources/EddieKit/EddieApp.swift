@@ -1,6 +1,7 @@
 import IAMJARLDesignTokens
 import SwiftUI
 import AVFoundation
+import ScreenCaptureKit
 
 /// The entry point, shared by the Edwell app and the `Eddie` executable that `swift build` makes.
 public enum Launcher {
@@ -59,27 +60,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-            guard let view = NSApp.windows.first(where: { $0.isVisible })?.contentView?.superview,
-                  let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
-            view.cacheDisplay(in: view.bounds, to: rep)
-            try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path))
-            if let editor = self.editor, let item = editor.player.currentItem {
-                print("player item status \(item.status.rawValue) error \(String(describing: item.error)) duration \(item.duration.seconds)")
-                // Also save what the preview player renders at 1.5 s.
-                let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
-                item.add(output)
-                editor.seek(1.5)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    let time = CMTime(seconds: 1.5, preferredTimescale: 600)
-                    guard let buffer = output.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else {
-                        print("preview frame: none"); return
+            guard let window = NSApp.windows.first(where: { $0.isVisible }) else { return }
+            Task { @MainActor in
+                await Self.snapshot(window, to: URL(fileURLWithPath: path))
+                if let editor = self.editor, let item = editor.player.currentItem {
+                    print("player item status \(item.status.rawValue) error \(String(describing: item.error)) duration \(item.duration.seconds)")
+                    // Also save what the preview player renders at 1.5 s.
+                    let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+                    item.add(output)
+                    editor.seek(1.5)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        let time = CMTime(seconds: 1.5, preferredTimescale: 600)
+                        guard let buffer = output.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else {
+                            print("preview frame: none"); return
+                        }
+                        let image = CIImage(cvPixelBuffer: buffer)
+                        let rep = NSBitmapImageRep(ciImage: image)
+                        try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path + ".preview.png"))
+                        print("preview frame: \(CVPixelBufferGetWidth(buffer))x\(CVPixelBufferGetHeight(buffer))")
                     }
-                    let image = CIImage(cvPixelBuffer: buffer)
-                    let rep = NSBitmapImageRep(ciImage: image)
-                    try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path + ".preview.png"))
-                    print("preview frame: \(CVPixelBufferGetWidth(buffer))x\(CVPixelBufferGetHeight(buffer))")
                 }
             }
+        }
+    }
+
+    /// Writes the window as the window server shows it, through ScreenCaptureKit; an app may capture its own
+    /// windows without screen-recording permission. Drawing the views with `cacheDisplay` can't show Liquid
+    /// Glass: the selected segment of the toolbar's format picker came out as a blank white pill.
+    @MainActor static func snapshot(_ window: NSWindow, to url: URL) async {
+        do {
+            let content = try await SCShareableContent.currentProcess
+            guard let shared = content.windows.first(where: { $0.windowID == CGWindowID(window.windowNumber) }) else {
+                throw CocoaError(.featureUnsupported)
+            }
+            let filter = SCContentFilter(desktopIndependentWindow: shared)
+            let config = SCStreamConfiguration()
+            config.width = Int(filter.contentRect.width * CGFloat(filter.pointPixelScale))
+            config.height = Int(filter.contentRect.height * CGFloat(filter.pointPixelScale))
+            config.showsCursor = false
+            let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+            try NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])?.write(to: url)
+        } catch {
+            print("snapshot: ScreenCaptureKit failed (\(error)), drawing the views instead")
+            guard let view = window.contentView?.superview,
+                  let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
+            view.cacheDisplay(in: view.bounds, to: rep)
+            try? rep.representation(using: .png, properties: [:])?.write(to: url)
         }
     }
 
