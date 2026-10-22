@@ -104,6 +104,92 @@ enum SelfTest {
 
         try await MainActor.run { try storeBuildTests(dir, demo: data) }
         print("store build tests ok")
+
+        try await mediaAccessTests(dir, source: landscape)
+        print("media access tests ok")
+    }
+
+    /// Media under the sandbox: an import gets a bookmark, which follows a renamed file and is made again;
+    /// a project copied with its media finds them next to it; media that can't be read is left out of
+    /// export and found again in a picked folder or as a picked file; an old project gets bookmarks.
+    @MainActor
+    private static func mediaAccessTests(_ dir: URL, source: URL) async throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Medieadgang: \(message)") } }
+        func same(_ a: URL, _ b: URL) -> Bool { a.standardizedFileURL.path == b.standardizedFileURL.path }
+        let fm = FileManager.default
+        let root = dir.appendingPathComponent("access")
+        try? fm.removeItem(at: root)
+        let folder = root.appendingPathComponent("Projekt")
+        try fm.createDirectory(at: folder.appendingPathComponent("medier"), withIntermediateDirectories: true)
+        let recording = folder.appendingPathComponent("medier/optagelse.mov")
+        try fm.copyItem(at: source, to: recording)
+
+        guard let item = await MediaLoader.load(recording), item.bookmark != nil else { throw err("Medieadgang: bogmærke ved import") }
+        let editor = Editor(persist: false)
+        editor.edit {
+            $0.media = [item]
+            $0.clips = [Clip(kind: .video, track: 0, start: 0, duration: 2, mediaID: item.id)]
+        }
+        let projectURL = folder.appendingPathComponent("film.edwell")
+        try check(editor.write(to: projectURL), "gem")
+        let saved = try JSONDecoder().decode(Project.self, from: Data(contentsOf: projectURL))
+        try check(saved.media.first?.relativePath == "medier/optagelse.mov", "relativ sti \(saved.media.first?.relativePath ?? "ingen")")
+
+        // Renamed: the bookmark follows the file and is made again, so it isn't stale next time.
+        let renamed = folder.appendingPathComponent("medier/omdoebt.mov")
+        try fm.moveItem(at: recording, to: renamed)
+        editor.open(projectURL)
+        try check(same(editor.project.media[0].url, renamed) && editor.unreadableMedia.isEmpty, "omdøbt fil \(editor.project.media[0].url.path)")
+        guard let bookmark = editor.project.media[0].bookmark, let again = MediaAccess.resolve(bookmark) else { throw err("Medieadgang: nyt bogmærke") }
+        if again.scoped { again.url.stopAccessingSecurityScopedResource() }
+        try check(!again.stale, "bogmærket er stadig forældet")
+        try check(editor.write(to: projectURL), "gem igen")
+
+        // Copied with its media to another drive (new files, so the bookmark can't follow): found next to the project.
+        let copy = root.appendingPathComponent("Kopi")
+        try fm.copyItem(at: folder, to: copy)
+        try fm.removeItem(at: folder)
+        editor.open(copy.appendingPathComponent("film.edwell"))
+        let copied = copy.appendingPathComponent("medier/omdoebt.mov")
+        try check(same(editor.project.media[0].url, copied) && editor.unreadableMedia.isEmpty, "flyttet med projektet")
+
+        // A file that exists but can't be read, as in the sandbox: left out of export instead of failing it.
+        try fm.setAttributes([.posixPermissions: 0], ofItemAtPath: copied.path)
+        try check(editor.unreadableMedia.count == 1, "ulæselig fil ikke opdaget")
+        let without = root.appendingPathComponent("uden-medier.mp4")
+        try await Exporter.export(editor.project, to: without, codec: .h264) { _ in }
+        // Only the one second of black filler is left; the two second clip would have made it longer.
+        let length = try await AVURLAsset(url: without).load(.duration).seconds
+        try check(length < 1.5, "ulæselig fil kom med i eksporten (\(length) s)")
+        try fm.setAttributes([.posixPermissions: 0o644], ofItemAtPath: copied.path)
+
+        // Gone from where the project expects it: found by name in a picked folder, as one undo step.
+        let elsewhere = root.appendingPathComponent("Andet/dybt/omdoebt.mov")
+        try fm.createDirectory(at: elsewhere.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: copied, to: elsewhere)
+        try fm.removeItem(at: copied)
+        editor.open(copy.appendingPathComponent("film.edwell"))
+        try check(editor.unreadableMedia.count == 1, "manglende fil ikke opdaget")
+        editor.relink(editor.unreadableMedia, in: root.appendingPathComponent("Andet"))
+        try check(same(editor.project.media[0].url, elsewhere) && editor.unreadableMedia.isEmpty && editor.isDirty
+                  && editor.errorMessage == nil, "fundet i mappe")
+
+        // A single file picked under another name.
+        let other = root.appendingPathComponent("andet navn.mov")
+        try fm.copyItem(at: elsewhere, to: other)
+        try fm.removeItem(at: elsewhere)
+        editor.open(copy.appendingPathComponent("film.edwell"))
+        editor.relink(editor.unreadableMedia, in: other)
+        try check(same(editor.project.media[0].url, other) && editor.unreadableMedia.isEmpty, "fundet som fil")
+
+        // An old project without bookmarks opens and gets them.
+        var old = Project()
+        old.media = [MediaItem(url: other, kind: .video, duration: item.duration, width: item.width, height: item.height, hasAudio: item.hasAudio)]
+        let oldURL = root.appendingPathComponent("gammelt.eddie")
+        try JSONEncoder().encode(old).write(to: oldURL)
+        try check(!String(decoding: try Data(contentsOf: oldURL), as: UTF8.self).contains("bookmark"), "gammel fil har bogmærke")
+        editor.open(oldURL)
+        try check(editor.project.media[0].bookmark != nil && editor.unreadableMedia.isEmpty, "gammelt projekt")
     }
 
     /// The Mac App Store build declares what the code expects: the bundle id and copyright, the project type
