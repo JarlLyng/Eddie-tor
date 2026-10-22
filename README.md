@@ -5,7 +5,6 @@ En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. Den
 ## Funktioner
 
 - **Ny Ambient Session** (⇧⌘N, eller knappen i Medier): vælg optagelsen, og Eddie sætter den op som i Rush: hele optagelsen på V1 med 0,5 s dyk til sort og lydfade i begge ender, og titlen "Ambient / Session NNN" fra 11,2 til 50,8 s, venstrestillet i Outfit ExtraBold 177 px, i sessionens egen farve. Sæt så afspilningshovedet, hvor sessionen begynder, og tryk **Q**; hvor den slutter, og tryk **W**. Titlen bliver stående ved 11,2 s
-
 - **Import** af video, lyd og billeder (knappen **+**, ⌘I eller træk filer ind i Medier)
 - **Magnetisk hovedspor** som i Rush: klip på V1 ligger altid i forlængelse af hinanden, så sletning og trim lukker hullet. Træk et klip for at flytte det til en ny plads
 - **Flere spor**: 3 videospor, 2 tekstspor og 2 lydspor, og du kan tilføje flere. Hvert spor kan skjules, have lyden slået fra og låses
@@ -48,7 +47,6 @@ En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. Den
 ## Endnu ikke med
 
 Se også [docs/rush-reference.md](docs/rush-reference.md): alt, hvad Rush kunne, hvordan det blev brugt til Ambient Sessions, og hvad Eddie mangler.
-
 
 Farvefiltre, hastighed for kun en del af et klip (ramp), animerede tekstskabeloner, pan & zoom, auto reframe, auto-ducking, støjreduktion og optagelse af voiceover.
 
