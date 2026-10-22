@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Edwell Project" : {
+      "comment" : "The kind of an .edwell file in Finder (CFBundleTypeName and UTTypeDescription).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edwell-projekt"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -107,39 +107,39 @@ struct EddieCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("Nyt projekt") { editor.newProject() }.keyboardShortcut("n")
-            Button("Ny Ambient Session…") { editor.newAmbientSession() }.keyboardShortcut("n", modifiers: [.command, .shift])
-            Button("Åbn…") { editor.open() }.keyboardShortcut("o")
+            Button("New Project") { editor.newProject() }.keyboardShortcut("n")
+            Button("New Ambient Session…") { editor.newAmbientSession() }.keyboardShortcut("n", modifiers: [.command, .shift])
+            Button("Open…") { editor.open() }.keyboardShortcut("o")
         }
         CommandGroup(replacing: .saveItem) {
-            Button("Gem") { editor.save() }.keyboardShortcut("s")
-            Button("Gem som…") { editor.saveAs() }.keyboardShortcut("s", modifiers: [.command, .shift])
+            Button("Save") { editor.save() }.keyboardShortcut("s")
+            Button("Save As…") { editor.saveAs() }.keyboardShortcut("s", modifiers: [.command, .shift])
             Divider()
-            Button("Importer medier…") { editor.showImportPanel() }.keyboardShortcut("i")
-            Button("Eksporter video…") { editor.showExport = true }.keyboardShortcut("e")
+            Button("Import Media…") { editor.showImportPanel() }.keyboardShortcut("i")
+            Button("Export Video…") { editor.showExport = true }.keyboardShortcut("e")
         }
         CommandGroup(replacing: .undoRedo) {
-            Button("Fortryd") { editor.undo() }.keyboardShortcut("z").disabled(!editor.canUndo)
-            Button("Annuller fortryd") { editor.redo() }.keyboardShortcut("z", modifiers: [.command, .shift]).disabled(!editor.canRedo)
+            Button("Undo") { editor.undo() }.keyboardShortcut("z").disabled(!editor.canUndo)
+            Button("Redo") { editor.redo() }.keyboardShortcut("z", modifiers: [.command, .shift]).disabled(!editor.canRedo)
         }
         // Single-key shortcuts (S, D, G …) are handled by the editor's key monitor so they never
         // interfere with typing; the menus only show them as hints.
-        CommandMenu("Klip") {
-            Button("Afspil / pause  (mellemrum)") { editor.togglePlay() }
+        CommandMenu("Clip") {
+            Button("Play / Pause  (Space)") { editor.togglePlay() }
             Divider()
-            Button("Del ved afspilningshoved  (S)") { editor.splitAtPlayhead() }
-            Button("Trim start til afspilningshoved  (Q)") { editor.trimToPlayhead(start: true) }
-            Button("Trim slut til afspilningshoved  (W)") { editor.trimToPlayhead(start: false) }
-            Button("Dupliker  (D)") { editor.duplicateSelection() }
-            Button("Adskil lyd  (E)") { editor.separateAudio() }
-            Button("Slet  (⌫)") { editor.deleteSelection() }
+            Button("Split at Playhead  (S)") { editor.splitAtPlayhead() }
+            Button("Trim Start to Playhead  (Q)") { editor.trimToPlayhead(start: true) }
+            Button("Trim End to Playhead  (W)") { editor.trimToPlayhead(start: false) }
+            Button("Duplicate  (D)") { editor.duplicateSelection() }
+            Button("Separate Audio  (E)") { editor.separateAudio() }
+            Button("Delete  (⌫)") { editor.deleteSelection() }
             Divider()
-            Button("Tilføj tekst  (G)") { editor.addTitle() }
-            Button("Tilføj overgang") { editor.applyDefaultTransition() }.keyboardShortcut("d")
+            Button("Add Title  (G)") { editor.addTitle() }
+            Button("Add Transition") { editor.applyDefaultTransition() }.keyboardShortcut("d")
             Divider()
-            Button("Sæt indpunkt  (I)") { editor.markIn() }
-            Button("Sæt udpunkt  (O)") { editor.markOut() }
-            Button("Ryd ind og ud  (⌥X)") { editor.clearInOut(in: true, out: true) }
+            Button("Set In Point  (I)") { editor.markIn() }
+            Button("Set Out Point  (O)") { editor.markOut() }
+            Button("Clear In and Out  (⌥X)") { editor.clearInOut(in: true, out: true) }
         }
         CommandGroup(before: .toolbar) {
             ForEach(InspectorTab.allCases) { tab in
@@ -148,13 +148,13 @@ struct EddieCommands: Commands {
             }
             Divider()
             Toggle("Snap", isOn: Binding(get: { editor.snapping }, set: { editor.snapping = $0 })).keyboardShortcut("y")
-            Toggle("Gentag afspilning", isOn: Binding(get: { editor.loopPlayback }, set: { editor.loopPlayback = $0 })).keyboardShortcut("l")
-            Toggle("Stort preview  (`)", isOn: Binding(get: { editor.monitorMaximized }, set: { editor.monitorMaximized = $0 }))
-            Toggle("Vis medier  (Y)", isOn: Binding(get: { editor.showMedia }, set: { editor.showMedia = $0 }))
+            Toggle("Loop Playback", isOn: Binding(get: { editor.loopPlayback }, set: { editor.loopPlayback = $0 })).keyboardShortcut("l")
+            Toggle("Large Preview  (`)", isOn: Binding(get: { editor.monitorMaximized }, set: { editor.monitorMaximized = $0 }))
+            Toggle("Show Media  (Y)", isOn: Binding(get: { editor.showMedia }, set: { editor.showMedia = $0 }))
             Divider()
-            Button("Zoom ind  (=)") { editor.pps = min(editor.pps * 1.4, 600) }
-            Button("Zoom ud  (−)") { editor.pps = max(editor.pps / 1.4, 4) }
-            Button("Vis hele tidslinjen  (\\)") { editor.zoomToFitRequest += 1 }
+            Button("Zoom In  (=)") { editor.pps = min(editor.pps * 1.4, 600) }
+            Button("Zoom Out  (−)") { editor.pps = max(editor.pps / 1.4, 4) }
+            Button("Zoom to Fit  (\\)") { editor.zoomToFitRequest += 1 }
             Divider()
         }
     }

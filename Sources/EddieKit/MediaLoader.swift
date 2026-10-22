@@ -39,7 +39,7 @@ enum MediaLoader {
                 return MediaItem(url: url, kind: .audio, duration: duration, width: 0, height: 0, hasAudio: true)
             }
         } catch {
-            NSLog("Eddie: kunne ikke læse \(url.lastPathComponent): \(error)")
+            NSLog("Edwell: couldn't read \(url.lastPathComponent): \(error)")
         }
         return nil
     }

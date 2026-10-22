@@ -95,7 +95,7 @@ final class EddieCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
     private func render(_ request: AVAsynchronousVideoCompositionRequest) {
         guard let instruction = request.videoCompositionInstruction as? EddieInstruction,
               let output = request.renderContext.newPixelBuffer() else {
-            request.finish(with: NSError(domain: "Eddie", code: 1, userInfo: [NSLocalizedDescriptionKey: "Kunne ikke rendere billede"]))
+            request.finish(with: NSError(domain: "Eddie", code: 1, userInfo: [NSLocalizedDescriptionKey: String(localized: "Couldn't render the frame")]))
             return
         }
         let size = request.renderContext.size

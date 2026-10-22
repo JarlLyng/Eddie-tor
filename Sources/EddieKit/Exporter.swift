@@ -2,16 +2,18 @@ import AVFoundation
 
 enum Exporter {
     enum Codec: String, CaseIterable, Identifiable {
-        case h264 = "H.264 (passer overalt)"
-        case hevc = "HEVC (mindre fil)"
+        case h264, hevc
         var id: String { rawValue }
+        var label: String {
+            self == .h264 ? String(localized: "H.264 (plays everywhere)") : String(localized: "HEVC (smaller file)")
+        }
         var preset: String { self == .h264 ? AVAssetExportPresetHighestQuality : AVAssetExportPresetHEVCHighestQuality }
     }
 
     static func export(_ project: Project, to url: URL, codec: Codec, range: ClosedRange<Double>? = nil, progress: @escaping @Sendable (Double) -> Void) async throws {
         let result = try await CompositionBuilder.build(project)
         guard let session = AVAssetExportSession(asset: result.composition, presetName: codec.preset) else {
-            throw NSError(domain: "Eddie", code: 2, userInfo: [NSLocalizedDescriptionKey: "Eksport understøttes ikke på denne Mac"])
+            throw NSError(domain: "Eddie", code: 2, userInfo: [NSLocalizedDescriptionKey: String(localized: "Export isn't supported on this Mac")])
         }
         session.videoComposition = result.videoComposition
         session.audioMix = result.audioMix
