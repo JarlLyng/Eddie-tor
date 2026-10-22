@@ -11,7 +11,7 @@ struct BuildResult: @unchecked Sendable {
 
 enum BuildError: LocalizedError {
     case trackCreation
-    var errorDescription: String? { "Kunne ikke bygge tidslinjen" }
+    var errorDescription: String? { String(localized: "Couldn't build the timeline") }
 }
 
 /// Turns a `Project` into something AVFoundation can play and export.

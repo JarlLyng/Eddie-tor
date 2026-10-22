@@ -82,7 +82,7 @@ enum TextAlign: String, Codable, CaseIterable, Identifiable, Sendable {
 }
 
 struct TitleStyle: Codable, Hashable, Sendable {
-    var text = "Din tekst"
+    var text = String(localized: "Your text")
     var fontFamily = "Helvetica Neue"
     /// 100 (thin) to 900 (black). Variable fonts get exactly this weight; others the nearest one they have.
     var weight: Double = 700
@@ -100,7 +100,7 @@ struct TitleStyle: Codable, Hashable, Sendable {
     var x: Double = 0.5
     var y: Double = 0.8
 
-    init(text: String = "Din tekst", fontFamily: String = "Helvetica Neue", weight: Double = 700, size: Double = 90,
+    init(text: String = String(localized: "Your text"), fontFamily: String = "Helvetica Neue", weight: Double = 700, size: Double = 90,
          color: RGBA = .white, shadow: Bool = true, background: Bool = false,
          backgroundColor: RGBA = RGBA(r: 0, g: 0, b: 0, a: 0.6), align: TextAlign = .center, lineHeight: Double = 1,
          x: Double = 0.5, y: Double = 0.8) {
@@ -217,13 +217,13 @@ enum TransitionKind: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var label: String {
         switch self {
-        case .crossDissolve: "Krydsfade"
-        case .dipToBlack: "Dyk til sort"
-        case .dipToWhite: "Dyk til hvid"
-        case .pushLeft: "Skub til venstre"
-        case .pushRight: "Skub til højre"
-        case .pushUp: "Skub op"
-        case .pushDown: "Skub ned"
+        case .crossDissolve: String(localized: "Cross Dissolve")
+        case .dipToBlack: String(localized: "Dip to Black")
+        case .dipToWhite: String(localized: "Dip to White")
+        case .pushLeft: String(localized: "Push Left")
+        case .pushRight: String(localized: "Push Right")
+        case .pushUp: String(localized: "Push Up")
+        case .pushDown: String(localized: "Push Down")
         }
     }
 

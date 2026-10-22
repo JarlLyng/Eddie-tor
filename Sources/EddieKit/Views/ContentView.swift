@@ -27,24 +27,24 @@ struct ContentView: View {
         .navigationTitle(editor.windowTitle)
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                Button { editor.showImportPanel() } label: { Label("Importer", systemImage: "plus") }
-                    .help("Importer video, lyd eller billeder (⌘I)")
+                Button { editor.showImportPanel() } label: { Label("Import", systemImage: "plus") }
+                    .help("Import video, audio or images (⌘I)")
             }
             ToolbarItem(placement: .principal) {
                 Picker("Format", selection: editor.projectBinding(\.aspect)) {
                     ForEach(AspectRatio.allCases) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)
-                .help("Billedformat")
+                .help("Aspect ratio")
             }
             ToolbarItem(placement: .primaryAction) {
-                Button { editor.showExport = true } label: { Label("Eksporter", systemImage: "square.and.arrow.up") }
-                    .help("Eksporter til MP4 (⌘E)")
+                Button { editor.showExport = true } label: { Label("Export", systemImage: "square.and.arrow.up") }
+                    .help("Export to MP4 (⌘E)")
                     .disabled(editor.project.clips.isEmpty)
             }
         }
         .sheet(isPresented: $editor.showExport) { ExportSheet() }
-        .alert("Hov", isPresented: Binding(get: { editor.errorMessage != nil }, set: { if !$0 { editor.errorMessage = nil } })) {
+        .alert("Oops", isPresented: Binding(get: { editor.errorMessage != nil }, set: { if !$0 { editor.errorMessage = nil } })) {
             Button("OK") { editor.errorMessage = nil }
         } message: {
             Text(editor.errorMessage ?? "")
