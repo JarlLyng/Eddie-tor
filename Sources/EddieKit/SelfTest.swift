@@ -110,6 +110,52 @@ enum SelfTest {
 
         try localizationTests()
         print("localization tests ok")
+
+        try await MainActor.run { try purchaseTests() }
+        print("purchase tests ok")
+    }
+
+    /// The trial and the purchase without the App Store (the StoreKit cases are in App/StoreTests): when
+    /// export opens and closes, that a build signed on this Mac is unlocked, that Edwell.storekit matches
+    /// the product ids, and that the screen that starts the trial says what guideline 3.1.1 asks for.
+    @MainActor
+    private static func purchaseTests() throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Køb: \(message)") } }
+        let now = Date()
+        let day: TimeInterval = 86_400
+        func access(_ unlocked: Bool, startedDaysAgo: Double?) -> Access {
+            Access.compute(unlocked: unlocked, trialStart: startedDaysAgo.map { now.addingTimeInterval(-$0 * day) }, now: now)
+        }
+        try check(access(false, startedDaysAgo: nil) == .notStarted && !Access.notStarted.canExport, "ikke startet")
+        try check(access(false, startedDaysAgo: 0) == .trial(daysLeft: 14), "første dag \(access(false, startedDaysAgo: 0))")
+        try check(access(false, startedDaysAgo: 0.5) == .trial(daysLeft: 14), "første døgn")
+        try check(access(false, startedDaysAgo: 13.5) == .trial(daysLeft: 1), "sidste dag")
+        try check(access(false, startedDaysAgo: 14.01) == .trialEnded && !Access.trialEnded.canExport, "udløbet")
+        try check(access(true, startedDaysAgo: 30) == .unlocked && access(true, startedDaysAgo: nil) == .unlocked, "købt")
+        try check(Access.trial(daysLeft: 3).canExport && Access.unlocked.canExport, "eksport i prøveperioden")
+
+        // `swift build` and ./build.sh sign on this Mac, so those builds are unlocked without StoreKit.
+        try check(Store.isLocalBuild && Store(localBuild: true).access == .unlocked, "lokalt build")
+
+        // Before the trial starts: its length, that export stops, and the price, all on the screen.
+        let start = (PurchaseCopy.title(.notStarted) + " " + PurchaseCopy.paragraphs(.notStarted, price: "$9.99").joined(separator: " "))
+        let danish = Bundle.main.preferredLocalizations.first == "da"
+        let expected = danish ? ["14 dage", "$9.99", "eksport"] : ["14 days", "$9.99", "export"]
+        try check(expected.allSatisfy { start.localizedCaseInsensitiveContains($0) }, "3.1.1: \(start)")
+        try check(!PurchaseCopy.paragraphs(.trialEnded, price: "$9.99").joined().localizedCaseInsensitiveContains("free"), "aldrig gratis")
+
+        guard Bundle.main.bundleURL.pathExtension != "app" else { return }
+        let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let config = try JSONSerialization.jsonObject(with: Data(contentsOf: repo.appendingPathComponent("App/Edwell.storekit"))) as? [String: Any]
+        let products = config?["products"] as? [[String: Any]] ?? []
+        func product(_ id: String) -> [String: Any]? { products.first { $0["productID"] as? String == id } }
+        let trial = product(Store.trialID), unlock = product(Store.unlockID)
+        try check(products.count == 2 && trial?["type"] as? String == "NonConsumable" && unlock?["type"] as? String == "NonConsumable",
+                  "produkter i Edwell.storekit")
+        try check(trial?["displayPrice"] as? String == "0.00" && unlock?["displayPrice"] as? String == "9.99", "priser")
+        // App Review wants the $0 trial named "XX-day Trial", as reference name and display name.
+        let trialName = ((trial?["localizations"] as? [[String: Any]])?.first?["displayName"] as? String)
+        try check(trial?["referenceName"] as? String == "14-day Trial" && trialName == "14-day Trial", "navnet på prøveperioden")
     }
 
     /// English is the development language and Danish a full localization: every string in the catalog

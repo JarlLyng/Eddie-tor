@@ -11,15 +11,30 @@
 		48A2D36AEBB0D9FC3CCFE000 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102CECAD4FB6C9647D12AA43 /* main.swift */; };
 		7806286151E738DE27C67514 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 71C3631B33797314A6388B7B /* InfoPlist.xcstrings */; };
 		9A1F42D710BA4C512A5F9CDA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 795A1ECDF7A40C0C7B83EB97 /* Assets.xcassets */; };
+		E254D33A0481741B8E38FCCB /* StoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCF3ADEE459DEF7BA6EF507 /* StoreTests.swift */; };
 		EDC44AD85C348D4A05030434 /* EddieKit in Frameworks */ = {isa = PBXBuildFile; productRef = 503E2ECDC8E09E06AA98F6FF /* EddieKit */; };
+		F7A6513709943A536B83BDBC /* Edwell.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2CFE524E49CF2FCA171E72C6 /* Edwell.storekit */; };
 		F9CD18BF17BBEA472B8684F8 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = 7E9BD1EEE5655DFB91B88D2C /* Fonts */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B12107E8B4D9BF25C41D9B92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CAF500EBB3B5C31A8CF81B52 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D553EE3421BA80ADF004493;
+			remoteInfo = Edwell;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		102CECAD4FB6C9647D12AA43 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		1F04DDD8434A0DB4FBD6B2DD /* Edwell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Edwell.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CFE524E49CF2FCA171E72C6 /* Edwell.storekit */ = {isa = PBXFileReference; path = Edwell.storekit; sourceTree = "<group>"; };
+		5BCF3ADEE459DEF7BA6EF507 /* StoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTests.swift; sourceTree = "<group>"; };
 		6DEF0B32612A8C3048AE0E2F /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		71C3631B33797314A6388B7B /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		75C47270DEF25C8EC469054B /* EdwellStoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EdwellStoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		795A1ECDF7A40C0C7B83EB97 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7E9BD1EEE5655DFB91B88D2C /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = ../Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		A6FCEC50F3ABE4A87DB534CA /* affectionate-gauss-e23e4c */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "affectionate-gauss-e23e4c"; path = ..; sourceTree = SOURCE_ROOT; };
@@ -51,9 +66,11 @@
 		64EE6BA1358F19E17CEDA4F0 = {
 			isa = PBXGroup;
 			children = (
+				2CFE524E49CF2FCA171E72C6 /* Edwell.storekit */,
 				1201BE03B787931126AE118F /* affectionate-gauss-e23e4c */,
 				D7645D62D05E5324BCE2FAAB /* Edwell */,
 				E2A202927919701CC90CDCEF /* Packages */,
+				D2DE44D62284BB1575FC13CF /* StoreTests */,
 				6B1D8E29319C5E41B3C124F4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -62,6 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				1F04DDD8434A0DB4FBD6B2DD /* Edwell.app */,
+				75C47270DEF25C8EC469054B /* EdwellStoreTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -72,6 +90,14 @@
 				7E9BD1EEE5655DFB91B88D2C /* Fonts */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		D2DE44D62284BB1575FC13CF /* StoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				5BCF3ADEE459DEF7BA6EF507 /* StoreTests.swift */,
+			);
+			path = StoreTests;
 			sourceTree = "<group>";
 		};
 		D7645D62D05E5324BCE2FAAB /* Edwell */ = {
@@ -118,6 +144,25 @@
 			productReference = 1F04DDD8434A0DB4FBD6B2DD /* Edwell.app */;
 			productType = "com.apple.product-type.application";
 		};
+		5F5C8153423EFB4AB0A5567F /* EdwellStoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 707BCAECAE60CCBACDF263E5 /* Build configuration list for PBXNativeTarget "EdwellStoreTests" */;
+			buildPhases = (
+				21E7D7446994EDA89CA8C2DF /* Sources */,
+				1E4338610F75CDE0879C228A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				216A21315578567913C0E274 /* PBXTargetDependency */,
+			);
+			name = EdwellStoreTests;
+			packageProductDependencies = (
+			);
+			productName = EdwellStoreTests;
+			productReference = 75C47270DEF25C8EC469054B /* EdwellStoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -152,11 +197,20 @@
 			projectRoot = "";
 			targets = (
 				4D553EE3421BA80ADF004493 /* Edwell */,
+				5F5C8153423EFB4AB0A5567F /* EdwellStoreTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1E4338610F75CDE0879C228A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F7A6513709943A536B83BDBC /* Edwell.storekit in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C71B5CFF22034B7B2BE00CE8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -171,6 +225,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		21E7D7446994EDA89CA8C2DF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E254D33A0481741B8E38FCCB /* StoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		890CC6869D6A3CD5CFFF7CC3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -180,6 +242,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		216A21315578567913C0E274 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D553EE3421BA80ADF004493 /* Edwell */;
+			targetProxy = B12107E8B4D9BF25C41D9B92 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		00EAAB3AE196711684CB6D9E /* Release */ = {
@@ -328,6 +398,24 @@
 			};
 			name = Debug;
 		};
+		4A4DFDC517CC0CD5968A4251 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.iamjarl.edwell.storetests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Edwell.app/Contents/MacOS/Edwell";
+			};
+			name = Debug;
+		};
 		A68A3BA4B290765D9CC0E910 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -355,9 +443,36 @@
 			};
 			name = Debug;
 		};
+		AC9E242E69B7A78240864E3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.iamjarl.edwell.storetests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Edwell.app/Contents/MacOS/Edwell";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		707BCAECAE60CCBACDF263E5 /* Build configuration list for PBXNativeTarget "EdwellStoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A4DFDC517CC0CD5968A4251 /* Debug */,
+				AC9E242E69B7A78240864E3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		8669BECBE4F8600E4800CD30 /* Build configuration list for PBXNativeTarget "Edwell" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

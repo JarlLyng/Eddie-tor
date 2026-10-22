@@ -1,8 +1,23 @@
 import IAMJARLDesignTokens
 import SwiftUI
 
+/// Export, or the trial and the purchase when export isn't open yet. Once the trial starts or the
+/// purchase goes through, the same sheet turns into the export settings.
 struct ExportSheet: View {
+    @Environment(Store.self) private var store
+
+    var body: some View {
+        if store.access.canExport {
+            ExportSettings()
+        } else {
+            PurchaseView()
+        }
+    }
+}
+
+private struct ExportSettings: View {
     @Environment(Editor.self) private var editor
+    @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
     @ViewState private var codec = Exporter.Codec.h264
     @ViewState private var state = ExportState.idle
@@ -49,6 +64,10 @@ struct ExportSheet: View {
                 Label("Done: \(url.lastPathComponent)", systemImage: "checkmark.circle.fill").foregroundStyle(Tokens.Palette.State.success)
             case .failed(let message):
                 Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(Tokens.Palette.State.error)
+            }
+
+            if case .trial(let days) = store.access {
+                Text("\(days) days left of your trial").ijFont(.sm).foregroundStyle(Tokens.Palette.Text.secondary)
             }
 
             HStack {

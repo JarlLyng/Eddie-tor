@@ -75,6 +75,22 @@ targets:
         ENABLE_USER_SCRIPT_SANDBOXING: YES
         DEAD_CODE_STRIPPING: YES
 
+  # The trial and the purchase against Edwell.storekit (StoreKitTest needs a test hosted in the app).
+  EdwellStoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: StoreTests
+      - path: Edwell.storekit
+        buildPhase: resources
+    dependencies:
+      - target: Edwell
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.iamjarl.edwell.storetests
+        SWIFT_VERSION: "5.0"
+
 schemes:
   Edwell:
     build:
@@ -82,5 +98,10 @@ schemes:
         Edwell: all
     run:
       config: Debug
+      # Purchases in an Xcode run go to this local configuration instead of the App Store.
+      storeKitConfiguration: Edwell.storekit
+    test:
+      targets:
+        - EdwellStoreTests
     archive:
       config: Release
