@@ -79,7 +79,10 @@ final class Editor {
     @ObservationIgnored private var keyMonitor: Any?
     @ObservationIgnored private var interacting = false
 
-    static let projectType = UTType(exportedAs: "dk.eddie-tor.project", conformingTo: .json)
+    /// Declared in App/Edwell/Info.plist with the extensions below; `.eddie` is what projects were saved as
+    /// before the app became Edwell, so those files open as the same type.
+    static let projectType = UTType(exportedAs: "com.iamjarl.edwell.project", conformingTo: .json)
+    static let projectExtensions = ["edwell", "eddie"]
     static let defaultTransition = Transition(kind: .crossDissolve, duration: 0.5)
 
     /// `persist: false` skips the autosave file (used by the self test).
@@ -579,7 +582,7 @@ final class Editor {
             cache.prepare(new)
             if thenAddToTimeline { added.forEach { add($0) } }
             if added.count < urls.count {
-                errorMessage = "Nogle filer kunne ikke åbnes. Eddie kan bruge video, lyd og billeder."
+                errorMessage = "Nogle filer kunne ikke åbnes. Edwell kan bruge video, lyd og billeder."
             }
         }
     }
@@ -710,9 +713,8 @@ final class Editor {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.movie]
         panel.message = "Vælg optagelsen af sessionen"
-        if FileManager.default.fileExists(atPath: AmbientSession.recordingsFolder.path) {
-            panel.directoryURL = AmbientSession.recordingsFolder
-        }
+        // The sandbox hides the folder from fileExists; the panel itself falls back when it isn't there.
+        panel.directoryURL = AmbientSession.recordingsFolder
         guard panel.runModal() == .OK, let url = panel.url else { return }
         Task {
             guard let recording = await MediaLoader.load(url), recording.kind == .video else {
@@ -759,9 +761,15 @@ final class Editor {
     func saveAs() -> Bool {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [Self.projectType]
-        panel.nameFieldStringValue = fileURL?.lastPathComponent ?? "\(suggestedName ?? "Mit projekt").eddie"
+        panel.nameFieldStringValue = suggestedFileName
         guard panel.runModal() == .OK, let url = panel.url else { return false }
         return write(to: url)
+    }
+
+    /// What Save As suggests: always `.edwell`, also for a project opened from an old `.eddie` file.
+    var suggestedFileName: String {
+        let name = fileURL?.deletingPathExtension().lastPathComponent ?? suggestedName ?? "Mit projekt"
+        return "\(name).\(Self.projectExtensions[0])"
     }
 
     private func write(to url: URL) -> Bool {

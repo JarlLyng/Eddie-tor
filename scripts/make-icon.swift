@@ -1,4 +1,4 @@
-// Draws Resources/AppIcon.icns. Run: swift scripts/make-icon.swift
+// Draws the app icon into App/Edwell/Assets.xcassets. Run from the repository: swift scripts/make-icon.swift
 // Lime on black like the other IAMJARL Mac apps. The colours are the design system's dark tokens:
 // primary #D0FF00, background.app #000000 and border.subtle rgba(255, 255, 255, 0.12).
 import AppKit
@@ -42,12 +42,16 @@ func draw(_ size: CGFloat) -> NSBitmapImageRep {
     return rep
 }
 
-let iconset = URL(fileURLWithPath: "Resources/AppIcon.iconset")
+let iconset = URL(fileURLWithPath: "App/Edwell/Assets.xcassets/AppIcon.appiconset")
 try? FileManager.default.removeItem(at: iconset)
 try! FileManager.default.createDirectory(at: iconset, withIntermediateDirectories: true)
+var images: [String] = []
 for base in [16, 32, 128, 256, 512] {
     for scale in [1, 2] {
         let name = scale == 1 ? "icon_\(base)x\(base).png" : "icon_\(base)x\(base)@2x.png"
         try! draw(CGFloat(base * scale)).representation(using: .png, properties: [:])!.write(to: iconset.appendingPathComponent(name))
+        images.append(#"    { "filename" : "\#(name)", "idiom" : "mac", "scale" : "\#(scale)x", "size" : "\#(base)x\#(base)" }"#)
     }
 }
+let contents = "{\n  \"images\" : [\n" + images.joined(separator: ",\n") + "\n  ],\n  \"info\" : { \"author\" : \"xcode\", \"version\" : 1 }\n}\n"
+try! contents.write(to: iconset.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)

@@ -16,7 +16,7 @@ enum AmbientSession {
     static let dip = 0.5
 
     static var recordingsFolder: URL {
-        FileManager.default.homeDirectoryForCurrentUser
+        FileManager.default.userHomeDirectory
             .appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs/Ableton/Music/LIVE Recordings/Twitch streams")
     }
 

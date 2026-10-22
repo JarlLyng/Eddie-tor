@@ -1,0 +1,86 @@
+# The Mac App Store build. Generates Edwell.xcodeproj, which is committed because Xcode Cloud builds it:
+#   cd App && xcodegen generate
+# The app itself is the EddieKit library in the package one folder up; this target only wraps it.
+name: Edwell
+options:
+  bundleIdPrefix: com.iamjarl
+  deploymentTarget:
+    macOS: "15.0"
+  developmentLanguage: da
+  createIntermediateGroups: true
+  xcodeVersion: "27.1"
+
+packages:
+  Eddie:
+    path: ..
+
+targets:
+  Edwell:
+    type: application
+    platform: macOS
+    sources:
+      - path: Edwell
+      - path: ../Resources/Fonts
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - package: Eddie
+        product: EddieKit
+    info:
+      path: Edwell/Info.plist
+      properties:
+        CFBundleDisplayName: Edwell
+        # Must follow the build settings, or TestFlight uploads all claim 1.0 (1).
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSApplicationCategoryType: public.app-category.video
+        LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
+        NSHumanReadableCopyright: "© 2026 IAMJARL"
+        ITSAppUsesNonExemptEncryption: false
+        # The project type and its extensions match Editor.projectType and Editor.projectExtensions.
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.iamjarl.edwell.project
+            UTTypeDescription: Edwell-projekt
+            UTTypeConformsTo:
+              - public.json
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - edwell
+                - eddie
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Edwell-projekt
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Owner
+            LSItemContentTypes:
+              - com.iamjarl.edwell.project
+    # Only what the app uses: files the user picks in an open or save panel or drags in.
+    entitlements:
+      path: Edwell/Edwell.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.files.user-selected.read-write: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.iamjarl.edwell
+        PRODUCT_NAME: Edwell
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        VERSIONING_SYSTEM: apple-generic
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: KDWZ3WNLDK
+        ENABLE_USER_SCRIPT_SANDBOXING: YES
+        DEAD_CODE_STRIPPING: YES
+
+schemes:
+  Edwell:
+    build:
+      targets:
+        Edwell: all
+    run:
+      config: Debug
+    archive:
+      config: Release
