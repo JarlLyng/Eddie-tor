@@ -25,6 +25,8 @@ It opens the project, selects the first image clip, writes the window to `ui.png
 
 ## Gotchas
 
+- **Fonts that ship with the app** live in `Resources/Fonts` (Outfit, OFL-1.1, with its licence) and are registered at launch by `BundledFonts`. Outfit's variable font is called "Outfit Thin" by CoreText; the UI shows it as "Outfit". Weights go through the `wght` axis.
+
 - **`@State` is a macro in the macOS 27 SDK** and its plugin ships only with Xcode. Use `@ViewState` (`typealias ViewState = SwiftUI.State` in `Model.swift`). Other SwiftUI macros (`#Preview`, `@Entry`) will fail the same way.
 - Swift 6 compiler in Swift 5 language mode (`swiftLanguageModes: [.v5]`), so concurrency warnings don't block the build.
 - Project files are JSON. New fields need a default in the hand-written `init(from:)` in `Model.swift`, or older `.eddie` files stop opening (the self test checks a version 1 file).
@@ -43,6 +45,6 @@ The UI follows the IAMJARL design system (`iamjarl-design`, Swift package `IAMJA
 
 ## Open work, roughly in order
 
-1. **The Ambient Session workflow** (`docs/rush-reference.md` has Rush's exact values): left-aligned titles (left edge at 2.1 % of the width); a free bold face to replace Soleil Extra Bold (Adobe Fonts), e.g. Outfit ExtraBold; check an hour-long recording (timeline width at default zoom, export time through the compositor); compare export bitrate with Rush's ~19 Mbit/s. A "new session" shortcut (trim, 0.5 s dips, title 11.2–50.8 s in the next colour) would save the most time.
+1. **The Ambient Session workflow** is in place: `AmbientSession.swift` (File › Ny Ambient Session, ⇧⌘N), checked against Rush's own video by `--session-test` (see README). Left: export bitrate is ~10.5 Mbit/s against Rush's ~19 (Apple's preset; a fixed bitrate needs an AVAssetReader/AVAssetWriter export); scrubbing and playback of an hour-long clip haven't been tried by hand.
 2. Colour looks and adjustments, speed ramps over part of a clip, pan and zoom on stills, animated titles.
 3. Auto volume (−23 LUFS dialogue, −25 LUFS music), auto ducking (−18 dB, 800 ms fades), noise reduction, voice-over recording, Auto Reframe.

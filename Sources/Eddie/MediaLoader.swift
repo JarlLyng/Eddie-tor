@@ -108,6 +108,21 @@ final class MediaCache {
     var thumbnails: [UUID: NSImage] = [:]
     var waveforms: [UUID: [Float]] = [:]
     @ObservationIgnored private var pending = Set<UUID>()
+    @ObservationIgnored private var tiles: [String: NSImage] = [:]
+
+    /// The thumbnail scaled to a timeline row's height, for repeating along a clip.
+    func tile(for id: UUID?, height: CGFloat) -> NSImage? {
+        guard let id, let thumb = thumbnails[id], height > 0 else { return nil }
+        let key = "\(id)-\(Int(height))"
+        if let hit = tiles[key] { return hit }
+        let width = max((height * thumb.size.width / max(thumb.size.height, 1)).rounded(), 20)
+        let tile = NSImage(size: NSSize(width: width, height: height), flipped: false) { rect in
+            thumb.draw(in: rect)
+            return true
+        }
+        tiles[key] = tile
+        return tile
+    }
 
     func prepare(_ items: [MediaItem]) {
         for media in items where !pending.contains(media.id) {

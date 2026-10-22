@@ -131,11 +131,18 @@ final class EddieCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
             guard let source = ImageCache.image(url) else { return nil }
             return place(source, layer: layer, canvas: canvas)
         case .title(let style):
-            guard let text = TitleRenderer.image(style, canvas: canvas) else { return nil }
+            guard let title = TitleRenderer.image(style, canvas: canvas) else { return nil }
+            let size = title.image.extent.size
+            // x is the text's left edge, centre or right edge; the margin around the text doesn't count.
+            let anchor = style.x * canvas.width
+            let x = switch style.align {
+            case .left: anchor - title.margin
+            case .center: anchor - size.width / 2
+            case .right: anchor - size.width + title.margin
+            }
             // CoreImage is y-up; the style's y is measured from the top.
-            let x = style.x * canvas.width - text.extent.width / 2
-            let y = (1 - style.y) * canvas.height - text.extent.height / 2
-            return text.transformed(by: CGAffineTransform(translationX: x.rounded(), y: y.rounded()))
+            let y = (1 - style.y) * canvas.height - size.height / 2
+            return title.image.transformed(by: CGAffineTransform(translationX: x.rounded(), y: y.rounded()))
         }
     }
 
@@ -219,7 +226,8 @@ enum Transitions {
                 if p < 0.5 { return solid.withOpacity(p * 2).composited(over: below) }
                 return solid.withOpacity(2 - p * 2).composited(over: image.composited(over: solid))
             }
-            return tint(image, toward: effect.kind, amount: 1 - p).composited(over: below)
+            // As in Rush: the colour holds for the first half, the picture comes up in the second.
+            return tint(image, toward: effect.kind, amount: p < 0.5 ? 1 : 2 - p * 2).composited(over: below)
         default:
             let v = effect.kind.pushVector ?? .zero
             let e = 1 - smooth(p)
@@ -235,7 +243,8 @@ enum Transitions {
             // When paired, the incoming clip on top does the dissolve.
             return (effect.paired ? image : image.withOpacity(1 - p)).composited(over: below)
         case .dipToBlack, .dipToWhite:
-            return (effect.paired ? image : tint(image, toward: effect.kind, amount: p)).composited(over: below)
+            // The picture goes in the first half, the colour holds for the second.
+            return (effect.paired ? image : tint(image, toward: effect.kind, amount: min(p * 2, 1))).composited(over: below)
         default:
             let v = effect.kind.pushVector ?? .zero
             let e = smooth(p)
@@ -295,32 +304,68 @@ enum ImageCache {
     }
 }
 
-enum TitleRenderer {
-    private static let cache = NSCache<NSString, CIImage>()
+/// A rendered title and the empty room around its text (for the shadow and the box).
+final class RenderedTitle {
+    let image: CIImage
+    let margin: CGFloat
+    init(image: CIImage, margin: CGFloat) { self.image = image; self.margin = margin }
+}
 
-    static func image(_ style: TitleStyle, canvas: CGSize) -> CIImage? {
+enum TitleRenderer {
+    private static let cache = NSCache<NSString, RenderedTitle>()
+
+    static func image(_ style: TitleStyle, canvas: CGSize) -> RenderedTitle? {
         let key = "\(style.hashValue)-\(Int(canvas.width))x\(Int(canvas.height))" as NSString
         if let hit = cache.object(forKey: key) { return hit }
-        guard let image = render(style, canvas: canvas) else { return nil }
-        cache.setObject(image, forKey: key)
-        return image
+        guard let title = render(style, canvas: canvas) else { return nil }
+        cache.setObject(title, forKey: key)
+        return title
     }
 
+    private static let weightAxis = 0x7767_6874 // 'wght'
+
+    /// The family at the style's weight: exactly, along the weight axis of a variable font,
+    /// or the nearest face the family has.
     static func font(_ style: TitleStyle) -> CTFont {
-        var attributes: [CFString: Any] = [kCTFontFamilyNameAttribute: style.fontFamily]
-        if style.bold {
-            attributes[kCTFontTraitsAttribute] = [kCTFontSymbolicTrait: CTFontSymbolicTraits.traitBold.rawValue]
+        let family = CTFontDescriptorCreateWithAttributes([kCTFontFamilyNameAttribute: style.fontFamily] as CFDictionary)
+        let base = CTFontCreateWithFontDescriptor(family, style.size, nil)
+        if let axes = CTFontCopyVariationAxes(base) as? [[CFString: Any]],
+           let axis = axes.first(where: { ($0[kCTFontVariationAxisIdentifierKey] as? NSNumber)?.intValue == weightAxis }) {
+            let low = (axis[kCTFontVariationAxisMinimumValueKey] as? NSNumber)?.doubleValue ?? 100
+            let high = (axis[kCTFontVariationAxisMaximumValueKey] as? NSNumber)?.doubleValue ?? 900
+            let variation = [NSNumber(value: weightAxis): NSNumber(value: min(max(style.weight, low), high))]
+            let descriptor = CTFontDescriptorCreateWithAttributes([kCTFontVariationAttribute: variation] as CFDictionary)
+            return CTFontCreateCopyWithAttributes(base, style.size, nil, descriptor)
         }
-        let descriptor = CTFontDescriptorCreateWithAttributes(attributes as CFDictionary)
+        let descriptor = CTFontDescriptorCreateWithAttributes([
+            kCTFontFamilyNameAttribute: style.fontFamily,
+            kCTFontTraitsAttribute: [kCTFontWeightTrait: coreTextWeight(style.weight)],
+        ] as CFDictionary)
         return CTFontCreateWithFontDescriptor(descriptor, style.size, nil)
     }
 
-    private static func render(_ style: TitleStyle, canvas: CGSize) -> CIImage? {
+    /// CSS-style weights (100–900) on CoreText's −1…1 weight trait.
+    private static func coreTextWeight(_ weight: Double) -> Double {
+        let table: [(Double, Double)] = [(100, -0.8), (200, -0.6), (300, -0.4), (400, 0), (500, 0.23),
+                                         (600, 0.3), (700, 0.4), (800, 0.56), (900, 0.62)]
+        let w = min(max(weight, 100), 900)
+        for (a, b) in zip(table, table.dropFirst()) where w <= b.0 {
+            return a.1 + (b.1 - a.1) * (w - a.0) / (b.0 - a.0)
+        }
+        return 0.62
+    }
+
+    private static func render(_ style: TitleStyle, canvas: CGSize) -> RenderedTitle? {
         let text = style.text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, style.size > 0 else { return nil }
 
         let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .center
+        paragraph.alignment = switch style.align {
+        case .left: .left
+        case .center: .center
+        case .right: .right
+        }
+        if style.lineHeight != 1 { paragraph.lineHeightMultiple = style.lineHeight }
         let attributed = NSAttributedString(string: text, attributes: [
             NSAttributedString.Key(kCTFontAttributeName as String): font(style),
             NSAttributedString.Key(kCTForegroundColorAttributeName as String): style.color.cgColor,
@@ -361,6 +406,6 @@ enum TitleRenderer {
         CTFrameDraw(frame, ctx)
 
         guard let cg = ctx.makeImage() else { return nil }
-        return CIImage(cgImage: cg)
+        return RenderedTitle(image: CIImage(cgImage: cg), margin: margin)
     }
 }

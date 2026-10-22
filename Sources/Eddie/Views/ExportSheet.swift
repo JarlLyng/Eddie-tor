@@ -88,7 +88,7 @@ struct ExportSheet: View {
     private func chooseAndExport() {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.mpeg4Movie]
-        let base = editor.fileURL?.deletingPathExtension().lastPathComponent ?? "Eddie-video"
+        let base = editor.fileURL?.deletingPathExtension().lastPathComponent ?? editor.suggestedName ?? "Eddie-video"
         panel.nameFieldStringValue = "\(base).mp4"
         panel.directoryURL = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask).first
         guard panel.runModal() == .OK, let url = panel.url else { return }

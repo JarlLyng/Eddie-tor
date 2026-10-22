@@ -18,16 +18,16 @@ The exact edit comes from the Rush project for session 011 (read on 2026-10-22, 
 | Step | In Rush (session 011) | Eddie |
 |---|---|---|
 | Trim the recording | One clip on V1, source **212.967 s to 4069.300 s** of the recording: 3 min 33 s cut from the start, 5.8 s from the end. Timeline 0 to 3856.333 s, 30 fps | ✓ trim on the main track |
-| Fade in | **Dip to Black, 0.5 s**, at the head of the clip | ✓ "Dyk til sort" at the start, 0.5 s |
+| Fade in | **Dip to Black, 0.5 s**, at the head of the clip: black for the first 0.25 s, then up over 0.25 s | ✓ "Dyk til sort" at the start, 0.5 s, the same curve (measured frame by frame) |
 | Sound in and out | **Constant Power crossfade, 0.5 s**, at the head and the tail of the audio | ✓ set Lyd › "Fade ind" and "Fade ud" to 0.5 s on the clip. A dip at the very start or end doesn't fade the sound by itself; only a transition between two clips cross-fades it |
-| Title | One graphic on V2 from **11.233 s to 50.767 s** (39.5 s), hard cut in and out. Text "Ambient⏎Session 011" in two lines | ✓ timing. See the title row below |
-| Title face | **Soleil Extra Bold** (PostScript name `SoleilXb`), from Adobe Fonts | **Not on a Mac without Creative Cloud.** Choose a free face (Outfit ExtraBold from the design system is the closest in spirit) |
-| Title size | about **177 px** in a 1080 px frame (177.27 is in the text data; the measured letter height agrees). Lines 166 px apart (tops of the ink at y 334 and 500) | Set size 177 in Eddie |
+| Title | One graphic on V2 from **11.233 s to 50.767 s** (39.5 s), hard cut in and out. Text "Ambient⏎Session 011" in two lines | ✓ "Ny Ambient Session" sets it up |
+| Title face | **Soleil Extra Bold** (PostScript name `SoleilXb`), from Adobe Fonts | Outfit at weight 800, shipped with Eddie. Soleil is used instead if its Extra Bold is installed (it isn't, even on the old Mac: only Soleil Light is activated there) |
+| Title size | about **177 px** in a 1080 px frame (177.27 is in the text data; the measured letter height agrees). Lines 166 px apart (tops of the ink at y 334 and 500) | ✓ 177 px, line height 77 %: the ink lands at y 332 and 500 |
 | Title colour | **#D622CE** in session 011 (measured in the video as #D828D0). A new colour every session, see below | ✓ |
-| Title position | Left-aligned. The text box's left edge at **2.1 % of the width** (41 px; ink starts at x 44), its anchor at 52.5 % of the height: the left middle of the frame. Scale 100 %, no rotation, opacity 100 %. No box, no shadow | **Missing: left alignment.** Eddie centres all text |
-| Fade out | **Dip to Black, 0.5 s**, at the tail | ✓ "Dyk til sort" at the end, 0.5 s |
+| Title position | Left-aligned. The text box's left edge at **2.1 % of the width** (41 px; ink starts at x 44), its anchor at 52.5 % of the height: the left middle of the frame. Scale 100 %, no rotation, opacity 100 %. No box, no shadow | ✓ left-aligned at x 2.13 %, y 46.7 % (the box's centre): ink at x 44, as in Rush |
+| Fade out | **Dip to Black, 0.5 s**, at the tail: down over 0.25 s, then black | ✓ "Dyk til sort" at the end, 0.5 s |
 | Audio | Audio type *music*, volume 0 dB, no auto volume (Loudness off), no tracks muted. Ducking is switched on in the clip's Essential Sound but there is nothing to duck under | ✓ nothing to add |
-| Export | 1080p H.264, about 19 Mbit/s, AAC 317 kbit/s (measured on the finished files) | Partly: Eddie exports 1080p H.264 with Apple's "highest quality" preset, whose bitrate isn't set. Not yet compared |
+| Export | 1080p H.264, about 19 Mbit/s, AAC 317 kbit/s (measured on the finished files) | 1080p H.264 at about **10.5 Mbit/s**, AAC 252 kbit/s (Apple's "highest quality" preset). Lower than Rush; a fixed bitrate needs a writer of Eddie's own |
 
 ### Title colours per session
 
@@ -37,7 +37,7 @@ Each session's project starts as a copy of the one before, so each holds the pre
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | Colour | #F10000 | #2BCB00 | #0019CB | #03A8A1 | #A6A301 | #623435 | #2595A6 | #D41717 | #AAB50E | #0E49B5 | #D622CE |
 
-**Not yet tried in Eddie:** an hour-long recording. The timeline at the default zoom is then about 230,000 points wide, and the export runs every frame through Eddie's compositor. Both need a test with a real session.
+**Tried in Eddie on 2026-10-22** with the recording of session 011 (`--session-test`, Rush's trim): the whole session (1 h 4 min) exports in 10 minutes (6.45× real time) to exactly Rush's length, 3856.33 s, and the dips at both ends, the frame at 30 minutes, the title's timing, position (within 2 px), size and colour match Rush's video frame by frame. The face is Outfit rather than Soleil, so the words run a little narrower (ink to x 943 against 961). The hour-long timeline opens in a few seconds and the app stays under 200 MB; it draws frames and waveform only where the timeline is in view.
 
 ## Still on the old Mac
 

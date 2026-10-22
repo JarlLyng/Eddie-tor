@@ -72,19 +72,77 @@ enum TrackGroup: String, Sendable {
     case title, visual, audio
 }
 
+enum TextAlign: String, Codable, CaseIterable, Identifiable, Sendable {
+    case left, center, right
+    var id: String { rawValue }
+}
+
 struct TitleStyle: Codable, Hashable, Sendable {
     var text = "Din tekst"
     var fontFamily = "Helvetica Neue"
-    var bold = true
+    /// 100 (thin) to 900 (black). Variable fonts get exactly this weight; others the nearest one they have.
+    var weight: Double = 700
     /// Font size in pixels of the rendered frame.
     var size: Double = 90
     var color = RGBA.white
     var shadow = true
     var background = false
     var backgroundColor = RGBA(r: 0, g: 0, b: 0, a: 0.6)
-    /// Centre of the text box, normalised 0...1 from the top-left corner.
+    var align = TextAlign.center
+    /// Multiple of the font's own line height.
+    var lineHeight: Double = 1
+    /// Normalised 0...1 from the top-left corner. Vertically the centre of the text box; horizontally its
+    /// left edge, centre or right edge, following `align`.
     var x: Double = 0.5
     var y: Double = 0.8
+
+    init(text: String = "Din tekst", fontFamily: String = "Helvetica Neue", weight: Double = 700, size: Double = 90,
+         color: RGBA = .white, shadow: Bool = true, background: Bool = false,
+         backgroundColor: RGBA = RGBA(r: 0, g: 0, b: 0, a: 0.6), align: TextAlign = .center, lineHeight: Double = 1,
+         x: Double = 0.5, y: Double = 0.8) {
+        self.text = text; self.fontFamily = fontFamily; self.weight = weight; self.size = size
+        self.color = color; self.shadow = shadow; self.background = background; self.backgroundColor = backgroundColor
+        self.align = align; self.lineHeight = lineHeight; self.x = x; self.y = y
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case text, fontFamily, weight, bold, size, color, shadow, background, backgroundColor, align, lineHeight, x, y
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = TitleStyle()
+        text = try c.value(.text, d.text)
+        fontFamily = try c.value(.fontFamily, d.fontFamily)
+        // Version 1 files had a bold switch instead of a weight.
+        let bold = try c.decodeIfPresent(Bool.self, forKey: .bold) ?? true
+        weight = try c.value(.weight, bold ? 700 : 400)
+        size = try c.value(.size, d.size)
+        color = try c.value(.color, d.color)
+        shadow = try c.value(.shadow, d.shadow)
+        background = try c.value(.background, d.background)
+        backgroundColor = try c.value(.backgroundColor, d.backgroundColor)
+        align = try c.value(.align, d.align)
+        lineHeight = try c.value(.lineHeight, d.lineHeight)
+        x = try c.value(.x, d.x)
+        y = try c.value(.y, d.y)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(text, forKey: .text)
+        try c.encode(fontFamily, forKey: .fontFamily)
+        try c.encode(weight, forKey: .weight)
+        try c.encode(size, forKey: .size)
+        try c.encode(color, forKey: .color)
+        try c.encode(shadow, forKey: .shadow)
+        try c.encode(background, forKey: .background)
+        try c.encode(backgroundColor, forKey: .backgroundColor)
+        try c.encode(align, forKey: .align)
+        try c.encode(lineHeight, forKey: .lineHeight)
+        try c.encode(x, forKey: .x)
+        try c.encode(y, forKey: .y)
+    }
 }
 
 struct Clip: Identifiable, Codable, Hashable, Sendable {
@@ -271,7 +329,7 @@ typealias ViewState = SwiftUI.State
 
 // Decoding fills in defaults for keys missing from files saved by earlier versions.
 extension KeyedDecodingContainer {
-    fileprivate func value<T: Decodable>(_ key: Key, _ fallback: T) throws -> T {
+    func value<T: Decodable>(_ key: Key, _ fallback: T) throws -> T {
         try decodeIfPresent(T.self, forKey: key) ?? fallback
     }
 }

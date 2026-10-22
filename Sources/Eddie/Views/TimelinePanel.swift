@@ -21,8 +21,14 @@ struct TimelinePanel: View {
                         TimelineContent(width: contentWidth)
                     }
                     .scrollPosition($scroll)
-                    .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, x in scrollOffset = x }
-                    .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.width } action: { _, w in visibleWidth = w }
+                    .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, x in
+                        scrollOffset = x
+                        editor.viewport = Double(x)...Double(x + visibleWidth)
+                    }
+                    .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.width } action: { _, w in
+                        visibleWidth = w
+                        editor.viewport = Double(scrollOffset)...Double(scrollOffset + w)
+                    }
                 }
             }
             .background(Tokens.Palette.Background.app)
@@ -317,7 +323,8 @@ private struct ClipView: View {
             content
                 .frame(width: max(width, 3), height: row.height - 6, alignment: .bottomLeading)
                 .clipped()
-            label
+            // The name stays in view while a long clip is scrolled past.
+            label.offset(x: max(0, min(editor.viewport.lowerBound - clip.start * editor.pps, width - 160)))
         }
         .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.sm))
         .overlay(alignment: .leading) { transitionMarker(clip.transitionIn, leading: true) }
@@ -362,32 +369,50 @@ private struct ClipView: View {
         return isMissing ? Tokens.Palette.State.error : Tokens.Palette.Border.default
     }
 
+    /// The part of the clip that is on screen, in points from the clip's left edge, with a little to spare.
+    private var visibleSpan: (start: CGFloat, end: CGFloat) {
+        let left = clip.start * editor.pps
+        let width = clip.duration * editor.pps
+        let start = max(0, editor.viewport.lowerBound - left - 300)
+        let end = min(width, editor.viewport.upperBound - left + 300)
+        return (start, max(start, end))
+    }
+
+    /// Frames and waveform are drawn only where the clip is on screen, so an hour-long clip costs
+    /// no more than a short one.
     @ViewBuilder private var content: some View {
         let height = row.height - 6
+        let span = visibleSpan
+        // Seconds of source per point, for the waveform.
+        let sourcePerPoint = clip.speed / editor.pps
         switch clip.kind {
         case .video, .image:
-            ZStack(alignment: .bottom) {
-                if let thumb = editor.cache.thumbnails[clip.mediaID ?? UUID()] {
-                    let tileWidth = max(height * thumb.size.width / max(thumb.size.height, 1), 20)
-                    let count = min(Int(clip.duration * editor.pps / tileWidth) + 1, 60)
-                    HStack(spacing: 0) {
-                        ForEach(0..<count, id: \.self) { _ in
-                            Image(nsImage: thumb).resizable().aspectRatio(contentMode: .fill)
-                                .frame(width: tileWidth, height: height).clipped()
-                        }
+            if span.end > span.start {
+                ZStack(alignment: .bottomLeading) {
+                    if let tile = editor.cache.tile(for: clip.mediaID, height: height) {
+                        // Start on a whole tile so the frames don't slide while scrolling.
+                        let first = (span.start / tile.size.width).rounded(.down) * tile.size.width
+                        Rectangle()
+                            .fill(ImagePaint(image: Image(nsImage: tile)))
+                            .frame(width: span.end - first, height: height)
+                            .offset(x: first)
+                            .opacity(0.75)
                     }
-                    .opacity(0.75)
-                }
-                if clip.kind == .video, !clip.audioDetached, let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
-                    WaveformView(peaks: peaks, sourceIn: clip.sourceIn, duration: clip.sourceDuration, volume: clip.volume)
-                        .frame(height: height * 0.35)
-                        .background(Tokens.Palette.Background.app.opacity(0.6))
+                    if clip.kind == .video, !clip.audioDetached, let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
+                        WaveformView(peaks: peaks, sourceIn: clip.sourceIn + span.start * sourcePerPoint,
+                                     duration: (span.end - span.start) * sourcePerPoint, volume: clip.volume)
+                            .frame(width: span.end - span.start, height: height * 0.35)
+                            .background(Tokens.Palette.Background.app.opacity(0.6))
+                            .offset(x: span.start)
+                    }
                 }
             }
         case .audio:
-            if let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
-                WaveformView(peaks: peaks, sourceIn: clip.sourceIn, duration: clip.sourceDuration, volume: clip.volume)
-                    .padding(.top, Tokens.Spacing.lg)
+            if span.end > span.start, let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
+                WaveformView(peaks: peaks, sourceIn: clip.sourceIn + span.start * sourcePerPoint,
+                             duration: (span.end - span.start) * sourcePerPoint, volume: clip.volume)
+                    .frame(width: span.end - span.start, height: height - Tokens.Spacing.lg)
+                    .offset(x: span.start, y: Tokens.Spacing.lg)
             }
         case .title:
             EmptyView()
