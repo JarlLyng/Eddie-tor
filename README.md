@@ -45,6 +45,9 @@ En lille videoredigerer til Mac, lavet som afløser for Adobe Premiere Rush. Den
 
 ## Endnu ikke med
 
+Se også [docs/rush-reference.md](docs/rush-reference.md): alt, hvad Rush kunne, hvordan det blev brugt til Ambient Sessions, og hvad Eddie mangler.
+
+
 Farvefiltre, hastighed for kun en del af et klip (ramp), animerede tekstskabeloner, pan & zoom, auto reframe, auto-ducking, støjreduktion og optagelse af voiceover.
 
 ## Design
