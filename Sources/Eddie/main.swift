@@ -1,0 +1,3 @@
+import EddieKit
+
+Launcher.run()

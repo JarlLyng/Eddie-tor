@@ -1,5 +1,6 @@
 import AVFoundation
 import AppKit
+import Security
 import UniformTypeIdentifiers
 
 /// `Eddie --selftest <dir>`: generates test media, builds a project with every clip type,
@@ -100,6 +101,59 @@ enum SelfTest {
 
         try await titleAndSessionTests(dir, media: m)
         print("title and session tests ok")
+
+        try await MainActor.run { try storeBuildTests(dir, demo: data) }
+        print("store build tests ok")
+    }
+
+    /// The Mac App Store build declares what the code expects: the bundle id and copyright, the project type
+    /// with `.edwell` first and old `.eddie` files still opening, and no entitlement beyond the sandbox and
+    /// files the user picks. Inside Edwell.app it checks the app itself; from `swift build` it reads App/.
+    @MainActor
+    private static func storeBuildTests(_ dir: URL, demo: Data) throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("App Store-build: \(message)") } }
+        let insideApp = Bundle.main.bundleURL.pathExtension == "app"
+        let info: [String: Any]
+        if insideApp {
+            info = Bundle.main.infoDictionary ?? [:]
+            try check(info["CFBundleIdentifier"] as? String == "com.iamjarl.edwell", "bundle id")
+            let task = SecTaskCreateFromSelf(nil)!
+            let sandboxed = SecTaskCopyValueForEntitlement(task, "com.apple.security.app-sandbox" as CFString, nil) as? Bool
+            try check(sandboxed == true, "ikke i sandkassen")
+        } else {
+            let app = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+                .deletingLastPathComponent().appendingPathComponent("App")
+            func plist(_ path: String) throws -> [String: Any] {
+                let data = try Data(contentsOf: app.appendingPathComponent(path))
+                return try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] ?? [:]
+            }
+            info = try plist("Edwell/Info.plist")
+            let entitlements = try plist("Edwell/Edwell.entitlements")
+            try check(Set(entitlements.keys) == ["com.apple.security.app-sandbox", "com.apple.security.files.user-selected.read-write"]
+                      && entitlements.values.allSatisfy { $0 as? Bool == true }, "entitlements \(entitlements.keys.sorted())")
+            let project = try String(contentsOf: app.appendingPathComponent("Edwell.xcodeproj/project.pbxproj"), encoding: .utf8)
+            try check(project.contains("PRODUCT_BUNDLE_IDENTIFIER = com.iamjarl.edwell;"), "bundle id")
+        }
+        try check(info["CFBundleDisplayName"] as? String == "Edwell", "navn")
+        try check(info["NSHumanReadableCopyright"] as? String == "© 2026 IAMJARL", "copyright")
+        try check(info["LSApplicationCategoryType"] as? String == "public.app-category.video", "kategori")
+
+        let types = info["UTExportedTypeDeclarations"] as? [[String: Any]] ?? []
+        let type = types.first { $0["UTTypeIdentifier"] as? String == Editor.projectType.identifier }
+        let tags = type?["UTTypeTagSpecification"] as? [String: Any]
+        try check(tags?["public.filename-extension"] as? [String] == Editor.projectExtensions, "projekttype \(types)")
+        let documents = info["CFBundleDocumentTypes"] as? [[String: Any]] ?? []
+        try check(documents.contains { ($0["LSItemContentTypes"] as? [String])?.contains(Editor.projectType.identifier) == true },
+                  "dokumenttype")
+
+        // An old .eddie file opens, and Save As offers it back as .edwell.
+        let editor = Editor(persist: false)
+        try check(editor.suggestedFileName == "Mit projekt.edwell", "nyt navn \(editor.suggestedFileName)")
+        let old = dir.appendingPathComponent("Gammelt projekt.eddie")
+        try demo.write(to: old)
+        editor.open(old)
+        try check(editor.fileURL == old && editor.errorMessage == nil && !editor.project.clips.isEmpty, "åbn .eddie")
+        try check(editor.suggestedFileName == "Gammelt projekt.edwell", "gem som \(editor.suggestedFileName)")
     }
 
     /// Magnetic main track, ripple trims, transitions, speed, track flags, copy/paste and in/out.

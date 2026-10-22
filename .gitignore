@@ -2,3 +2,15 @@
 build/
 *.app
 .DS_Store
+
+# Xcode
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xcarchive
+
+# Secrets: never commit. App Store Connect API keys and env files.
+*.p8
+.env
+.env.*
+!.env.example
