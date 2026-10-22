@@ -827,6 +827,11 @@ final class Editor {
 
         if flags.contains(.control) { return false }
         if flags.contains(.command) {
+            switch event.keyCode {
+            case 126: seek(0); return true                          // ⌘↑ sequence start
+            case 125: seek(project.duration); return true           // ⌘↓ sequence end
+            default: break
+            }
             switch (key, flags.contains(.shift)) {
             case ("c", false): copySelection()
             case ("x", false): cutSelection()
