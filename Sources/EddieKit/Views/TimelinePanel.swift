@@ -337,6 +337,10 @@ private struct ClipView: View {
         .onTapGesture { editor.selection = clip.id }
         .gesture(drag(.move))
         .contextMenu {
+            if isMissing, let media {
+                Button("Find \(media.name)…") { editor.locateMedia(media) }
+                Divider()
+            }
             Button("Del ved afspilningshoved  (S)") { editor.selection = clip.id; editor.splitAtPlayhead() }
             Button("Dupliker  (D)") { editor.selection = clip.id; editor.duplicateSelection() }
             Button("Kopiér  (⌘C)") { editor.selection = clip.id; editor.copySelection() }
@@ -361,7 +365,7 @@ private struct ClipView: View {
     }
 
     private var isMissing: Bool {
-        clip.kind != .title && media.map({ FileManager.default.fileExists(atPath: $0.url.path) }) != true
+        clip.kind != .title && media.map({ MediaAccess.canRead($0.url) }) != true
     }
 
     private func borderColor(selected: Bool) -> Color {

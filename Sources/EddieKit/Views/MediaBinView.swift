@@ -73,11 +73,16 @@ private struct MediaTile: View {
                         .padding(Tokens.Spacing.xs)
                 }
             }
-            Text(media.name)
-                .ijFont(.xs)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .foregroundStyle(FileManager.default.fileExists(atPath: media.url.path) ? Tokens.Palette.Text.primary : Tokens.Palette.State.error)
+            HStack(spacing: Tokens.Spacing.xs) {
+                if missing {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Tokens.Palette.State.error)
+                }
+                Text(media.name)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .foregroundStyle(missing ? Tokens.Palette.State.error : Tokens.Palette.Text.primary)
+            }
+            .ijFont(.xs)
         }
         .contentShape(Rectangle())
         .draggable(media.id.uuidString) {
@@ -85,14 +90,20 @@ private struct MediaTile: View {
         }
         .onTapGesture(count: 2) { editor.add(media) }
         .contextMenu {
+            if missing {
+                Button("Find…") { editor.locateMedia(media) }
+                Divider()
+            }
             Button("Tilføj til tidslinjen") { editor.add(media) }
             Button("Tilføj ved afspilningshoved") { editor.add(media, at: editor.currentTime) }
             Button("Vis i Finder") { NSWorkspace.shared.activateFileViewerSelecting([media.url]) }
             Divider()
             Button("Fjern fra projektet", role: .destructive) { editor.removeMedia(media.id) }
         }
-        .help(media.url.path)
+        .help(missing ? "\(media.url.path)\nKan ikke læses. Højreklik og vælg Find…" : media.url.path)
     }
+
+    private var missing: Bool { !MediaAccess.canRead(media.url) }
 
     @ViewBuilder private var thumbnail: some View {
         if let image = editor.cache.thumbnails[media.id] {

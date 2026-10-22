@@ -85,8 +85,13 @@ final class Editor {
     static let projectExtensions = ["edwell", "eddie"]
     static let defaultTransition = Transition(kind: .crossDissolve, duration: 0.5)
 
-    /// `persist: false` skips the autosave file (used by the self test).
+    /// `persist: false` skips the autosave file and never stops to ask the user anything (used by the
+    /// self test and snapshot runs).
     @ObservationIgnored private let persist: Bool
+    @ObservationIgnored private let access = MediaAccess()
+    /// A bookmark to the project file, so after a relaunch the sandboxed app can still save to it.
+    @ObservationIgnored private var fileBookmark: Data?
+    @ObservationIgnored private var fileScope: URL?
 
     init(persist: Bool = true) {
         self.persist = persist
@@ -746,9 +751,71 @@ final class Editor {
             let project = try JSONDecoder().decode(Project.self, from: Data(contentsOf: url))
             pause()
             replaceProject(project, url: url)
+            // Typically a project from before bookmarks, or from another Mac: ask for its media once.
+            if persist, !unreadableMedia.isEmpty {
+                DispatchQueue.main.async { self.askForMissingMedia() }
+            }
         } catch {
             errorMessage = "Projektet kunne ikke åbnes: \(error.localizedDescription)"
         }
+    }
+
+    // MARK: - Missing media
+
+    /// Media the app can't read now: moved, deleted, on a drive that isn't connected, or, in the sandbox,
+    /// never picked on this Mac. Their clips are left out of preview and export until they are found.
+    var unreadableMedia: [MediaItem] {
+        project.media.filter { !MediaAccess.canRead($0.url) }
+    }
+
+    private func askForMissingMedia() {
+        let missing = unreadableMedia
+        guard !missing.isEmpty else { return }
+        let alert = NSAlert()
+        alert.messageText = missing.count == 1
+            ? "Edwell kan ikke læse \(missing[0].name)"
+            : "Edwell kan ikke læse \(missing.count) af projektets medier"
+        alert.informativeText = "De er flyttet, slettet eller ligger på et drev, der ikke er tilsluttet, eller Edwell har ikke fået lov at åbne dem på denne Mac. Find dem én gang, så husker projektet dem, når du gemmer."
+        alert.addButton(withTitle: "Find…")
+        alert.addButton(withTitle: "Senere")
+        if alert.runModal() == .alertFirstButtonReturn { locateMedia() }
+    }
+
+    /// Asks where missing media is: the file itself, or a folder that holds several of them.
+    func locateMedia(_ only: MediaItem? = nil) {
+        let items = only.map { [$0] } ?? unreadableMedia
+        guard let first = items.first else { return }
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = items.count > 1
+        panel.allowedContentTypes = [.audiovisualContent, .image]
+        panel.prompt = "Find"
+        panel.message = items.count == 1
+            ? "Find \(first.name)"
+            : "Vælg mappen med projektets medier. Edwell finder dem, der ligger i den."
+        panel.directoryURL = first.url.deletingLastPathComponent()
+        guard panel.runModal() == .OK, let picked = panel.url else { return }
+        relink(items, in: picked)
+    }
+
+    /// Points the items at the files found in what the user picked, as one undo step. Saving the
+    /// project keeps their new bookmarks.
+    func relink(_ items: [MediaItem], in picked: URL) {
+        let found = MediaAccess.locate(items, in: picked, projectURL: fileURL)
+        let left = items.count - found.count
+        if left > 0 {
+            errorMessage = left == 1 && items.count == 1
+                ? "\(items[0].name) blev ikke fundet i \(picked.lastPathComponent)."
+                : "\(left) af \(items.count) medier blev ikke fundet i \(picked.lastPathComponent)."
+        }
+        guard !found.isEmpty else { return }
+        found.forEach { AssetCache.forget($0.url) }
+        edit { project in
+            for item in found {
+                if let i = project.media.firstIndex(where: { $0.id == item.id }) { project.media[i] = item }
+            }
+        }
+        cache.prepare(found)
     }
 
     @discardableResult
@@ -772,11 +839,18 @@ final class Editor {
         return "\(name).\(Self.projectExtensions[0])"
     }
 
-    private func write(to url: URL) -> Bool {
+    /// Saves to a file the user picked (or the self test chose). Each media item gets its place relative
+    /// to the project, for media that moves with it.
+    func write(to url: URL) -> Bool {
         do {
+            var saved = project
+            for i in saved.media.indices {
+                saved.media[i].relativePath = MediaAccess.relativePath(of: saved.media[i].url, from: url.deletingLastPathComponent())
+            }
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            try encoder.encode(project).write(to: url, options: .atomic)
+            try encoder.encode(saved).write(to: url, options: .atomic)
+            if url != fileURL || fileBookmark == nil { fileBookmark = MediaAccess.bookmark(for: url) }
             fileURL = url
             isDirty = false
             UserDefaults.standard.set(url.path, forKey: "lastProjectPath")
@@ -802,9 +876,14 @@ final class Editor {
     }
 
     private func replaceProject(_ new: Project, url: URL?) {
+        access.release()
+        fileScope?.stopAccessingSecurityScopedResource()
+        fileScope = nil
         project = new
+        project.media = access.reach(new.media, projectURL: url)
         Self.packMain(&project)
         fileURL = url
+        fileBookmark = url.flatMap(MediaAccess.bookmark)
         suggestedName = nil
         isDirty = false
         selection = nil
@@ -812,7 +891,7 @@ final class Editor {
         redoStack.removeAll()
         currentTime = 0
         installedStructure = nil
-        cache.prepare(new.media)
+        cache.prepare(project.media.filter { MediaAccess.canRead($0.url) })
         scheduleRebuild(delay: 0)
         scheduleAutosave()
     }
@@ -828,12 +907,13 @@ final class Editor {
     private func scheduleAutosave() {
         guard persist else { return }
         autosaveTask?.cancel()
-        let snapshot = project, url = fileURL, dirty = isDirty
+        let snapshot = project, url = fileURL, bookmark = fileBookmark, dirty = isDirty
         autosaveTask = Task {
             try? await Task.sleep(for: .seconds(1))
             guard !Task.isCancelled, let data = try? JSONEncoder().encode(snapshot) else { return }
             try? data.write(to: Self.autosaveURL, options: .atomic)
             UserDefaults.standard.set(url?.path, forKey: "autosaveFilePath")
+            UserDefaults.standard.set(bookmark, forKey: "autosaveFileBookmark")
             UserDefaults.standard.set(dirty, forKey: "autosaveDirty")
         }
     }
@@ -841,11 +921,19 @@ final class Editor {
     private func restoreAutosave() {
         guard let data = try? Data(contentsOf: Self.autosaveURL),
               let saved = try? JSONDecoder().decode(Project.self, from: data) else { return }
+        var url = UserDefaults.standard.string(forKey: "autosaveFilePath").map { URL(fileURLWithPath: $0) }
+        fileBookmark = UserDefaults.standard.data(forKey: "autosaveFileBookmark")
+        if url != nil, let bookmark = fileBookmark, let found = MediaAccess.resolve(bookmark) {
+            url = found.url
+            if found.scoped { fileScope = found.url }
+            if found.stale { fileBookmark = MediaAccess.bookmark(for: found.url) ?? bookmark }
+        }
         project = saved
+        project.media = access.reach(saved.media, projectURL: url)
         Self.packMain(&project)
-        fileURL = UserDefaults.standard.string(forKey: "autosaveFilePath").map { URL(fileURLWithPath: $0) }
+        fileURL = url
         isDirty = UserDefaults.standard.bool(forKey: "autosaveDirty")
-        cache.prepare(saved.media)
+        cache.prepare(project.media.filter { MediaAccess.canRead($0.url) })
     }
 
     // MARK: - Keyboard
