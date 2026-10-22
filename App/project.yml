@@ -6,7 +6,7 @@ options:
   bundleIdPrefix: com.iamjarl
   deploymentTarget:
     macOS: "15.0"
-  developmentLanguage: da
+  developmentLanguage: en
   createIntermediateGroups: true
   xcodeVersion: "27.1"
 
@@ -40,7 +40,7 @@ targets:
         # The project type and its extensions match Editor.projectType and Editor.projectExtensions.
         UTExportedTypeDeclarations:
           - UTTypeIdentifier: com.iamjarl.edwell.project
-            UTTypeDescription: Edwell-projekt
+            UTTypeDescription: Edwell Project
             UTTypeConformsTo:
               - public.json
             UTTypeTagSpecification:
@@ -48,7 +48,7 @@ targets:
                 - edwell
                 - eddie
         CFBundleDocumentTypes:
-          - CFBundleTypeName: Edwell-projekt
+          - CFBundleTypeName: Edwell Project
             CFBundleTypeRole: Editor
             LSHandlerRank: Owner
             LSItemContentTypes:

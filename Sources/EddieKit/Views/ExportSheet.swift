@@ -17,22 +17,22 @@ struct ExportSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Spacing.lg) {
-            Text("Eksporter video").ijFont(.xl, weight: .semibold)
+            Text("Export Video").ijFont(.xl, weight: .semibold)
 
             let size = editor.project.aspect.renderSize
             Grid(alignment: .leading, horizontalSpacing: Tokens.Spacing.lg, verticalSpacing: Tokens.Spacing.sm) {
                 GridRow { Text("Format").foregroundStyle(Tokens.Palette.Text.secondary); Text("\(editor.project.aspect.label) · \(Int(size.width))×\(Int(size.height)) · \(editor.project.fps) fps") }
-                GridRow { Text("Varighed").foregroundStyle(Tokens.Palette.Text.secondary); Text(timecode(exportRange.map { $0.upperBound - $0.lowerBound } ?? editor.project.duration, fps: editor.project.fps)) }
+                GridRow { Text("Duration").foregroundStyle(Tokens.Palette.Text.secondary); Text(timecode(exportRange.map { $0.upperBound - $0.lowerBound } ?? editor.project.duration, fps: editor.project.fps)) }
                 if hasInOut {
                     GridRow {
-                        Text("Område").foregroundStyle(Tokens.Palette.Text.secondary)
-                        Toggle("Kun mellem ind- og udpunkt", isOn: $onlyInOut).disabled(isExporting)
+                        Text("Range").foregroundStyle(Tokens.Palette.Text.secondary)
+                        Toggle("Only between in and out points", isOn: $onlyInOut).disabled(isExporting)
                     }
                 }
                 GridRow {
                     Text("Codec").foregroundStyle(Tokens.Palette.Text.secondary)
                     Picker("", selection: $codec) {
-                        ForEach(Exporter.Codec.allCases) { Text($0.rawValue).tag($0) }
+                        ForEach(Exporter.Codec.allCases) { Text($0.label).tag($0) }
                     }
                     .labelsHidden()
                     .frame(width: 220)
@@ -44,25 +44,25 @@ struct ExportSheet: View {
             case .idle:
                 EmptyView()
             case .exporting(let progress):
-                ProgressView(value: progress) { Text("Eksporterer… \(Int(progress * 100)) %") }
+                ProgressView(value: progress) { Text("Exporting… \(Int(progress * 100)) %") }
             case .done(let url):
-                Label("Færdig: \(url.lastPathComponent)", systemImage: "checkmark.circle.fill").foregroundStyle(Tokens.Palette.State.success)
+                Label("Done: \(url.lastPathComponent)", systemImage: "checkmark.circle.fill").foregroundStyle(Tokens.Palette.State.success)
             case .failed(let message):
                 Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(Tokens.Palette.State.error)
             }
 
             HStack {
                 if case .done(let url) = state {
-                    Button("Vis i Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+                    Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
                         .buttonStyle(SecondaryButtonStyle())
                 }
                 Spacer()
-                Button(isDone ? "Luk" : "Annuller") { dismiss() }
+                Button(isDone ? "Close" : "Cancel") { dismiss() }
                     .keyboardShortcut(.cancelAction)
                     .buttonStyle(SecondaryButtonStyle())
                     .disabled(isExporting)
                 if !isDone {
-                    Button("Eksporter…") { chooseAndExport() }
+                    Button("Export…") { chooseAndExport() }
                         .keyboardShortcut(.defaultAction)
                         .buttonStyle(PrimaryButtonStyle())
                         .disabled(isExporting || editor.project.clips.isEmpty)
@@ -88,7 +88,7 @@ struct ExportSheet: View {
     private func chooseAndExport() {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.mpeg4Movie]
-        let base = editor.fileURL?.deletingPathExtension().lastPathComponent ?? editor.suggestedName ?? "Edwell-video"
+        let base = editor.fileURL?.deletingPathExtension().lastPathComponent ?? editor.suggestedName ?? String(localized: "Edwell Video")
         panel.nameFieldStringValue = "\(base).mp4"
         panel.directoryURL = FileManager.default.userHomeDirectory.appendingPathComponent("Movies")
         guard panel.runModal() == .OK, let url = panel.url else { return }

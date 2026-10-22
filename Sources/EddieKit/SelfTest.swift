@@ -107,6 +107,60 @@ enum SelfTest {
 
         try await mediaAccessTests(dir, source: landscape)
         print("media access tests ok")
+
+        try localizationTests()
+        print("localization tests ok")
+    }
+
+    /// English is the development language and Danish a full localization: every string in the catalog
+    /// has its Danish translation (scripts/sync-strings.sh adds new ones without), and no Danish is left
+    /// in the code. Inside Edwell.app it checks the compiled Danish strings instead.
+    private static func localizationTests() throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Lokalisering: \(message)") } }
+        if Bundle.main.bundleURL.pathExtension == "app" {
+            try check(Bundle.main.developmentLocalization == "en" && Bundle.main.localizations.contains("da"),
+                      "sprog \(Bundle.main.localizations)")
+            guard let url = Bundle.main.url(forResource: "da", withExtension: "lproj"), let danish = Bundle(url: url) else {
+                throw err("Lokalisering: ingen da.lproj")
+            }
+            try check(danish.localizedString(forKey: "Save", value: nil, table: nil) == "Gem", "Save")
+            try check(danish.localizedString(forKey: "Edwell Project", value: nil, table: "InfoPlist") == "Edwell-projekt", "dokumenttype")
+            let format = danish.localizedString(forKey: "%lld media files can't be read", value: nil, table: nil)
+            try check(String.localizedStringWithFormat(format, 1) == "1 mediefil kan ikke læses"
+                      && String.localizedStringWithFormat(format, 3) == "3 mediefiler kan ikke læses", "flertal")
+            return
+        }
+
+        let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        for name in ["Localizable", "InfoPlist"] {
+            let data = try Data(contentsOf: repo.appendingPathComponent("App/Edwell/\(name).xcstrings"))
+            let catalog = try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
+            try check(catalog["sourceLanguage"] as? String == "en", "\(name): kildesprog")
+            let strings = catalog["strings"] as? [String: [String: Any]] ?? [:]
+            let untranslated = strings.filter { _, entry in
+                guard entry["shouldTranslate"] as? Bool != false else { return false }
+                let danish = (entry["localizations"] as? [String: Any])?["da"] as? [String: Any]
+                let unit = danish?["stringUnit"] as? [String: Any]
+                return unit?["state"] as? String != "translated" && danish?["variations"] == nil
+            }
+            try check(untranslated.isEmpty, "\(name) mangler dansk: \(untranslated.keys.sorted())")
+        }
+        let project = try String(contentsOf: repo.appendingPathComponent("App/Edwell.xcodeproj/project.pbxproj"), encoding: .utf8)
+        try check(project.contains("developmentRegion = en;"), "udviklingssprog")
+
+        // Danish letters in a string literal mean a string that never went through the catalog.
+        let sources = repo.appendingPathComponent("Sources/EddieKit")
+        let files = FileManager.default.enumerator(at: sources, includingPropertiesForKeys: nil)?
+            .compactMap { $0 as? URL }.filter { $0.pathExtension == "swift" && !$0.lastPathComponent.hasSuffix("Test.swift") } ?? []
+        let literal = try NSRegularExpression(pattern: #""[^"\n]*[æøåÆØÅ][^"\n]*""#)
+        for file in files {
+            let text = try String(contentsOf: file, encoding: .utf8)
+            for line in text.split(separator: "\n") where !line.trimmingCharacters(in: .whitespaces).hasPrefix("//") {
+                let s = String(line)
+                try check(literal.firstMatch(in: s, range: NSRange(s.startIndex..., in: s)) == nil,
+                          "dansk i \(file.lastPathComponent): \(s.trimmingCharacters(in: .whitespaces))")
+            }
+        }
     }
 
     /// Media under the sandbox: an import gets a bookmark, which follows a renamed file and is made again;
@@ -234,7 +288,7 @@ enum SelfTest {
 
         // An old .eddie file opens, and Save As offers it back as .edwell.
         let editor = Editor(persist: false)
-        try check(editor.suggestedFileName == "Mit projekt.edwell", "nyt navn \(editor.suggestedFileName)")
+        try check(editor.suggestedFileName == String(localized: "My Project") + ".edwell", "nyt navn \(editor.suggestedFileName)")
         let old = dir.appendingPathComponent("Gammelt projekt.eddie")
         try demo.write(to: old)
         editor.open(old)

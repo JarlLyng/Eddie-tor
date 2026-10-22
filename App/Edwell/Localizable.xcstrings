@@ -1,0 +1,2324 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+      "shouldTranslate" : false
+    },
+    "%" : {
+      "shouldTranslate" : false
+    },
+    "%@\nCan't be read. Right-click and choose Find…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@\nKan ikke læses. Højreklik og vælg Find…"
+          }
+        }
+      }
+    },
+    "%@  (%lld×%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  (%2$lld×%3$lld)"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%@  /  %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  /  %2$@"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%@ (edited)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (redigeret)"
+          }
+        }
+      }
+    },
+    "%@ (⌘%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (⌘%2$lld)"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%@ couldn't be opened as a video." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kunne ikke åbnes som video."
+          }
+        }
+      }
+    },
+    "%@ wasn't found in %@." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ blev ikke fundet i %2$@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ wasn't found in %2$@."
+          }
+        }
+      }
+    },
+    "%@ · %lld×%lld · %lld fps" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld×%3$lld · %4$lld fps"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%lld" : {
+      "shouldTranslate" : false
+    },
+    "%lld %%" : {
+      "shouldTranslate" : false
+    },
+    "%lld media files can't be read" : {
+      "localizations" : {
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mediefil kan ikke læses"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mediefiler kan ikke læses"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld media file can't be read"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld media files can't be read"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld media files weren't found in %@." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld af %2$lld medier blev ikke fundet i %3$@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld media files weren't found in %3$@."
+          }
+        }
+      }
+    },
+    "Add Title  (G)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj tekst  (G)"
+          }
+        }
+      }
+    },
+    "Add Transition" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj overgang"
+          }
+        }
+      }
+    },
+    "Add Transition  (⌘D)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj overgang  (⌘D)"
+          }
+        }
+      }
+    },
+    "Add a title (G)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj tekst (G)"
+          }
+        }
+      }
+    },
+    "Add a track" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj spor"
+          }
+        }
+      }
+    },
+    "Add a transition (⌘D)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj overgang (⌘D)"
+          }
+        }
+      }
+    },
+    "Add at Playhead" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj ved afspilningshoved"
+          }
+        }
+      }
+    },
+    "Add to Timeline" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj til tidslinjen"
+          }
+        }
+      }
+    },
+    "Add transition" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj overgang"
+          }
+        }
+      }
+    },
+    "Alignment" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Justering"
+          }
+        }
+      }
+    },
+    "All title tracks are locked." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle tekstspor er låst."
+          }
+        }
+      }
+    },
+    "Aspect Ratio" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billedformat"
+          }
+        }
+      }
+    },
+    "Aspect ratio" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billedformat"
+          }
+        }
+      }
+    },
+    "At End" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ved slut"
+          }
+        }
+      }
+    },
+    "At Start" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ved start"
+          }
+        }
+      }
+    },
+    "Audio" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lyd"
+          }
+        }
+      }
+    },
+    "Audio Track" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lydspor"
+          }
+        }
+      }
+    },
+    "Background" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baggrund"
+          }
+        }
+      }
+    },
+    "Background Color" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baggrundsfarve"
+          }
+        }
+      }
+    },
+    "Black" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort"
+          }
+        }
+      }
+    },
+    "Bold" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fed"
+          }
+        }
+      }
+    },
+    "Bottom" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bund"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuller"
+          }
+        }
+      }
+    },
+    "Center" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Midt"
+          }
+        }
+      }
+    },
+    "Choose the folder with the project's media. Edwell finds the ones inside it." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg mappen med projektets medier. Edwell finder dem, der ligger i den."
+          }
+        }
+      }
+    },
+    "Choose the recording; the fades and title are set up for you (⇧⌘N)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg optagelsen; fades og titel sættes op for dig (⇧⌘N)"
+          }
+        }
+      }
+    },
+    "Choose the session recording" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg optagelsen af sessionen"
+          }
+        }
+      }
+    },
+    "Choose video, audio or images" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg video, lyd eller billeder"
+          }
+        }
+      }
+    },
+    "Clear In and Out  (⌥X)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ryd ind og ud  (⌥X)"
+          }
+        }
+      }
+    },
+    "Clear in / out / both" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ryd ind / ud / begge"
+          }
+        }
+      }
+    },
+    "Clip" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klip"
+          }
+        }
+      }
+    },
+    "Clips" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klip"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luk"
+          }
+        }
+      }
+    },
+    "Codec" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Codec"
+          }
+        }
+      }
+    },
+    "Color" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farve"
+          }
+        }
+      }
+    },
+    "Copy  (⌘C)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiér  (⌘C)"
+          }
+        }
+      }
+    },
+    "Copy / cut / paste" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiér / klip ud / sæt ind"
+          }
+        }
+      }
+    },
+    "Couldn't build the timeline" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunne ikke bygge tidslinjen"
+          }
+        }
+      }
+    },
+    "Couldn't render the frame" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunne ikke rendere billede"
+          }
+        }
+      }
+    },
+    "Crop" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beskæring"
+          }
+        }
+      }
+    },
+    "Cross Dissolve" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krydsfade"
+          }
+        }
+      }
+    },
+    "Cut  (⌘X)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klip ud  (⌘X)"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet"
+          }
+        }
+      }
+    },
+    "Delete  (⌫)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet  (⌫)"
+          }
+        }
+      }
+    },
+    "Delete Clip" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet klip"
+          }
+        }
+      }
+    },
+    "Delete the selected clip (⌫)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet valgt klip (⌫)"
+          }
+        }
+      }
+    },
+    "Dip to Black" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dyk til sort"
+          }
+        }
+      }
+    },
+    "Dip to White" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dyk til hvid"
+          }
+        }
+      }
+    },
+    "Do you want to save the changes to %@?" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vil du gemme ændringerne i %@?"
+          }
+        }
+      }
+    },
+    "Don't Save" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem ikke"
+          }
+        }
+      }
+    },
+    "Done: %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Færdig: %@"
+          }
+        }
+      }
+    },
+    "Double-click or drag onto the timeline" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dobbeltklik eller træk ned på tidslinjen"
+          }
+        }
+      }
+    },
+    "Drag video, audio or images here" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk video, lyd eller billeder hertil"
+          }
+        }
+      }
+    },
+    "Duplicate" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dupliker"
+          }
+        }
+      }
+    },
+    "Duplicate  (D)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dupliker  (D)"
+          }
+        }
+      }
+    },
+    "Duplicate (D)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dupliker (D)"
+          }
+        }
+      }
+    },
+    "Duration" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Varighed"
+          }
+        }
+      }
+    },
+    "Edwell" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edwell"
+          }
+        }
+      }
+    },
+    "Edwell Video" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edwell-video"
+          }
+        }
+      }
+    },
+    "Edwell can't read %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edwell kan ikke læse %@"
+          }
+        }
+      }
+    },
+    "Edwell can't read %lld of the project's media files" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edwell kan ikke læse %lld af projektets medier"
+          }
+        }
+      }
+    },
+    "End" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slut"
+          }
+        }
+      }
+    },
+    "Export" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter"
+          }
+        }
+      }
+    },
+    "Export Video" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter video"
+          }
+        }
+      }
+    },
+    "Export Video…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter video…"
+          }
+        }
+      }
+    },
+    "Export isn't supported on this Mac" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksport understøttes ikke på denne Mac"
+          }
+        }
+      }
+    },
+    "Export to MP4 (⌘E)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter til MP4 (⌘E)"
+          }
+        }
+      }
+    },
+    "Exporting… %lld %%" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporterer… %lld %%"
+          }
+        }
+      }
+    },
+    "Export…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter…"
+          }
+        }
+      }
+    },
+    "Extra Bold" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekstra fed"
+          }
+        }
+      }
+    },
+    "Extra Light" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekstra let"
+          }
+        }
+      }
+    },
+    "Fade" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fade"
+          }
+        }
+      }
+    },
+    "Fade In" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fade ind"
+          }
+        }
+      }
+    },
+    "Fade Out" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fade ud"
+          }
+        }
+      }
+    },
+    "Feather" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blød kant"
+          }
+        }
+      }
+    },
+    "File" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fil"
+          }
+        }
+      }
+    },
+    "Fill the Frame" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udfyld rammen"
+          }
+        }
+      }
+    },
+    "Find" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find"
+          }
+        }
+      }
+    },
+    "Find %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find %@"
+          }
+        }
+      }
+    },
+    "Find %@…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find %@…"
+          }
+        }
+      }
+    },
+    "Find…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find…"
+          }
+        }
+      }
+    },
+    "Fit" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilpas"
+          }
+        }
+      }
+    },
+    "Flip Horizontally" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spejl vandret"
+          }
+        }
+      }
+    },
+    "Flip Vertically" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spejl lodret"
+          }
+        }
+      }
+    },
+    "Font" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skrifttype"
+          }
+        }
+      }
+    },
+    "Format" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format"
+          }
+        }
+      }
+    },
+    "Frame Rate" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billeder pr. sekund"
+          }
+        }
+      }
+    },
+    "Go to in / out" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gå til ind / ud"
+          }
+        }
+      }
+    },
+    "H.264 (plays everywhere)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "H.264 (passer overalt)"
+          }
+        }
+      }
+    },
+    "HEVC (smaller file)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEVC (mindre fil)"
+          }
+        }
+      }
+    },
+    "Hide track" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skjul spor"
+          }
+        }
+      }
+    },
+    "Horizontal" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vandret"
+          }
+        }
+      }
+    },
+    "Horizontal is the left edge, center or right edge of the text, depending on the alignment." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vandret er tekstens venstre kant, midte eller højre kant, alt efter justeringen."
+          }
+        }
+      }
+    },
+    "Image" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billede"
+          }
+        }
+      }
+    },
+    "Import" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer"
+          }
+        }
+      }
+    },
+    "Import Media…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer medier…"
+          }
+        }
+      }
+    },
+    "Import media" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer medier"
+          }
+        }
+      }
+    },
+    "Import video, audio or images (⌘I)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer video, lyd eller billeder (⌘I)"
+          }
+        }
+      }
+    },
+    "Import…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer…"
+          }
+        }
+      }
+    },
+    "In / Out" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ind / ud"
+          }
+        }
+      }
+    },
+    "In / out point" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ind- / udpunkt"
+          }
+        }
+      }
+    },
+    "In and out points: I and O" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ind- og udpunkt: I og O"
+          }
+        }
+      }
+    },
+    "Large Preview  (`)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stort preview  (`)"
+          }
+        }
+      }
+    },
+    "Large preview / media" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stort preview / medier"
+          }
+        }
+      }
+    },
+    "Later" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senere"
+          }
+        }
+      }
+    },
+    "Left" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Venstre"
+          }
+        }
+      }
+    },
+    "Light" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let"
+          }
+        }
+      }
+    },
+    "Line Spacing" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linjeafstand"
+          }
+        }
+      }
+    },
+    "Lock track" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lås spor"
+          }
+        }
+      }
+    },
+    "Loop Playback" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gentag afspilning"
+          }
+        }
+      }
+    },
+    "Loop playback, between in and out if they're set (⌘L)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gentag afspilning, inden for ind/ud hvis de er sat (⌘L)"
+          }
+        }
+      }
+    },
+    "Magnetic Main Track (V1)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Magnetisk hovedspor (V1)"
+          }
+        }
+      }
+    },
+    "Magnetic main track: clips on V1 always sit without gaps" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Magnetisk hovedspor: klip på V1 ligger altid uden huller"
+          }
+        }
+      }
+    },
+    "Main track" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hovedspor"
+          }
+        }
+      }
+    },
+    "Media" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medier"
+          }
+        }
+      }
+    },
+    "Medium" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
+          }
+        }
+      }
+    },
+    "Middle" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Midt"
+          }
+        }
+      }
+    },
+    "Missing file" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mangler fil"
+          }
+        }
+      }
+    },
+    "Mute" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slå lyd fra"
+          }
+        }
+      }
+    },
+    "Mute track" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slå lyd fra"
+          }
+        }
+      }
+    },
+    "My Project" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit projekt"
+          }
+        }
+      }
+    },
+    "New Ambient Session…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ny Ambient Session…"
+          }
+        }
+      }
+    },
+    "New Project" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyt projekt"
+          }
+        }
+      }
+    },
+    "New title" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ny tekst"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "On the main track the clip slides over the clip before it, so the transition is between the two." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "På hovedsporet glider klippet ind over klippet før, så overgangen bliver mellem de to."
+          }
+        }
+      }
+    },
+    "One frame back / forward" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et billede tilbage / frem"
+          }
+        }
+      }
+    },
+    "Only between in and out points" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kun mellem ind- og udpunkt"
+          }
+        }
+      }
+    },
+    "Oops" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hov"
+          }
+        }
+      }
+    },
+    "Opacity" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opacitet"
+          }
+        }
+      }
+    },
+    "Open…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åbn…"
+          }
+        }
+      }
+    },
+    "Overview" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overblik"
+          }
+        }
+      }
+    },
+    "Play / Pause  (Space)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afspil / pause  (mellemrum)"
+          }
+        }
+      }
+    },
+    "Play / pause" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afspil / pause"
+          }
+        }
+      }
+    },
+    "Play / pause (Space, J K L)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afspil / pause (mellemrum, J K L)"
+          }
+        }
+      }
+    },
+    "Position" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Placering"
+          }
+        }
+      }
+    },
+    "Preserve Pitch" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bevar tonehøjde"
+          }
+        }
+      }
+    },
+    "Previous / next clip edge" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forrige / næste klip"
+          }
+        }
+      }
+    },
+    "Project" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projekt"
+          }
+        }
+      }
+    },
+    "Push Down" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skub ned"
+          }
+        }
+      }
+    },
+    "Push Left" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skub til venstre"
+          }
+        }
+      }
+    },
+    "Push Right" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skub til højre"
+          }
+        }
+      }
+    },
+    "Push Up" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skub op"
+          }
+        }
+      }
+    },
+    "Range" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Område"
+          }
+        }
+      }
+    },
+    "Redo" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuller fortryd"
+          }
+        }
+      }
+    },
+    "Redo (⇧⌘Z)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuller fortryd (⇧⌘Z)"
+          }
+        }
+      }
+    },
+    "Regular" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        }
+      }
+    },
+    "Remove from Project" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fjern fra projektet"
+          }
+        }
+      }
+    },
+    "Reset Size, Position and Crop" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nulstil størrelse, placering og beskæring"
+          }
+        }
+      }
+    },
+    "Rewind / stop / forward" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spol tilbage / stop / frem"
+          }
+        }
+      }
+    },
+    "Right" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Højre"
+          }
+        }
+      }
+    },
+    "Rotation" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotation"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem"
+          }
+        }
+      }
+    },
+    "Save As…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem som…"
+          }
+        }
+      }
+    },
+    "Scaling" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilpasning"
+          }
+        }
+      }
+    },
+    "Semibold" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halvfed"
+          }
+        }
+      }
+    },
+    "Separate Audio  (E)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adskil lyd  (E)"
+          }
+        }
+      }
+    },
+    "Separate Audio to Its Own Track  (E)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adskil lyd til eget spor  (E)"
+          }
+        }
+      }
+    },
+    "Separate audio" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adskil lyd"
+          }
+        }
+      }
+    },
+    "Set In Point  (I)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sæt indpunkt  (I)"
+          }
+        }
+      }
+    },
+    "Set Out Point  (O)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sæt udpunkt  (O)"
+          }
+        }
+      }
+    },
+    "Shadow" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skygge"
+          }
+        }
+      }
+    },
+    "Shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genveje"
+          }
+        }
+      }
+    },
+    "Show Media  (Y)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis medier  (Y)"
+          }
+        }
+      }
+    },
+    "Show in Finder" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis i Finder"
+          }
+        }
+      }
+    },
+    "Show the Whole Picture" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis hele billedet"
+          }
+        }
+      }
+    },
+    "Show the whole timeline (\\)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis hele tidslinjen (\\)"
+          }
+        }
+      }
+    },
+    "Size" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Størrelse"
+          }
+        }
+      }
+    },
+    "Size and Position" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Størrelse og placering"
+          }
+        }
+      }
+    },
+    "Snap" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap"
+          }
+        }
+      }
+    },
+    "Snap / loop" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap / gentag"
+          }
+        }
+      }
+    },
+    "Snap to edges and the playhead (⌘Y)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap til kanter og afspilningshoved (⌘Y)"
+          }
+        }
+      }
+    },
+    "Some files couldn't be opened. Edwell works with video, audio and images." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nogle filer kunne ikke åbnes. Edwell kan bruge video, lyd og billeder."
+          }
+        }
+      }
+    },
+    "Source Length" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kildelængde"
+          }
+        }
+      }
+    },
+    "Space" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mellemrum"
+          }
+        }
+      }
+    },
+    "Speed" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hastighed"
+          }
+        }
+      }
+    },
+    "Split at Playhead  (S)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del ved afspilningshoved  (S)"
+          }
+        }
+      }
+    },
+    "Split clip" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del klip"
+          }
+        }
+      }
+    },
+    "Split the clip at the playhead (S)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del klip ved afspilningshovedet (S)"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        }
+      }
+    },
+    "Text" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst"
+          }
+        }
+      }
+    },
+    "The clip gets shorter or longer, so the same part of the recording plays. You can type up to 1000 % in the field." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klippet bliver kortere eller længere, så den samme del af optagelsen vises. Op til 1000 % kan skrives i feltet."
+          }
+        }
+      }
+    },
+    "The project couldn't be opened: %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projektet kunne ikke åbnes: %@"
+          }
+        }
+      }
+    },
+    "The project couldn't be saved: %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projektet kunne ikke gemmes: %@"
+          }
+        }
+      }
+    },
+    "They have been moved or deleted, are on a drive that isn't connected, or Edwell hasn't been allowed to open them on this Mac. Find them once and the project remembers them when you save." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De er flyttet, slettet eller ligger på et drev, der ikke er tilsluttet, eller Edwell har ikke fået lov at åbne dem på denne Mac. Find dem én gang, så husker projektet dem, når du gemmer."
+          }
+        }
+      }
+    },
+    "Thin" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tynd"
+          }
+        }
+      }
+    },
+    "Tip: drag in the preview to move the picture." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tip: træk i preview for at flytte billedet."
+          }
+        }
+      }
+    },
+    "Tip: drag in the preview to move the text." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tip: træk i preview for at flytte teksten."
+          }
+        }
+      }
+    },
+    "Title" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst"
+          }
+        }
+      }
+    },
+    "Title Track" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekstspor"
+          }
+        }
+      }
+    },
+    "Tools" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Værktøjer"
+          }
+        }
+      }
+    },
+    "Top" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top"
+          }
+        }
+      }
+    },
+    "Track %@ is locked." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sporet %@ er låst."
+          }
+        }
+      }
+    },
+    "Transitions" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overgange"
+          }
+        }
+      }
+    },
+    "Trim End to Playhead  (W)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trim slut til afspilningshoved  (W)"
+          }
+        }
+      }
+    },
+    "Trim Start to Playhead  (Q)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trim start til afspilningshoved  (Q)"
+          }
+        }
+      }
+    },
+    "Trim start / end to playhead" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trim start / slut til hoved"
+          }
+        }
+      }
+    },
+    "Type" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type"
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortryd"
+          }
+        }
+      }
+    },
+    "Undo (⌘Z)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortryd (⌘Z)"
+          }
+        }
+      }
+    },
+    "Untitled" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uden navn"
+          }
+        }
+      }
+    },
+    "Vertical" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lodret"
+          }
+        }
+      }
+    },
+    "Video" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        }
+      }
+    },
+    "Video Track" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videospor"
+          }
+        }
+      }
+    },
+    "Volume" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lydstyrke"
+          }
+        }
+      }
+    },
+    "Weight" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vægt"
+          }
+        }
+      }
+    },
+    "Your text" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din tekst"
+          }
+        }
+      }
+    },
+    "Zoom In  (=)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom ind  (=)"
+          }
+        }
+      }
+    },
+    "Zoom Out  (−)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom ud  (−)"
+          }
+        }
+      }
+    },
+    "Zoom in (=)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom ind (=)"
+          }
+        }
+      }
+    },
+    "Zoom in / out / fit" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom ind / ud / hele"
+          }
+        }
+      }
+    },
+    "Zoom out (−)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom ud (−)"
+          }
+        }
+      }
+    },
+    "Zoom to Fit  (\\)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis hele tidslinjen  (\\)"
+          }
+        }
+      }
+    },
+    "sec" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sek"
+          }
+        }
+      }
+    },
+    "the project" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "projektet"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
