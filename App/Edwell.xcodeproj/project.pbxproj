@@ -1,0 +1,387 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		48A2D36AEBB0D9FC3CCFE000 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102CECAD4FB6C9647D12AA43 /* main.swift */; };
+		9A1F42D710BA4C512A5F9CDA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 795A1ECDF7A40C0C7B83EB97 /* Assets.xcassets */; };
+		EDC44AD85C348D4A05030434 /* EddieKit in Frameworks */ = {isa = PBXBuildFile; productRef = 503E2ECDC8E09E06AA98F6FF /* EddieKit */; };
+		F9CD18BF17BBEA472B8684F8 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = 7E9BD1EEE5655DFB91B88D2C /* Fonts */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		102CECAD4FB6C9647D12AA43 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		1F04DDD8434A0DB4FBD6B2DD /* Edwell.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Edwell.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		795A1ECDF7A40C0C7B83EB97 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7E9BD1EEE5655DFB91B88D2C /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = ../Resources/Fonts; sourceTree = SOURCE_ROOT; };
+		A6FCEC50F3ABE4A87DB534CA /* affectionate-gauss-e23e4c */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "affectionate-gauss-e23e4c"; path = ..; sourceTree = SOURCE_ROOT; };
+		B4C0757438101EB616E1696F /* Edwell.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Edwell.entitlements; sourceTree = "<group>"; };
+		D4E39125A5E7C0B5CB9B7531 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A2FAFA8592A629BE9BEDED37 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EDC44AD85C348D4A05030434 /* EddieKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1201BE03B787931126AE118F /* affectionate-gauss-e23e4c */ = {
+			isa = PBXGroup;
+			children = (
+				6DF66EC187B1AD7DFAFF6373 /* Resources */,
+			);
+			name = "affectionate-gauss-e23e4c";
+			path = ..;
+			sourceTree = "<group>";
+		};
+		64EE6BA1358F19E17CEDA4F0 = {
+			isa = PBXGroup;
+			children = (
+				1201BE03B787931126AE118F /* affectionate-gauss-e23e4c */,
+				D7645D62D05E5324BCE2FAAB /* Edwell */,
+				E2A202927919701CC90CDCEF /* Packages */,
+				6B1D8E29319C5E41B3C124F4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6B1D8E29319C5E41B3C124F4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1F04DDD8434A0DB4FBD6B2DD /* Edwell.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6DF66EC187B1AD7DFAFF6373 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7E9BD1EEE5655DFB91B88D2C /* Fonts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D7645D62D05E5324BCE2FAAB /* Edwell */ = {
+			isa = PBXGroup;
+			children = (
+				795A1ECDF7A40C0C7B83EB97 /* Assets.xcassets */,
+				B4C0757438101EB616E1696F /* Edwell.entitlements */,
+				D4E39125A5E7C0B5CB9B7531 /* Info.plist */,
+				102CECAD4FB6C9647D12AA43 /* main.swift */,
+			);
+			path = Edwell;
+			sourceTree = "<group>";
+		};
+		E2A202927919701CC90CDCEF /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				A6FCEC50F3ABE4A87DB534CA /* affectionate-gauss-e23e4c */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4D553EE3421BA80ADF004493 /* Edwell */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8669BECBE4F8600E4800CD30 /* Build configuration list for PBXNativeTarget "Edwell" */;
+			buildPhases = (
+				890CC6869D6A3CD5CFFF7CC3 /* Sources */,
+				C71B5CFF22034B7B2BE00CE8 /* Resources */,
+				A2FAFA8592A629BE9BEDED37 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Edwell;
+			packageProductDependencies = (
+				503E2ECDC8E09E06AA98F6FF /* EddieKit */,
+			);
+			productName = Edwell;
+			productReference = 1F04DDD8434A0DB4FBD6B2DD /* Edwell.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CAF500EBB3B5C31A8CF81B52 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2710;
+				TargetAttributes = {
+					4D553EE3421BA80ADF004493 = {
+						DevelopmentTeam = KDWZ3WNLDK;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C95CE1B31F7459E2D85BC74F /* Build configuration list for PBXProject "Edwell" */;
+			developmentRegion = da;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				da,
+			);
+			mainGroup = 64EE6BA1358F19E17CEDA4F0;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C99AE8D68AA2377BC74DFD02 /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 6B1D8E29319C5E41B3C124F4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4D553EE3421BA80ADF004493 /* Edwell */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C71B5CFF22034B7B2BE00CE8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9A1F42D710BA4C512A5F9CDA /* Assets.xcassets in Resources */,
+				F9CD18BF17BBEA472B8684F8 /* Fonts in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		890CC6869D6A3CD5CFFF7CC3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				48A2D36AEBB0D9FC3CCFE000 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		00EAAB3AE196711684CB6D9E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		28045333E52F6DF317ACB712 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Edwell/Edwell.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = KDWZ3WNLDK;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Edwell/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.iamjarl.edwell;
+				PRODUCT_NAME = Edwell;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		454A0D0F657F2AA47BF43D78 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A68A3BA4B290765D9CC0E910 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Edwell/Edwell.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = KDWZ3WNLDK;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Edwell/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.iamjarl.edwell;
+				PRODUCT_NAME = Edwell;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8669BECBE4F8600E4800CD30 /* Build configuration list for PBXNativeTarget "Edwell" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A68A3BA4B290765D9CC0E910 /* Debug */,
+				28045333E52F6DF317ACB712 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C95CE1B31F7459E2D85BC74F /* Build configuration list for PBXProject "Edwell" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				454A0D0F657F2AA47BF43D78 /* Debug */,
+				00EAAB3AE196711684CB6D9E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		C99AE8D68AA2377BC74DFD02 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		503E2ECDC8E09E06AA98F6FF /* EddieKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = EddieKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = CAF500EBB3B5C31A8CF81B52 /* Project object */;
+}
