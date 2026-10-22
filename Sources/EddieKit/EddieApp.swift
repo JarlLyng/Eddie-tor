@@ -20,12 +20,14 @@ public enum Launcher {
 struct EddieApp: App {
     // Debug runs with EDDIE_SNAPSHOT never touch the user's autosave.
     @ViewState private var editor = Editor(persist: ProcessInfo.processInfo.environment["EDDIE_SNAPSHOT"] == nil)
+    @ViewState private var store = Store()
     @NSApplicationDelegateAdaptor private var delegate: AppDelegate
 
     var body: some Scene {
         Window("Edwell", id: "main") {
             ContentView()
                 .environment(editor)
+                .environment(store)
                 .tint(Tokens.Palette.primary)
                 .onAppear {
                     delegate.editor = editor
@@ -33,7 +35,7 @@ struct EddieApp: App {
                 }
         }
         .defaultSize(width: 1400, height: 900)
-        .commands { EddieCommands(editor: editor) }
+        .commands { EddieCommands(editor: editor, store: store) }
     }
 }
 
@@ -104,8 +106,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 struct EddieCommands: Commands {
     let editor: Editor
+    let store: Store
 
     var body: some Commands {
+        CommandGroup(after: .appInfo) {
+            if store.access != .unlocked {
+                Button("Buy Edwell…") { store.showsPurchase = true }
+            }
+            if !store.localBuild {
+                Button("Restore Purchases") {
+                    store.showsPurchase = true
+                    Task { await store.restore() }
+                }
+            }
+        }
         CommandGroup(replacing: .newItem) {
             Button("New Project") { editor.newProject() }.keyboardShortcut("n")
             Button("New Ambient Session…") { editor.newAmbientSession() }.keyboardShortcut("n", modifiers: [.command, .shift])

@@ -17,6 +17,7 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 - **Format**: 16:9, 9:16, 1:1 and 4:5
 - **Export** to MP4 (H.264 or HEVC) in 1080p, the whole project or only between the in and out points
 - Undo/redo, autosave, and projects saved as `.edwell` files (old `.eddie` files still open)
+- **Trial and purchase**: everything works for 14 days, then export needs one purchase ($9.99 once, no subscription). Projects always open and edit. Restore Purchases is in the Edwell menu. A build you make yourself with `./build.sh` is unlocked
 - **Media that moves**: the app remembers each file it's given, follows it when it's renamed or moved, and asks with **Find…** when it can't be read
 
 ## Shortcuts
@@ -79,6 +80,12 @@ Test with a real session (builds the template, trims as Rush did for session 011
 .build/debug/Eddie --session-test "<recording>.mov" /tmp/eddie-session "<Rush's finished video>.mp4"
 ```
 
+The trial and the purchase are tested against Xcode's local StoreKit (`App/Edwell.storekit`), with no App Store account involved:
+
+```bash
+xcodebuild test -project App/Edwell.xcodeproj -scheme Edwell -destination 'platform=macOS' CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+```
+
 Self test (makes test videos, exports a project with every kind of clip, and tests the editing, media access, the store build and the translations):
 
 ```bash
@@ -96,4 +103,5 @@ swift build && .build/debug/Eddie --selftest /tmp/eddie-test
 | `Compositor.swift` | Draws every frame: scaling, layers and titles. Used by both preview and export |
 | `Exporter.swift` | MP4 export |
 | `Sandbox.swift` | Media access under the App Sandbox: bookmarks and Find… |
+| `Store.swift` | The 14-day trial and the one-time purchase (StoreKit 2) |
 | `Views/` | Media bin, preview, timeline, inspector and export |

@@ -3,9 +3,11 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(Editor.self) private var editor
+    @Environment(Store.self) private var store
 
     var body: some View {
         @Bindable var editor = editor
+        @Bindable var store = store
         VSplitView {
             HSplitView {
                 if editor.showMedia && !editor.monitorMaximized {
@@ -44,6 +46,7 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $editor.showExport) { ExportSheet() }
+        .sheet(isPresented: $store.showsPurchase) { PurchaseView() }
         .alert("Oops", isPresented: Binding(get: { editor.errorMessage != nil }, set: { if !$0 { editor.errorMessage = nil } })) {
             Button("OK") { editor.errorMessage = nil }
         } message: {
