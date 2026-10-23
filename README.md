@@ -19,6 +19,7 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 - **New Ambient Session**, the owner's own template, kept out of sight: hold ⌥ in the File menu and New Project turns into it (⌥⌘N). Choose the recording, and the app sets it up as it was done in Rush: the whole recording on V1 with a 0.5 s dip to black and a sound fade at both ends, and the title "Ambient / Session NNN" from 11.2 to 50.8 s, left-aligned in Outfit ExtraBold 177 px, in the session's own color. Then put the playhead where the session starts and press **Q**, and where it ends and press **W**. The title stays at 11.2 s
 - Undo/redo, autosave, and projects saved as `.edwell` files (old `.eddie` files still open)
 - **Trial and purchase**: everything works for 14 days, then export needs one purchase ($9.99 once, no subscription). Projects always open and edit. Restore Purchases is in the Edwell menu. A build you make yourself with `./build.sh` is unlocked
+- **Send Feedback…** in the Help menu opens a draft to support@iamjarl.com in your mail app, with the app's and macOS's versions filled in. You see all of it and send it or not. About Edwell shows the version and the same address
 - **Media that moves**: the app remembers each file it's given, follows it when it's renamed or moved, and asks with **Find…** when it can't be read
 
 ## Shortcuts
@@ -104,5 +105,6 @@ swift build && .build/debug/Eddie --selftest /tmp/eddie-test
 | `Compositor.swift` | Draws every frame: scaling, layers and titles. Used by both preview and export |
 | `Exporter.swift` | MP4 export |
 | `Sandbox.swift` | Media access under the App Sandbox: bookmarks and Find… |
+| `Feedback.swift` | Help › Send Feedback… and the About panel |
 | `Store.swift` | The 14-day trial and the one-time purchase (StoreKit 2) |
 | `Views/` | Media bin, preview, timeline, inspector and export |

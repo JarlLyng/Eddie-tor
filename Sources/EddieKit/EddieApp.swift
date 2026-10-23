@@ -135,6 +135,13 @@ struct EddieCommands: Commands {
     let store: Store
 
     var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("About Edwell") { About.show() }
+        }
+        // Instead of the default item, which only says help isn't available.
+        CommandGroup(replacing: .help) {
+            Button("Send Feedback…") { Feedback.compose(editor: editor) }
+        }
         CommandGroup(after: .appInfo) {
             if store.access != .unlocked {
                 Button("Buy Edwell…") { store.showsPurchase = true }
