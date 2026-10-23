@@ -16,7 +16,7 @@ enum SessionTest {
                 exit(1)
             }
         }
-        dispatchMain()
+        Launcher.runMainQueue()
     }
 
     private static func perform(_ args: [String]) async throws {

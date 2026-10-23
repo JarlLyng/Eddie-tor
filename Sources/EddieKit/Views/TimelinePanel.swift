@@ -6,7 +6,7 @@ private let headerWidth: CGFloat = 96
 
 struct TimelinePanel: View {
     @Environment(Editor.self) private var editor
-    @ViewState private var scroll = ScrollPosition(edge: .leading)
+    @ViewState private var scrollTarget = ScrollTarget()
     @ViewState private var scrollOffset: CGFloat = 0
     @ViewState private var visibleWidth: CGFloat = 800
     @AppStorage(FirstRunHint.dismissedKey) private var hintDismissed = false
@@ -22,24 +22,29 @@ struct TimelinePanel: View {
             ScrollView(.vertical) {
                 HStack(alignment: .top, spacing: 0) {
                     headers
-                    ScrollView(.horizontal) {
-                        TimelineContent(width: contentWidth)
-                    }
-                    .scrollPosition($scroll)
-                    .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, x in
-                        scrollOffset = x
-                        editor.viewport = Double(x)...Double(x + visibleWidth)
-                    }
-                    .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.width } action: { _, w in
-                        visibleWidth = w
-                        editor.viewport = Double(scrollOffset)...Double(scrollOffset + w)
+                    ScrollViewReader { proxy in
+                        ScrollView(.horizontal) {
+                            TimelineContent(width: contentWidth)
+                                .modifier(ScrollHooks(target: scrollTarget, offset: $scrollOffset))
+                        }
+                        .modifier(TimelineScrolling(target: scrollTarget, offset: $scrollOffset, width: $visibleWidth, proxy: proxy))
                     }
                 }
             }
             .background(Tokens.Palette.Background.app)
         }
+        .onChange(of: scrollOffset) { updateViewport() }
+        .onChange(of: visibleWidth) { updateViewport() }
         .onChange(of: editor.currentTime) { _, time in followPlayhead(time) }
         .onChange(of: editor.zoomToFitRequest) { zoomToFit() }
+    }
+
+    private func updateViewport() {
+        editor.viewport = Double(scrollOffset)...Double(scrollOffset + visibleWidth)
+    }
+
+    private func scroll(to x: CGFloat) {
+        scrollTarget = ScrollTarget(x: x, serial: scrollTarget.serial + 1)
     }
 
     private var contentWidth: CGFloat {
@@ -51,14 +56,14 @@ struct TimelinePanel: View {
         guard editor.isPlaying else { return }
         let x = time * editor.pps
         if x > scrollOffset + visibleWidth - 30 || x < scrollOffset {
-            scroll.scrollTo(x: max(0, x - 40))
+            scroll(to: max(0, x - 40))
         }
     }
 
     private func zoomToFit() {
         let duration = max(editor.project.duration, 5)
         editor.pps = min(max(Double(visibleWidth - 40) / duration, 4), 600)
-        scroll.scrollTo(x: 0)
+        scroll(to: 0)
     }
 
     private var toolbar: some View {
@@ -135,6 +140,87 @@ struct TimelinePanel: View {
             }
         }
         .frame(width: headerWidth)
+    }
+}
+
+/// Where the timeline was last asked to scroll. The serial lets the same place be asked for twice.
+private struct ScrollTarget: Equatable {
+    var x: CGFloat = 0
+    var serial = 0
+}
+
+/// macOS 15 reads and sets the horizontal scroll with `ScrollPosition` and `onScrollGeometryChange`.
+/// macOS 14 has neither, so there a geometry reader in the content reports the offset and a
+/// `ScrollViewReader` scrolls to an anchor placed at the target. `EDDIE_LEGACY_SCROLL=1` takes the
+/// macOS 14 path on a newer Mac, to try it there.
+private let legacyScrolling: Bool = {
+    if #available(macOS 15, *) { return ProcessInfo.processInfo.environment["EDDIE_LEGACY_SCROLL"] != nil }
+    return true
+}()
+private let scrollSpace = "timelineScroll"
+private let scrollAnchor = "timelineScrollTarget"
+
+/// On the horizontal scroll view: reports the visible width and scrolls to the target.
+private struct TimelineScrolling: ViewModifier {
+    let target: ScrollTarget
+    @Binding var offset: CGFloat
+    @Binding var width: CGFloat
+    let proxy: ScrollViewProxy
+
+    func body(content: Content) -> some View {
+        if #available(macOS 15, *), !legacyScrolling {
+            content.modifier(ScrollPositionTracking(target: target, offset: $offset, width: $width))
+        } else {
+            content
+                .coordinateSpace(.named(scrollSpace))
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear.onChange(of: geometry.size.width, initial: true) { _, w in width = w }
+                    }
+                }
+                .onChange(of: target) {
+                    // Once the anchor has moved to the target.
+                    DispatchQueue.main.async { proxy.scrollTo(scrollAnchor, anchor: .leading) }
+                }
+        }
+    }
+}
+
+@available(macOS 15, *)
+private struct ScrollPositionTracking: ViewModifier {
+    let target: ScrollTarget
+    @Binding var offset: CGFloat
+    @Binding var width: CGFloat
+    @ViewState private var position = ScrollPosition(edge: .leading)
+
+    func body(content: Content) -> some View {
+        content
+            .scrollPosition($position)
+            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, x in offset = x }
+            .onScrollGeometryChange(for: CGFloat.self) { $0.containerSize.width } action: { _, w in width = w }
+            .onChange(of: target) { position.scrollTo(x: target.x) }
+    }
+}
+
+/// Inside the scrolled content, for macOS 14 only: the offset, and the anchor `TimelineScrolling` scrolls to.
+private struct ScrollHooks: ViewModifier {
+    let target: ScrollTarget
+    @Binding var offset: CGFloat
+
+    func body(content: Content) -> some View {
+        if legacyScrolling {
+            content
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear.onChange(of: geometry.frame(in: .named(scrollSpace)).minX, initial: true) { _, x in offset = -x }
+                    }
+                }
+                .overlay(alignment: .topLeading) {
+                    Color.clear.frame(width: 1, height: 1).id(scrollAnchor).padding(.leading, target.x).allowsHitTesting(false)
+                }
+        } else {
+            content
+        }
     }
 }
 

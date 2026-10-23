@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Eddie",
-    platforms: [.macOS(.v15)],
+    platforms: [.macOS(.v14)],
     products: [
         // The whole app. The Edwell app target in App/ (Xcode) and the Eddie executable below both run it.
         .library(name: "EddieKit", targets: ["EddieKit"]),

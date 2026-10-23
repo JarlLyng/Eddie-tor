@@ -16,6 +16,15 @@ public enum Launcher {
             EddieApp.main()
         }
     }
+
+    /// For the command-line tests: keeps the main queue on the main thread, as it is in the app, until the test
+    /// exits. `dispatchMain()` hands the main queue to another thread, and then `MainActor.assumeIsolated` on
+    /// it fails wherever the Swift runtime uses its older check (a binary stamped with the macOS 14 SDK, as
+    /// `swift build` makes, or macOS 14 itself).
+    static func runMainQueue() -> Never {
+        RunLoop.main.add(NSMachPort(), forMode: .default)
+        while true { RunLoop.main.run() }
+    }
 }
 
 struct EddieApp: App {
@@ -89,6 +98,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Glass: the selected segment of the toolbar's format picker came out as a blank white pill.
     @MainActor static func snapshot(_ window: NSWindow, to url: URL) async {
         do {
+            guard #available(macOS 14.4, *) else { throw CocoaError(.featureUnsupported) }
             let content = try await SCShareableContent.currentProcess
             guard let shared = content.windows.first(where: { $0.windowID == CGWindowID(window.windowNumber) }) else {
                 throw CocoaError(.featureUnsupported)
@@ -155,11 +165,16 @@ struct EddieCommands: Commands {
         }
         CommandGroup(replacing: .newItem) {
             // The owner's Ambient Session template stays out of sight: hold ⌥ in the File menu (⌥⌘N).
-            Button("New Project") { editor.newProject() }
-                .keyboardShortcut("n")
-                .modifierKeyAlternate(.option) {
-                    Button("New Ambient Session…") { editor.newAmbientSession() }
-                }
+            // Menus have alternates from macOS 15; on 14 the template isn't there.
+            if #available(macOS 15, *) {
+                Button("New Project") { editor.newProject() }
+                    .keyboardShortcut("n")
+                    .modifierKeyAlternate(.option) {
+                        Button("New Ambient Session…") { editor.newAmbientSession() }
+                    }
+            } else {
+                Button("New Project") { editor.newProject() }.keyboardShortcut("n")
+            }
             Button("Open…") { editor.open() }.keyboardShortcut("o")
         }
         CommandGroup(replacing: .saveItem) {
