@@ -49,9 +49,11 @@ enum SessionTest {
         let output = dir.appendingPathComponent(full ? "session-full.mp4" : "session-first-minute.mp4")
         clock = Date()
         let tenths = Tenths()
-        try await Exporter.export(project, to: output, codec: .h264, range: full ? nil : 0...60) { p in
+        let settings = try await Exporter.export(project, to: output, codec: .h264, range: full ? nil : 0...60) { p in
             if tenths.passed(p) { print(String(format: "  export %.0f %%", p * 100)) }
         }
+        print(String(format: "motion %.4f, target %.1f Mbit/s video, %.0f kbit/s audio",
+                     settings.motion, Double(settings.bitrate) / 1e6, Double(Exporter.audioBitrate) / 1e3))
         let seconds = -clock.timeIntervalSinceNow
         let asset = AVURLAsset(url: output)
         let duration = try await asset.load(.duration).seconds
@@ -62,6 +64,13 @@ enum SessionTest {
         let audioRate = try await audio?.load(.estimatedDataRate) ?? 0
         print(String(format: "exported %.2f s of video in %.1f s (%.2fx real time); %.1f Mbit/s video, %.0f kbit/s audio, %.0f MB",
                      duration, seconds, duration / seconds, videoRate / 1e6, audioRate / 1e3, bytes / 1e6))
+
+        if let rush {
+            let asset = AVURLAsset(url: rush)
+            let video = try await asset.loadTracks(withMediaType: .video).first?.load(.estimatedDataRate) ?? 0
+            let audio = try await asset.loadTracks(withMediaType: .audio).first?.load(.estimatedDataRate) ?? 0
+            print(String(format: "rush: %.1f Mbit/s video, %.0f kbit/s audio", video / 1e6, audio / 1e3))
+        }
 
         // Same moments in Eddie's and Rush's results.
         let times = full ? [0.2, 0.6, 20, 1800, 3855.9, 3856.2] : [0.2, 0.6, 11.0, 12.0, 20, 50.5, 51.0]
