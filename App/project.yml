@@ -5,7 +5,7 @@ name: Edwell
 options:
   bundleIdPrefix: com.iamjarl
   deploymentTarget:
-    macOS: "15.0"
+    macOS: "14.0"
   developmentLanguage: en
   createIntermediateGroups: true
   xcodeVersion: "27.1"

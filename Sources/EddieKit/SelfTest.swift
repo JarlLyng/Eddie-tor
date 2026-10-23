@@ -17,7 +17,7 @@ enum SelfTest {
                 exit(1)
             }
         }
-        dispatchMain()
+        Launcher.runMainQueue()
     }
 
     private static func perform(_ dir: URL) async throws {
@@ -425,8 +425,11 @@ enum SelfTest {
     }
 
     /// The Mac App Store build declares what the code expects: the bundle id and copyright, the project type
-    /// with `.edwell` first and old `.eddie` files still opening, and no entitlement beyond the sandbox and
-    /// files the user picks. Inside Edwell.app it checks the app itself; from `swift build` it reads App/.
+    /// with `.edwell` first and old `.eddie` files still opening, no entitlement beyond the sandbox and
+    /// files the user picks, and one minimum macOS. Inside Edwell.app it checks the app itself; from `swift build` it reads App/.
+    /// The oldest macOS Edwell runs on. `@Observable` sets it; what's newer than it goes behind `#available`.
+    static let minimumMacOS = "14.0"
+
     @MainActor
     private static func storeBuildTests(_ dir: URL, demo: Data) throws {
         func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("App Store-build: \(message)") } }
@@ -451,6 +454,24 @@ enum SelfTest {
                       && entitlements.values.allSatisfy { $0 as? Bool == true }, "entitlements \(entitlements.keys.sorted())")
             let project = try String(contentsOf: app.appendingPathComponent("Edwell.xcodeproj/project.pbxproj"), encoding: .utf8)
             try check(project.contains("PRODUCT_BUNDLE_IDENTIFIER = com.iamjarl.edwell;"), "bundle id")
+
+            // One minimum macOS everywhere: the package, project.yml, the generated project, and Info.plist after it.
+            func found(_ pattern: String, in text: String) -> [String] {
+                let regex = try! NSRegularExpression(pattern: pattern)
+                return regex.matches(in: text, range: NSRange(text.startIndex..., in: text)).compactMap {
+                    Range($0.range(at: 1), in: text).map { String(text[$0]) }
+                }
+            }
+            let package = try String(contentsOf: app.deletingLastPathComponent().appendingPathComponent("Package.swift"), encoding: .utf8)
+            let spec = try String(contentsOf: app.appendingPathComponent("project.yml"), encoding: .utf8)
+            let major = minimumMacOS.split(separator: ".")[0]
+            try check(found(#"\.macOS\(\.v(\d+)\)"#, in: package) == [String(major)], "Package.swift-platform")
+            try check(found(#"macOS: "([\d.]+)""#, in: spec) == [minimumMacOS], "project.yml-deploymentTarget")
+            try check(Set(found(#"MACOSX_DEPLOYMENT_TARGET = ([\d.]+);"#, in: project)) == [minimumMacOS], "MACOSX_DEPLOYMENT_TARGET")
+            try check(info["LSMinimumSystemVersion"] as? String == "$(MACOSX_DEPLOYMENT_TARGET)", "LSMinimumSystemVersion følger ikke")
+        }
+        if insideApp {
+            try check(info["LSMinimumSystemVersion"] as? String == minimumMacOS, "LSMinimumSystemVersion \(info["LSMinimumSystemVersion"] ?? "")")
         }
         try check(info["CFBundleDisplayName"] as? String == "Edwell", "navn")
         try check(info["NSHumanReadableCopyright"] as? String == "© 2026 IAMJARL" && About.copyright == "© 2026 IAMJARL", "copyright")
