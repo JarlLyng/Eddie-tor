@@ -199,6 +199,16 @@
         }
       }
     },
+    "About Edwell" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om Edwell"
+          }
+        }
+      }
+    },
     "Add Title  (G)" : {
       "localizations" : {
         "da" : {
@@ -815,6 +825,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edwell"
+          }
+        }
+      }
+    },
+    "Edwell %@ feedback" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feedback på Edwell %@"
           }
         }
       }
@@ -1529,6 +1549,22 @@
         }
       }
     },
+    "No mail app opened. Write to %@ and mention Edwell %@ and macOS %@." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der åbnede ingen mailapp. Skriv til %@, og nævn Edwell %@ og macOS %@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No mail app opened. Write to %1$@ and mention Edwell %2$@ and macOS %3$@."
+          }
+        }
+      }
+    },
     "None" : {
       "localizations" : {
         "da" : {
@@ -1739,6 +1775,16 @@
         }
       }
     },
+    "Questions, or something not working? Write to %@, or choose Send Feedback… in the Help menu." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spørgsmål, eller virker noget ikke? Skriv til %@, eller vælg Send feedback… i menuen Hjælp."
+          }
+        }
+      }
+    },
     "Range" : {
       "localizations" : {
         "da" : {
@@ -1875,6 +1921,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Halvfed"
+          }
+        }
+      }
+    },
+    "Send Feedback…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send feedback…"
           }
         }
       }
@@ -2315,6 +2371,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tekstspor"
+          }
+        }
+      }
+    },
+    "Titles use the Outfit typeface, under the SIL Open Font License." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titler bruger skrifttypen Outfit under SIL Open Font License."
           }
         }
       }

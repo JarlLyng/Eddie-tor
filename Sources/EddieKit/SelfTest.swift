@@ -108,6 +108,9 @@ enum SelfTest {
         try await MainActor.run { try storeBuildTests(dir, demo: data) }
         print("store build tests ok")
 
+        try feedbackTests()
+        print("feedback tests ok")
+
         try await mediaAccessTests(dir, source: landscape)
         print("media access tests ok")
 
@@ -326,6 +329,29 @@ enum SelfTest {
         try check(abs(length - 10) < 0.1, "eksport \(length) s")
     }
 
+    /// Send Feedback… opens a draft to support with the versions in it, encoded so nothing is cut short,
+    /// and About links the same draft.
+    private static func feedbackTests() throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Feedback: \(message)") } }
+        let facts = Feedback.Facts(version: "1.0", build: "7", system: "27.0.1, Apple silicon")
+        let url = Feedback.url(facts)
+        let parts = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        func value(_ name: String) -> String? { parts?.queryItems?.first { $0.name == name }?.value }
+        try check(parts?.scheme == "mailto" && parts?.path == "support@iamjarl.com", "adresse \(url)")
+        try check(value("subject") == Feedback.subject(facts) && Feedback.subject(facts).contains("1.0"), "emne \(value("subject") ?? "")")
+        try check(value("body") == Feedback.body(facts), "brødtekst")
+        try check(Feedback.body(facts).contains("Edwell 1.0 (7)\nmacOS 27.0.1, Apple silicon"), "versioner")
+        try check(!url.absoluteString.contains(" ") && !url.absoluteString.contains("\n"), "kodning")
+        // A value with the characters `queryItems` would leave alone still comes back whole.
+        let odd = Feedback.Facts(version: "1&2=3+4", build: "?", system: "x")
+        let back = URLComponents(url: Feedback.url(odd), resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "body" }?.value
+        try check(back == Feedback.body(odd), "& = +")
+
+        let credits = About.credits
+        let range = (credits.string as NSString).range(of: Feedback.address)
+        try check(range.location != NSNotFound && credits.attribute(.link, at: range.location, effectiveRange: nil) as? URL != nil, "link i Om")
+    }
+
     /// The Mac App Store build declares what the code expects: the bundle id and copyright, the project type
     /// with `.edwell` first and old `.eddie` files still opening, and no entitlement beyond the sandbox and
     /// files the user picks. Inside Edwell.app it checks the app itself; from `swift build` it reads App/.
@@ -355,7 +381,7 @@ enum SelfTest {
             try check(project.contains("PRODUCT_BUNDLE_IDENTIFIER = com.iamjarl.edwell;"), "bundle id")
         }
         try check(info["CFBundleDisplayName"] as? String == "Edwell", "navn")
-        try check(info["NSHumanReadableCopyright"] as? String == "© 2026 IAMJARL", "copyright")
+        try check(info["NSHumanReadableCopyright"] as? String == "© 2026 IAMJARL" && About.copyright == "© 2026 IAMJARL", "copyright")
         try check(info["LSApplicationCategoryType"] as? String == "public.app-category.video", "kategori")
 
         let types = info["UTExportedTypeDeclarations"] as? [[String: Any]] ?? []
