@@ -105,6 +105,9 @@ enum SelfTest {
         try await firstRunTests(dir, video: landscape, image: image, music: tone)
         print("first run tests ok")
 
+        try await exportQualityTests(dir, image: image, withAudio: output)
+        print("export quality tests ok")
+
         try await MainActor.run { try storeBuildTests(dir, demo: data) }
         print("store build tests ok")
 
@@ -327,6 +330,75 @@ enum SelfTest {
         try await Exporter.export(editor.project, to: url, codec: .h264) { _ in }
         let length = try await AVURLAsset(url: url).load(.duration).seconds
         try check(abs(length - 10) < 0.1, "eksport \(length) s")
+    }
+
+    /// Export picks its bitrate from the frame size, the frame rate and how much the picture moves, and the
+    /// encoder keeps to it; sound is AAC at 48 kHz in stereo; and a cancelled export stops and leaves no file.
+    private static func exportQualityTests(_ dir: URL, image: URL, withAudio: URL) async throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Eksportkvalitet: \(message)") } }
+        let hd = CGSize(width: 1920, height: 1080)
+        func rate(_ codec: Exporter.Codec = .h264, _ size: CGSize = hd, fps: Int = 30, motion: Double = 0) -> Int {
+            Exporter.bitrate(codec: codec, size: size, fps: fps, motion: motion)
+        }
+        try check(rate() == 20_000_000 && rate(.hevc) == 12_000_000, "rolig 1080p30 \(rate()) \(rate(.hevc))")
+        try check(rate(fps: 60) == 30_000_000 && rate(motion: 1) == 30_000_000 && rate(fps: 60, motion: 1) == 45_000_000, "60 fps og bevægelse")
+        let byRate = [24, 25, 30, 50, 60].map { rate(fps: $0) }
+        try check(byRate == byRate.sorted() && Set(byRate).count == byRate.count, "stiger med billedfrekvens \(byRate)")
+        try check(rate(motion: Exporter.calmMotion) == rate() && rate(motion: 0.03) > rate() && rate(motion: 0.03) < rate(motion: 1), "bevægelse")
+        try check(rate(.h264, AspectRatio.portrait.renderSize) == rate() && rate(.h264, AspectRatio.square.renderSize) < rate(), "billedstørrelse")
+
+        // Blocks that change every frame move as much as anything can and get the most, and the encoder keeps
+        // to it. A still gets the calm rate.
+        let noise = dir.appendingPathComponent("noise.mov")
+        try await writeNoise(to: noise, seconds: 2)
+        guard let noiseItem = await MediaLoader.load(noise), let stillItem = await MediaLoader.load(image) else { throw err("Eksportkvalitet: medier") }
+        var project = Project()
+        project.aspect = .landscape
+        project.media = [noiseItem, stillItem]
+        project.clips = [Clip(kind: .video, track: 0, start: 0, duration: 2, mediaID: noiseItem.id)]
+        for codec in Exporter.Codec.allCases {
+            let url = dir.appendingPathComponent("noise-\(codec.rawValue).mp4")
+            let settings = try await Exporter.export(project, to: url, codec: codec) { _ in }
+            let track = try await AVURLAsset(url: url).loadTracks(withMediaType: .video).first
+            let measured = Double(try await track?.load(.estimatedDataRate) ?? 0)
+            let format = try await track?.load(.formatDescriptions).first
+            let subtype = format.map { CMFormatDescriptionGetMediaSubType($0) }
+            print(String(format: "%@ noise: motion %.3f, target %.1f Mbit/s, got %.1f", codec.rawValue, settings.motion,
+                         Double(settings.bitrate) / 1e6, measured / 1e6))
+            try check(settings.motion > Exporter.fastMotion && settings.bitrate == rate(codec, motion: settings.motion), "\(codec) støj \(settings)")
+            try check(abs(measured / Double(settings.bitrate) - 1) < 0.2, "\(codec): \(measured) bit/s mod \(settings.bitrate)")
+            try check(subtype == (codec == .h264 ? kCMVideoCodecType_H264 : kCMVideoCodecType_HEVC), "\(codec) codec")
+        }
+        project.clips = [Clip(kind: .image, track: 0, start: 0, duration: 2, mediaID: stillItem.id)]
+        let still = try await Exporter.export(project, to: dir.appendingPathComponent("still.mp4"), codec: .h264) { _ in }
+        try check(still.motion < Exporter.calmMotion && still.bitrate == rate(), "stillbillede \(still)")
+
+        let audio = try await AVURLAsset(url: withAudio).loadTracks(withMediaType: .audio).first
+        let description = try await audio?.load(.formatDescriptions).first
+        let stream = description.flatMap { CMAudioFormatDescriptionGetStreamBasicDescription($0)?.pointee }
+        try check(stream?.mFormatID == kAudioFormatMPEG4AAC && stream?.mSampleRate == 48_000 && stream?.mChannelsPerFrame == 2,
+                  "lyd \(String(describing: stream))")
+
+        // Cancelled halfway through a longer export: it stops, and no half-written file is left.
+        project.clips = (0..<8).map { Clip(kind: .video, track: 0, start: Double($0) * 2, duration: 2, mediaID: noiseItem.id) }
+        let cancelled = dir.appendingPathComponent("cancelled.mp4")
+        let started = Flag()
+        let job = Task { try await Exporter.export(project, to: cancelled, codec: .h264) { p in if p > 0.1 { started.set() } } }
+        while !started.isSet { try await Task.sleep(for: .milliseconds(20)) }
+        job.cancel()
+        do {
+            try await job.value
+            throw err("Eksportkvalitet: afbrudt eksport blev færdig")
+        } catch is CancellationError {
+            try check(!FileManager.default.fileExists(atPath: cancelled.path), "afbrudt fil ligger der stadig")
+        }
+    }
+
+    private final class Flag: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value = false
+        var isSet: Bool { lock.withLock { value } }
+        func set() { lock.withLock { value = true } }
     }
 
     /// Send Feedback… opens a draft to support with the versions in it, encoded so nothing is cut short,
@@ -755,6 +827,46 @@ enum SelfTest {
         input.markAsFinished()
         await writer.finishWriting()
         if writer.status != .completed { throw writer.error ?? err("video") }
+    }
+
+    /// 1920×1080 frames of random 8 px blocks in colour, a new pattern every frame: the encoder needs every
+    /// bit it's given, and can still fit them into it. Finer or misaligned blocks overshoot any sensible
+    /// bitrate, and larger ones need less.
+    private static func writeNoise(to url: URL, seconds: Int) async throws {
+        try? FileManager.default.removeItem(at: url)
+        let width = 1920, height = 1080, fps = 30, block = 8
+        let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
+        let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
+            AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: width, AVVideoHeightKey: height,
+        ])
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+            kCVPixelBufferWidthKey as String: width, kCVPixelBufferHeightKey as String: height,
+        ])
+        writer.add(input)
+        writer.startWriting()
+        writer.startSession(atSourceTime: .zero)
+        for frame in 0..<(seconds * fps) {
+            while !input.isReadyForMoreMediaData { try await Task.sleep(for: .milliseconds(5)) }
+            var buffer: CVPixelBuffer?
+            CVPixelBufferPoolCreatePixelBuffer(nil, adaptor.pixelBufferPool!, &buffer)
+            guard let buffer else { continue }
+            CVPixelBufferLockBaseAddress(buffer, [])
+            let base = CVPixelBufferGetBaseAddress(buffer)!, stride = CVPixelBufferGetBytesPerRow(buffer)
+            var line = [UInt32](repeating: 0, count: width)
+            for top in Swift.stride(from: 0, to: height, by: block) {
+                for x in Swift.stride(from: 0, to: width, by: block) {
+                    let colour = UInt32.random(in: 0...0xFFFFFF) | 0xFF00_0000
+                    for i in x..<min(x + block, width) { line[i] = colour }
+                }
+                for y in top..<min(top + block, height) { memcpy(base + y * stride, line, width * 4) }
+            }
+            CVPixelBufferUnlockBaseAddress(buffer, [])
+            adaptor.append(buffer, withPresentationTime: CMTime(value: CMTimeValue(frame), timescale: CMTimeScale(fps)))
+        }
+        input.markAsFinished()
+        await writer.finishWriting()
+        if writer.status != .completed { throw writer.error ?? err("støj") }
     }
 
     private static func writeImage(to url: URL) throws {

@@ -15,7 +15,7 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 - **Titles**: font, weight (100–900), size, color, left/center/right alignment, line spacing, shadow, background box, position and fade. Drag the text directly in the preview. Outfit ships with the app (OFL, from the design system), so projects look the same on every Mac
 - **Audio**: volume per clip (0–200 %), mute, fade in and out
 - **Format**: 16:9, 9:16, 1:1 and 4:5
-- **Export** to MP4 (H.264 or HEVC) in 1080p, the whole project or only between the in and out points
+- **Export** to MP4 (H.264 or HEVC) in 1080p, the whole project or only between the in and out points. The bitrate is the app's own, set from the frame size, the frame rate and how much the picture moves, with AAC sound at 48 kHz. Cancel stops an export halfway and leaves no file
 - **New Ambient Session**, the owner's own template, kept out of sight: hold ⌥ in the File menu and New Project turns into it (⌥⌘N). Choose the recording, and the app sets it up as it was done in Rush: the whole recording on V1 with a 0.5 s dip to black and a sound fade at both ends, and the title "Ambient / Session NNN" from 11.2 to 50.8 s, left-aligned in Outfit ExtraBold 177 px, in the session's own color. Then put the playhead where the session starts and press **Q**, and where it ends and press **W**. The title stays at 11.2 s
 - Undo/redo, autosave, and projects saved as `.edwell` files (old `.eddie` files still open)
 - **Trial and purchase**: everything works for 14 days, then export needs one purchase ($9.99 once, no subscription). Projects always open and edit. Restore Purchases is in the Edwell menu. A build you make yourself with `./build.sh` is unlocked
@@ -103,7 +103,7 @@ swift build && .build/debug/Eddie --selftest /tmp/eddie-test
 | `Editor.swift` | State, editing, undo, playback, save and open |
 | `CompositionBuilder.swift` | Turns the project into an AVFoundation composition |
 | `Compositor.swift` | Draws every frame: scaling, layers and titles. Used by both preview and export |
-| `Exporter.swift` | MP4 export |
+| `Exporter.swift` | MP4 export: the compositor's frames through AVAssetReader into AVAssetWriter, at a bitrate picked from the content |
 | `Sandbox.swift` | Media access under the App Sandbox: bookmarks and Find… |
 | `Feedback.swift` | Help › Send Feedback… and the About panel |
 | `Store.swift` | The 14-day trial and the one-time purchase (StoreKit 2) |
