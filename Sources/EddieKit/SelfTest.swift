@@ -102,6 +102,9 @@ enum SelfTest {
         try await titleAndSessionTests(dir, media: m)
         print("title and session tests ok")
 
+        try await firstRunTests(dir, video: landscape, image: image, music: tone)
+        print("first run tests ok")
+
         try await MainActor.run { try storeBuildTests(dir, demo: data) }
         print("store build tests ok")
 
@@ -290,6 +293,37 @@ enum SelfTest {
         try check(!String(decoding: try Data(contentsOf: oldURL), as: UTF8.self).contains("bookmark"), "gammel fil har bogmærke")
         editor.open(oldURL)
         try check(editor.project.media[0].bookmark != nil && editor.unreadableMedia.isEmpty, "gammelt projekt")
+    }
+
+    /// The path a new user takes on a first run: an empty project, files dragged from Finder straight onto
+    /// the timeline, a split, a title and an export.
+    @MainActor
+    private static func firstRunTests(_ dir: URL, video: URL, image: URL, music: URL) async throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Første gang: \(message)") } }
+        let editor = Editor(persist: false)
+        try check(editor.project.clips.isEmpty && editor.project.media.isEmpty && editor.fileURL == nil, "tomt projekt")
+
+        let v1 = TrackRow(group: .visual, index: 0), a1 = TrackRow(group: .audio, index: 0)
+        await editor.dropFiles([video, image], at: 0, row: v1)
+        // Music dropped on a video track goes to the first audio track.
+        await editor.dropFiles([music], at: 0, row: v1)
+        // The same file again is one more clip, not one more media item.
+        await editor.dropFiles([video], at: 100, row: v1)
+        let main = editor.clips(in: v1)
+        try check(editor.project.media.count == 3 && editor.errorMessage == nil, "medier \(editor.project.media.count)")
+        try check(main.map(\.kind) == [.video, .image, .video] && main.map(\.start) == [0, 3, 7], "V1 \(main.map(\.start))")
+        try check(editor.clips(in: a1).map(\.kind) == [.audio], "musik på A1")
+
+        editor.selection = nil
+        editor.seek(1.5)
+        editor.splitAtPlayhead()
+        editor.addTitle()
+        try check(editor.clips(in: v1).count == 4 && editor.project.clips.contains { $0.kind == .title }, "del og titel")
+
+        let url = dir.appendingPathComponent("first-run.mp4")
+        try await Exporter.export(editor.project, to: url, codec: .h264) { _ in }
+        let length = try await AVURLAsset(url: url).load(.duration).seconds
+        try check(abs(length - 10) < 0.1, "eksport \(length) s")
     }
 
     /// The Mac App Store build declares what the code expects: the bundle id and copyright, the project type

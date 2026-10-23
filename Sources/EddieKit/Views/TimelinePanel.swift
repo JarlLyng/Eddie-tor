@@ -9,11 +9,16 @@ struct TimelinePanel: View {
     @ViewState private var scroll = ScrollPosition(edge: .leading)
     @ViewState private var scrollOffset: CGFloat = 0
     @ViewState private var visibleWidth: CGFloat = 800
+    @AppStorage(FirstRunHint.dismissedKey) private var hintDismissed = false
 
     var body: some View {
         VStack(spacing: 0) {
             toolbar
             Divider()
+            if !hintDismissed {
+                FirstRunHint { hintDismissed = true }
+                Divider()
+            }
             ScrollView(.vertical) {
                 HStack(alignment: .top, spacing: 0) {
                     headers
@@ -282,10 +287,50 @@ private struct TrackLane: View {
                 LockedPattern().allowsHitTesting(false)
             }
         }
-        .dropDestination(for: String.self) { ids, location in
+        .dropDestination(for: TimelineDrop.self) { items, location in
             guard !flags.locked else { return false }
-            return editor.dropMedia(ids, at: location.x / editor.pps, row: row)
+            let time = location.x / editor.pps
+            let files = items.compactMap { if case .file(let url) = $0 { url } else { nil } }
+            let ids = items.compactMap { if case .media(let id) = $0 { id } else { nil } }
+            if !files.isEmpty { Task { await editor.dropFiles(files, at: time, row: row) } }
+            return editor.dropMedia(ids, at: time, row: row) || !files.isEmpty
         } isTargeted: { targeted = $0 && !flags.locked }
+    }
+}
+
+/// What a track takes: a tile from the media bin (its id as text) or files from Finder.
+private enum TimelineDrop: Transferable {
+    case media(String)
+    case file(URL)
+
+    static var transferRepresentation: some TransferRepresentation {
+        // Files first, in case Finder also offers a file's path as text.
+        ProxyRepresentation(importing: { (url: URL) in TimelineDrop.file(url) })
+        ProxyRepresentation(importing: { (id: String) in TimelineDrop.media(id) })
+    }
+}
+
+/// The only help a first run gets, above the timeline: where media goes, the two moves that matter and
+/// that export is the last step. It stays until it's closed or the first export is done. No tour.
+struct FirstRunHint: View {
+    static let dismissedKey = "firstRunHintDismissed"
+    let dismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: Tokens.Spacing.sm) {
+            Image(systemName: "lightbulb")
+            Text("Drag video, photos or music onto the timeline. Split with S, add a title with G, then export with ⌘E.")
+                .lineLimit(2)
+            Spacer(minLength: Tokens.Spacing.sm)
+            Button(action: dismiss) { Image(systemName: "xmark") }
+                .buttonStyle(.borderless)
+                .help("Hide this tip")
+        }
+        .ijFont(.sm)
+        .foregroundStyle(Tokens.Palette.Text.primary)
+        .padding(.horizontal, Tokens.Spacing.md)
+        .padding(.vertical, Tokens.Spacing.sm)
+        .background(Tokens.Palette.Background.card)
     }
 }
 

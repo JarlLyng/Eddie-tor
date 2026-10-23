@@ -574,22 +574,37 @@ final class Editor {
 
     func importMedia(_ urls: [URL], thenAddToTimeline: Bool = false) {
         Task {
-            var added: [MediaItem] = []
-            for url in urls {
-                if let existing = project.media.first(where: { $0.url == url }) {
-                    added.append(existing)
-                } else if let item = await MediaLoader.load(url) {
-                    added.append(item)
-                }
-            }
-            let new = added.filter { item in !project.media.contains { $0.id == item.id } }
-            if !new.isEmpty { edit { $0.media.append(contentsOf: new) } }
-            cache.prepare(new)
+            let added = await load(urls)
             if thenAddToTimeline { added.forEach { add($0) } }
-            if added.count < urls.count {
-                errorMessage = String(localized: "Some files couldn't be opened. Edwell works with video, audio and images.")
+        }
+    }
+
+    /// Files dragged from Finder straight onto a track: imported, then placed where they were dropped,
+    /// like tiles from the media bin. The quickest way in on a first run.
+    func dropFiles(_ urls: [URL], at time: Double, row: TrackRow) async {
+        let added = await load(urls)
+        _ = dropMedia(added.map(\.id.uuidString), at: time, row: row)
+    }
+
+    /// Adds the files to the project's media, each once, and returns them in order, including any that
+    /// were there already.
+    @discardableResult
+    func load(_ urls: [URL]) async -> [MediaItem] {
+        var added: [MediaItem] = []
+        for url in urls {
+            if let existing = project.media.first(where: { $0.url == url }) {
+                added.append(existing)
+            } else if let item = await MediaLoader.load(url) {
+                added.append(item)
             }
         }
+        let new = added.filter { item in !project.media.contains { $0.id == item.id } }
+        if !new.isEmpty { edit { $0.media.append(contentsOf: new) } }
+        cache.prepare(new)
+        if added.count < urls.count {
+            errorMessage = String(localized: "Some files couldn't be opened. Edwell works with video, audio and images.")
+        }
+        return added
     }
 
     // MARK: - Playback
@@ -712,7 +727,8 @@ final class Editor {
         replaceProject(Project(), url: nil)
     }
 
-    /// Starts a new project from an Ambient Session recording, set up as in Rush.
+    /// Starts a new project from an Ambient Session recording, set up as in Rush. The owner's own weekly
+    /// job, so it's kept out of sight: hold ⌥ in the File menu and New Project turns into it.
     func newAmbientSession() {
         guard confirmDiscard() else { return }
         let panel = NSOpenPanel()

@@ -58,6 +58,6 @@ The UI follows the IAMJARL design system (`iamjarl-design`, Swift package `IAMJA
 
 ## Open work, roughly in order
 
-1. **The Ambient Session workflow** is in place: `AmbientSession.swift` (File › New Ambient Session, ⇧⌘N), checked against Rush's own video by `--session-test` (see README). Left: export bitrate is ~10.5 Mbit/s against Rush's ~19 (Apple's preset; a fixed bitrate needs an AVAssetReader/AVAssetWriter export); scrubbing and playback of an hour-long clip haven't been tried by hand.
+1. **The Ambient Session workflow** is in place: `AmbientSession.swift` (hold ⌥ in the File menu: New Project turns into New Ambient Session, ⌥⌘N; new users never see it), checked against Rush's own video by `--session-test` (see README). Left: export bitrate is ~10.5 Mbit/s against Rush's ~19 (Apple's preset; a fixed bitrate needs an AVAssetReader/AVAssetWriter export); scrubbing and playback of an hour-long clip haven't been tried by hand.
 2. Colour looks and adjustments, speed ramps over part of a clip, pan and zoom on stills, animated titles.
 3. Auto volume (−23 LUFS dialogue, −25 LUFS music), auto ducking (−18 dB, 800 ms fades), noise reduction, voice-over recording, Auto Reframe.
