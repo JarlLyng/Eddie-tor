@@ -20,7 +20,7 @@ The exact edit comes from the Rush project for session 011 (read on 2026-10-22, 
 | Trim the recording | One clip on V1, source **212.967 s to 4069.300 s** of the recording: 3 min 33 s cut from the start, 5.8 s from the end. Timeline 0 to 3856.333 s, 30 fps | ✓ trim on the main track |
 | Fade in | **Dip to Black, 0.5 s**, at the head of the clip: black for the first 0.25 s, then up over 0.25 s | ✓ "Dyk til sort" at the start, 0.5 s, the same curve (measured frame by frame) |
 | Sound in and out | **Constant Power crossfade, 0.5 s**, at the head and the tail of the audio | ✓ set Lyd › "Fade ind" and "Fade ud" to 0.5 s on the clip. A dip at the very start or end doesn't fade the sound by itself; only a transition between two clips cross-fades it |
-| Title | One graphic on V2 from **11.233 s to 50.767 s** (39.5 s), hard cut in and out. Text "Ambient⏎Session 011" in two lines | ✓ "Ny Ambient Session" sets it up |
+| Title | One graphic on V2 from **11.233 s to 50.767 s** (39.5 s), hard cut in and out. Text "Ambient⏎Session 011" in two lines | ✓ New Ambient Session (⌥⌘N) sets it up |
 | Title face | **Soleil Extra Bold** (PostScript name `SoleilXb`), from Adobe Fonts | Outfit at weight 800, shipped with Eddie. Soleil is used instead if its Extra Bold is installed (it isn't, even on the old Mac: only Soleil Light is activated there) |
 | Title size | about **177 px** in a 1080 px frame (177.27 is in the text data; the measured letter height agrees). Lines 166 px apart (tops of the ink at y 334 and 500) | ✓ 177 px, line height 77 %: the ink lands at y 332 and 500 |
 | Title colour | **#D622CE** in session 011 (measured in the video as #D828D0). A new colour every session, see below | ✓ |

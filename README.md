@@ -4,8 +4,8 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 
 ## Features
 
-- **New Ambient Session** (⇧⌘N, or the button in Media): choose the recording, and the app sets it up as it was done in Rush: the whole recording on V1 with a 0.5 s dip to black and a sound fade at both ends, and the title "Ambient / Session NNN" from 11.2 to 50.8 s, left-aligned in Outfit ExtraBold 177 px, in the session's own color. Then put the playhead where the session starts and press **Q**, and where it ends and press **W**. The title stays at 11.2 s
-- **Import** video, audio and images (the **+** button, ⌘I, or drag files into Media)
+- **First run** is an empty project and one tip above the timeline: drag media in, split with S, add a title with G, export with ⌘E. Close the tip and it stays closed; it also goes after the first export
+- **Import** video, audio and images (the **+** button, ⌘I, or drag files into Media or straight onto a track)
 - **Magnetic main track**: clips on V1 always follow each other, so deleting and trimming close the gap. Drag a clip to move it to a new place
 - **More tracks**: 3 video tracks, 2 title tracks and 2 audio tracks, and you can add more. Each track can be hidden, muted and locked
 - **Clips**: move (also between tracks), trim at the edges, split (S), ripple trim to the playhead (Q/W), duplicate (D), copy/cut/paste and separate the audio from the video (E)
@@ -16,6 +16,7 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 - **Audio**: volume per clip (0–200 %), mute, fade in and out
 - **Format**: 16:9, 9:16, 1:1 and 4:5
 - **Export** to MP4 (H.264 or HEVC) in 1080p, the whole project or only between the in and out points
+- **New Ambient Session**, the owner's own template, kept out of sight: hold ⌥ in the File menu and New Project turns into it (⌥⌘N). Choose the recording, and the app sets it up as it was done in Rush: the whole recording on V1 with a 0.5 s dip to black and a sound fade at both ends, and the title "Ambient / Session NNN" from 11.2 to 50.8 s, left-aligned in Outfit ExtraBold 177 px, in the session's own color. Then put the playhead where the session starts and press **Q**, and where it ends and press **W**. The title stays at 11.2 s
 - Undo/redo, autosave, and projects saved as `.edwell` files (old `.eddie` files still open)
 - **Trial and purchase**: everything works for 14 days, then export needs one purchase ($9.99 once, no subscription). Projects always open and edit. Restore Purchases is in the Edwell menu. A build you make yourself with `./build.sh` is unlocked
 - **Media that moves**: the app remembers each file it's given, follows it when it's renamed or moved, and asks with **Find…** when it can't be read

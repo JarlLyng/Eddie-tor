@@ -147,8 +147,12 @@ struct EddieCommands: Commands {
             }
         }
         CommandGroup(replacing: .newItem) {
-            Button("New Project") { editor.newProject() }.keyboardShortcut("n")
-            Button("New Ambient Session…") { editor.newAmbientSession() }.keyboardShortcut("n", modifiers: [.command, .shift])
+            // The owner's Ambient Session template stays out of sight: hold ⌥ in the File menu (⌥⌘N).
+            Button("New Project") { editor.newProject() }
+                .keyboardShortcut("n")
+                .modifierKeyAlternate(.option) {
+                    Button("New Ambient Session…") { editor.newAmbientSession() }
+                }
             Button("Open…") { editor.open() }.keyboardShortcut("o")
         }
         CommandGroup(replacing: .saveItem) {
