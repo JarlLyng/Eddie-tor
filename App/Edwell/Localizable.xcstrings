@@ -939,16 +939,6 @@
         }
       }
     },
-    "Export isn't supported on this Mac" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eksport understøttes ikke på denne Mac"
-          }
-        }
-      }
-    },
     "Export to MP4 (⌘E)" : {
       "localizations" : {
         "da" : {
@@ -2301,6 +2291,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Købet venter på godkendelse. Edwell låses op, så snart det er godkendt."
+          }
+        }
+      }
+    },
+    "The video couldn't be exported." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videoen kunne ikke eksporteres."
           }
         }
       }
