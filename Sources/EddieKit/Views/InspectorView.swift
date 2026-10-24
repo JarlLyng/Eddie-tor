@@ -92,10 +92,12 @@ private struct ClipInspector: View {
         (600, "Semibold"), (700, "Bold"), (800, "Extra Bold"), (900, "Black"),
     ]
 
+    /// The clip as it is now. Looked up by its id, not through the selection, which may have moved on to another
+    /// clip when this inspector draws for the last time.
+    private var current: Clip { editor.project.clips.first { $0.id == clip.id } ?? clip }
+
     var body: some View {
-        let current = editor.selectedClip ?? clip
-        let tabs = InspectorTab.available(for: current, hasAudio: editor.project.media(clip.mediaID)?.hasAudio == true)
-        let tab = tabs.contains(editor.inspectorTab) ? editor.inspectorTab : tabs[0]
+        let (tabs, tab) = editor.inspectorTabs(for: clip)
         VStack(spacing: 0) {
             Picker("", selection: Binding(get: { tab }, set: { editor.inspectorTab = $0 })) {
                 ForEach(tabs) { t in
@@ -121,7 +123,7 @@ private struct ClipInspector: View {
                         Text("sec").foregroundStyle(Tokens.Palette.Text.secondary)
                     }
                     LabeledContent("Duration") {
-                        TextField("", value: Binding(get: { editor.selectedClip?.duration ?? clip.duration },
+                        TextField("", value: Binding(get: { current.duration },
                                                      set: { editor.setDuration(clip.id, $0) }),
                                   format: .number.precision(.fractionLength(0...2)))
                             .multilineTextAlignment(.trailing).frame(width: 80)
@@ -237,7 +239,7 @@ private struct ClipInspector: View {
         }
         if let transition {
             let value = Binding<Double>(
-                get: { editor.selectedClip?[keyPath: keyPath]?.duration ?? transition.duration },
+                get: { self.current[keyPath: keyPath]?.duration ?? transition.duration },
                 set: { d in editor.updateClip(clip.id, coalesce: "\(keyPath)") { $0[keyPath: keyPath]?.duration = d } }
             )
             LabeledContent("Duration") {
@@ -254,7 +256,7 @@ private struct ClipInspector: View {
 
     @ViewBuilder private func speedSection(_ current: Clip) -> some View {
         let percent = Binding<Double>(
-            get: { (editor.selectedClip?.speed ?? clip.speed) * 100 },
+            get: { self.current.speed * 100 },
             set: { editor.setSpeed(clip.id, $0 / 100) }
         )
         Section("Speed") {
@@ -284,7 +286,7 @@ private struct ClipInspector: View {
         Section("Audio") {
             slider("Volume", \.volume, 0...2, percent: true)
             Toggle("Mute", isOn: Binding(
-                get: { editor.selectedClip?.volume == 0 },
+                get: { self.current.volume == 0 },
                 set: { muted in editor.updateClip(clip.id) { $0.volume = muted ? 0 : 1 } }
             ))
             slider("Fade In", \.fadeIn, 0...3, unit: "s")
@@ -353,9 +355,10 @@ private struct ClipInspector: View {
 
     private var startBinding: Binding<Double> {
         Binding(
-            get: { editor.selectedClip?.start ?? clip.start },
+            get: { current.start },
             set: { value in
-                guard let current = editor.selectedClip, !editor.project.isMagnetic(current) else { return }
+                let current = self.current
+                guard !editor.project.isMagnetic(current) else { return }
                 let start = editor.freeStart(current.group, track: current.track, desired: max(0, value),
                                              duration: current.duration, excluding: current.id)
                 editor.updateClip(clip.id) { $0.start = start }
