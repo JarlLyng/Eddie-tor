@@ -394,6 +394,13 @@ enum SelfTest {
         try check(abs(landed - 2.11) < 0.01, "søgning til 2,11 s endte ved \(landed) s")
         try check(before == 0 && during > 1000, "titel i billedet \(before) \(during)")
         try check(playing && played > 2.3, "afspilning nåede \(played) s")
+
+        // Dragging the ruler or the playhead while it plays: playback stops and the player follows.
+        editor.play()
+        editor.scrub(to: 3.6)
+        for _ in 0..<40 where abs(editor.player.currentTime().seconds - 3.6) > 0.01 { try await Task.sleep(for: .milliseconds(25)) }
+        try check(!editor.isPlaying && editor.player.rate == 0 && editor.currentTime == 3.6
+                  && abs(editor.player.currentTime().seconds - 3.6) < 0.01, "træk i afspilningshovedet \(editor.player.currentTime().seconds) s")
     }
 
     /// Export picks its bitrate from the frame size, the frame rate and how much the picture moves, and the
