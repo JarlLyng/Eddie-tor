@@ -659,6 +659,12 @@ final class Editor {
         player.seek(to: CompositionBuilder.time(currentTime), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
+    /// Dragging the ruler or the playhead: playback stops and the playhead follows the mouse.
+    func scrub(to time: Double) {
+        if isPlaying { pause() }
+        seek(time)
+    }
+
     func step(frames: Int) {
         if isPlaying { pause() }
         seek(currentTime + Double(frames) / Double(project.fps))

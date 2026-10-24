@@ -759,6 +759,16 @@
         }
       }
     },
+    "Drag to move the playhead" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk for at flytte afspilningshovedet"
+          }
+        }
+      }
+    },
     "Drag video, audio or images here" : {
       "localizations" : {
         "da" : {
