@@ -50,6 +50,7 @@ The window is captured through ScreenCaptureKit, as the window server shows it (
 - `Editor.swift`: all state and every edit. Edits go through `edit {}` (one undo step, coalesced by key) or `beginInteraction`/`interact`/`endInteraction` for drags. `packMain` keeps V1 magnetic after every change. The Rush single-key shortcuts live in the key monitor (`handleKey`), never as menu key equivalents, so they don't fire while typing.
 - `CompositionBuilder.swift`: project → `AVMutableComposition` + video composition + audio mix. Clips are packed onto as few composition tracks as possible; a stretched black filler track sets the length. Speed is `scaleTimeRange`; pitch per audio track via `audioTimePitchAlgorithm`.
 - `Compositor.swift`: `EddieCompositor` (custom `AVVideoCompositing`) draws every frame with Core Image for both preview and export: placement, crop, rotation, opacity, transitions, titles (Core Text).
+- `Exporter.swift`: MP4 export without a preset: the composition's frames (through the same compositor) and mixed sound go through `AVAssetReader` into `AVAssetWriter`. `Exporter.bitrate` sets the video bitrate from the frame's area, the frame rate and `Exporter.motion` (moving detail, sampled on half-size frames); the self test checks the encoder keeps to it.
 - `Views/`: media bin, preview, timeline, inspector (Rush-style tool tabs, ⌘1–⌘6), export sheet.
 
 ## Design system
@@ -58,6 +59,6 @@ The UI follows the IAMJARL design system (`iamjarl-design`, Swift package `IAMJA
 
 ## Open work, roughly in order
 
-1. **The Ambient Session workflow** is in place: `AmbientSession.swift` (hold ⌥ in the File menu: New Project turns into New Ambient Session, ⌥⌘N; new users never see it), checked against Rush's own video by `--session-test` (see README). Left: export bitrate is ~10.5 Mbit/s against Rush's ~19 (Apple's preset; a fixed bitrate needs an AVAssetReader/AVAssetWriter export); scrubbing and playback of an hour-long clip haven't been tried by hand.
+1. **The Ambient Session workflow** is in place: `AmbientSession.swift` (hold ⌥ in the File menu: New Project turns into New Ambient Session, ⌥⌘N; new users never see it), checked against Rush's own video by `--session-test` (see README). Left: scrubbing and playback of an hour-long clip haven't been tried by hand.
 2. Colour looks and adjustments, speed ramps over part of a clip, pan and zoom on stills, animated titles.
 3. Auto volume (−23 LUFS dialogue, −25 LUFS music), auto ducking (−18 dB, 800 ms fades), noise reduction, voice-over recording, Auto Reframe.

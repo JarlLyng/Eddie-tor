@@ -22,6 +22,7 @@ private struct ExportSettings: View {
     @ViewState private var codec = Exporter.Codec.h264
     @ViewState private var state = ExportState.idle
     @ViewState private var onlyInOut = true
+    @ViewState private var job: Task<Void, Never>?
 
     enum ExportState {
         case idle
@@ -76,10 +77,12 @@ private struct ExportSettings: View {
                         .buttonStyle(SecondaryButtonStyle())
                 }
                 Spacer()
-                Button(isDone ? "Close" : "Cancel") { dismiss() }
+                // While exporting, Cancel stops the export and leaves no file; otherwise it closes the sheet.
+                Button(isDone ? "Close" : "Cancel") {
+                    if isExporting { job?.cancel() } else { dismiss() }
+                }
                     .keyboardShortcut(.cancelAction)
                     .buttonStyle(SecondaryButtonStyle())
-                    .disabled(isExporting)
                 if !isDone {
                     Button("Export…") { chooseAndExport() }
                         .keyboardShortcut(.defaultAction)
@@ -117,7 +120,7 @@ private struct ExportSettings: View {
         let project = editor.project
         let codec = codec
         let range = exportRange
-        Task {
+        job = Task {
             do {
                 try await Exporter.export(project, to: url, codec: codec, range: range) { progress in
                     Task { @MainActor in if case .exporting = state { state = .exporting(progress) } }
@@ -125,6 +128,8 @@ private struct ExportSettings: View {
                 state = .done(url)
                 // A finished video is what the first-run tip was for.
                 UserDefaults.standard.set(true, forKey: FirstRunHint.dismissedKey)
+            } catch is CancellationError {
+                state = .idle
             } catch {
                 state = .failed(error.localizedDescription)
             }
