@@ -834,9 +834,14 @@ enum SelfTest {
         try check(editor.project.clips.filter { $0.mediaID == video.id }.count == 3, "gentag del")
 
         // Titles and music.
+        editor.selection = parts[1].id
         editor.currentTime = 0.5
         editor.addTitle()
         try check(editor.selectedClip?.kind == .title && editor.selectedClip?.start == 0.5, "tilføj tekst")
+        // G with a video selected: the video's inspector draws once more and must not get the title's Text tab.
+        let previous = editor.inspectorTabs(for: parts[1])
+        try check(editor.inspectorTab == .text && editor.inspectorTabs(for: editor.selectedClip!).tab == .text
+                  && !previous.tabs.contains(.text) && previous.tab != .text, "tekstfanen kun for tekst")
         editor.add(tone)
         try check(editor.selectedClip?.group == .audio && editor.selectedClip?.track == 0, "musik på lydspor")
 
