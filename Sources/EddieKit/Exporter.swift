@@ -169,11 +169,17 @@ enum Exporter {
         writer.startSession(atSourceTime: range.start)
 
         let start = range.start.seconds, length = max(range.duration.seconds, 1e-6)
+        // Once per thousandth, not once per frame: an export runs many times faster than real time.
+        let reported = Reported()
         await withTaskCancellationHandler {
             await withTaskGroup(of: Void.self) { group in
                 group.addTask {
                     await pump(frames, into: videoInput, label: "video") { time in
-                        progress(min(max((time.seconds - start) / length, 0), 0.99))
+                        let done = min(max((time.seconds - start) / length, 0), 0.99)
+                        let step = Int(done * 1000)
+                        guard step != reported.step else { return }
+                        reported.step = step
+                        progress(done)
                     }
                 }
                 if let sound, let audioInput {
@@ -227,6 +233,11 @@ enum Exporter {
     /// Touched only on the pump's own queue.
     private final class PumpState: @unchecked Sendable {
         var finished = false
+    }
+
+    /// The last progress reported, touched only on the video pump's queue.
+    private final class Reported: @unchecked Sendable {
+        var step = -1
     }
 
     enum ExportError: LocalizedError {
