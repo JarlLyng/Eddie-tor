@@ -1,6 +1,6 @@
 # Eddie
 
-A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Mac App Store it's called **Edwell**. It has only the features that actually get used. The interface is in English and Danish.
+A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Mac App Store it's called **Edwell**. It has only the features that actually get used. The interface is in English and Danish. It runs on macOS 14 Sonoma and later.
 
 ## Features
 
