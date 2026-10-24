@@ -27,7 +27,7 @@ EDDIE_SNAPSHOT=/tmp/ui.png EDDIE_OPEN=/path/project.eddie EDDIE_APPEARANCE=dark 
 
 It opens the project, selects the first image clip, writes the window to `ui.png` after 4 s and a frame from the preview player to `ui.png.preview.png`. With `EDDIE_SNAPSHOT` set the app never touches the owner's autosave. The same hook works on `build/Edwell.app/Contents/MacOS/Edwell`, but the sandbox only lets it write inside `~/Library/Containers/com.iamjarl.edwell/Data`.
 
-The window is captured through ScreenCaptureKit, as the window server shows it (an app may capture its own windows without permission). Drawing the views with `cacheDisplay` can't show Liquid Glass and painted the toolbar picker's selection as a blank white pill. Two things the picture won't tell you: `.build/debug/Eddie` is stamped as built with the macOS 15 SDK, so AppKit gives it the controls from before macOS 26 (snapshot `build/Edwell.app` to see what ships), and the window is never key, so tinted selections show their inactive look.
+The window is captured through ScreenCaptureKit, as the window server shows it (an app may capture its own windows without permission). Drawing the views with `cacheDisplay` can't show Liquid Glass and painted the toolbar picker's selection as a blank white pill. Two things the picture won't tell you: `.build/debug/Eddie` is stamped as built with the SDK of the deployment target (macOS 14), so AppKit gives it the controls from before macOS 26 (snapshot `build/Edwell.app` to see what ships), and the window is never key, so tinted selections show their inactive look.
 
 ## Gotchas
 
@@ -40,6 +40,7 @@ The window is captured through ScreenCaptureKit, as the window server shows it (
 - **Fonts that ship with the app** live in `Resources/Fonts` (Outfit, OFL-1.1, with its licence), are copied into the app by the Xcode target and are registered at launch by `BundledFonts`. Outfit's variable font is called "Outfit Thin" by CoreText; the UI shows it as "Outfit". Weights go through the `wght` axis.
 
 - **`@State` is a macro in the macOS 27 SDK** and its plugin ships only with Xcode. Use `@ViewState` (`typealias ViewState = SwiftUI.State` in `Model.swift`). Other SwiftUI macros (`#Preview`, `@Entry`) will fail the same way.
+- **Deployment target: macOS 14.** `@Observable` is what sets it. The package platform (`Package.swift`) and `deploymentTarget` in `App/project.yml` must agree (`LSMinimumSystemVersion` follows the build setting), and the self test checks they do. Anything newer goes behind `#available`: the timeline's horizontal scrolling (`ScrollPosition` on 15, a geometry reader and a `ScrollViewReader` anchor on 14; `EDDIE_LEGACY_SCROLL=1` tries the 14 path on a newer Mac) and the ⌥ alternate in the File menu (15; on 14 there's no Ambient Session item). The command-line tests keep the main queue on the main thread (`Launcher.runMainQueue`), because with the 14 SDK stamp `MainActor.assumeIsolated` fails on a main queue that `dispatchMain()` has moved to another thread.
 - Swift 6 compiler in Swift 5 language mode (`swiftLanguageModes: [.v5]`), so concurrency warnings don't block the build.
 - Project files are JSON. New fields need a default in the hand-written `init(from:)` in `Model.swift`, or older `.eddie` files stop opening (the self test checks a version 1 file).
 
