@@ -267,17 +267,15 @@ private struct TimelineContent: View {
     let width: CGFloat
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            VStack(spacing: 0) {
-                RulerView(width: width)
-                    .frame(width: width, height: rulerHeight)
-                ForEach(editor.rows) { row in
-                    TrackLane(row: row)
-                        .frame(width: width, height: row.height)
-                }
+        VStack(spacing: 0) {
+            RulerView(width: width)
+                .frame(width: width, height: rulerHeight)
+            ForEach(editor.rows) { row in
+                TrackLane(row: row)
+                    .frame(width: width, height: row.height)
             }
-            PlayheadView()
         }
+        .overlay(alignment: .topLeading) { PlayheadView() }
         .frame(width: width, alignment: .topLeading)
         .coordinateSpace(.named("timeline"))
     }
@@ -321,28 +319,88 @@ private struct RulerView: View {
         .background(Tokens.Palette.Background.card)
         .contentShape(Rectangle())
         .gesture(DragGesture(minimumDistance: 0).onChanged { value in
-            if editor.isPlaying { editor.pause() }
-            editor.seek(value.location.x / pps)
+            editor.scrub(to: value.location.x / pps)
         })
         .help("In and out points: I and O")
     }
 }
 
+/// The playhead: a handle in the ruler and a line through every track. The handle and the line can be
+/// grabbed anywhere, over clips too; where the line sits on a cut, it wins over the clips' trim handles.
 private struct PlayheadView: View {
     @Environment(Editor.self) private var editor
+    @ViewState private var hovering = false
+    @ViewState private var dragging = false
 
     var body: some View {
-        let x = editor.currentTime * editor.pps
-        VStack(spacing: 0) {
-            Image(systemName: "arrowtriangle.down.fill")
-                .font(.caption)
-                .foregroundStyle(Tokens.Palette.primary)
-                .frame(height: rulerHeight - 6, alignment: .bottom)
-            Rectangle().fill(Tokens.Palette.primary).frame(width: Tokens.Focus.width)
+        // At 0:00 the line and the handle would be half outside the timeline, so they stay just inside it.
+        let x = max(editor.currentTime * editor.pps, Tokens.Focus.width / 2)
+        let handleX = max(x - PlayheadHandle.width / 2, 0)
+        let lineWidth = hovering || dragging ? Tokens.Focus.width + 1 : Tokens.Focus.width
+        ZStack(alignment: .topLeading) {
+            // A rim in the background colour keeps the line clear over clips of any colour.
+            Rectangle().fill(Tokens.Palette.Background.app)
+                .frame(width: lineWidth + 2)
+                .offset(x: x - lineWidth / 2 - 1)
+            Rectangle().fill(Tokens.Palette.primary)
+                .frame(width: lineWidth)
+                .offset(x: x - lineWidth / 2)
+            PlayheadHandle(tip: x - handleX)
+                .fill(Tokens.Palette.primary)
+                .overlay { PlayheadHandle(tip: x - handleX).stroke(Tokens.Palette.Background.app, lineWidth: 1) }
+                .frame(width: PlayheadHandle.width, height: rulerHeight - Tokens.Spacing.xs)
+                .offset(x: handleX, y: Tokens.Spacing.xs)
         }
-        .frame(width: 12)
-        .offset(x: x - 6, y: 4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .allowsHitTesting(false)
+        .overlay {
+            Color.clear
+                .contentShape(PlayheadGrabArea(line: x, handle: handleX))
+                .onHover { inside in
+                    hovering = inside
+                    if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
+                }
+                .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .named("timeline"))
+                    .onChanged { value in
+                        dragging = true
+                        editor.scrub(to: value.location.x / editor.pps)
+                    }
+                    .onEnded { _ in dragging = false })
+                .help("Drag to move the playhead")
+        }
+    }
+}
+
+/// The playhead's handle in the ruler: a tab that points down at the line. `tip` is where the line is,
+/// measured from the handle's left edge; it is off centre only at the very start of the timeline.
+private struct PlayheadHandle: Shape {
+    static let width = Tokens.Spacing.md + Tokens.Focus.width
+    var tip: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let shoulder = rect.height * 0.55
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: shoulder))
+        path.addLine(to: CGPoint(x: min(max(tip, rect.minX), rect.maxX), y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: shoulder))
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// Where the playhead takes the mouse: its handle, and a strip along the line through the tracks.
+private struct PlayheadGrabArea: Shape {
+    var line: CGFloat
+    var handle: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let strip = Tokens.Spacing.sm
+        var path = Path()
+        path.addRect(CGRect(x: handle, y: rect.minY, width: PlayheadHandle.width, height: rulerHeight))
+        path.addRect(CGRect(x: line - strip / 2, y: rect.minY, width: strip, height: rect.height))
+        return path
     }
 }
 
