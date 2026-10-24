@@ -24,8 +24,6 @@ struct MediaBinView: View {
                     Image(systemName: "film.stack").font(.largeTitle).foregroundStyle(Tokens.Palette.Text.secondary)
                     Text("Drag video, audio or images here").ijFont(.sm).multilineTextAlignment(.center)
                     Button("Import…") { editor.showImportPanel() }.buttonStyle(PrimaryButtonStyle())
-                    Button("New Ambient Session…") { editor.newAmbientSession() }.buttonStyle(SecondaryButtonStyle())
-                        .help("Choose the recording; the fades and title are set up for you (⇧⌘N)")
                 }
                 .foregroundStyle(Tokens.Palette.Text.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

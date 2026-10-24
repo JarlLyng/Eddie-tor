@@ -123,6 +123,8 @@ private struct ExportSettings: View {
                     Task { @MainActor in if case .exporting = state { state = .exporting(progress) } }
                 }
                 state = .done(url)
+                // A finished video is what the first-run tip was for.
+                UserDefaults.standard.set(true, forKey: FirstRunHint.dismissedKey)
             } catch {
                 state = .failed(error.localizedDescription)
             }
