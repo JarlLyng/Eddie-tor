@@ -116,6 +116,15 @@ final class Editor {
         return project.clips.first { $0.id == selection }
     }
 
+    /// The tools the inspector offers for `clip` and the one it shows, from that clip as it is now in the project,
+    /// never from the selection. When G adds a title and opens Text, the inspector of the clip selected before
+    /// draws once more; Text there would bind `\Clip.title!` on a clip that has no title.
+    func inspectorTabs(for clip: Clip) -> (tabs: [InspectorTab], tab: InspectorTab) {
+        let clip = project.clips.first { $0.id == clip.id } ?? clip
+        let tabs = InspectorTab.available(for: clip, hasAudio: project.media(clip.mediaID)?.hasAudio == true)
+        return (tabs, tabs.contains(inspectorTab) ? inspectorTab : tabs[0])
+    }
+
     var windowTitle: String {
         let name = fileURL?.deletingPathExtension().lastPathComponent ?? String(localized: "Untitled")
         return isDirty ? String(localized: "\(name) (edited)") : name
