@@ -4,8 +4,9 @@ struct BuildResult: @unchecked Sendable {
     let composition: AVComposition
     let videoComposition: AVVideoComposition
     let audioMix: AVAudioMix
-    /// Changes only when clips are added, moved or trimmed. If it is unchanged, the player can keep
-    /// its item and just swap in the new video composition and audio mix.
+    /// The composition's media and its length; stills and titles live in the video composition, but
+    /// their ends set the length too. If it is unchanged, the player can keep its item and just swap in
+    /// the new video composition and audio mix. An item of the old length would stop the preview there.
     let structureKey: [String]
 }
 
@@ -187,6 +188,7 @@ enum CompositionBuilder {
         try fillerTrack.insertTimeRange(fillerRange, of: fillerSource, at: .zero)
         fillerTrack.scaleTimeRange(CMTimeRange(start: .zero, duration: fillerRange.duration), toDuration: total)
         total = composition.duration
+        structureKey.append("length|\(total.value)/\(total.timescale)")
 
         // One instruction per stretch where the set of visible clips is constant.
         var bounds = Set<CMTimeValue>([0, total.convertScale(timescale, method: .default).value])

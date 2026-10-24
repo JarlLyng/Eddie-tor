@@ -105,6 +105,11 @@ enum SelfTest {
         try await firstRunTests(dir, video: landscape, image: image, music: tone)
         print("first run tests ok")
 
+        let photo = dir.appendingPathComponent("photo.jpg")
+        try writeImage(to: photo)
+        try await previewTests(photo: photo)
+        print("preview tests ok")
+
         try await exportQualityTests(dir, image: image, withAudio: output)
         print("export quality tests ok")
 
@@ -330,6 +335,65 @@ enum SelfTest {
         try await Exporter.export(editor.project, to: url, codec: .h264) { _ in }
         let length = try await AVURLAsset(url: url).load(.duration).seconds
         try check(abs(length - 10) < 0.1, "eksport \(length) s")
+    }
+
+    /// The preview player when stills and titles set the project's length: in a new 16:9 project, a photo
+    /// on V3, then a title on T1 that runs past the photo's end. The player must reach all of it: the
+    /// title shows, Play runs, and a seek lands where the playhead is.
+    @MainActor
+    private static func previewTests(photo: URL) async throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Forhåndsvisning: \(message)") } }
+        let editor = Editor(persist: false)
+        editor.edit { $0.aspect = .landscape }
+        await editor.previewReady()
+        await editor.dropFiles([photo], at: 0, row: TrackRow(group: .visual, index: 2))
+        await editor.previewReady()
+        editor.seek(1.44)
+        editor.addTitle()
+        editor.edit { project in
+            guard let i = project.clips.firstIndex(where: { $0.kind == .title }) else { return }
+            project.clips[i].title = TitleStyle(text: "Her er tekst", size: 131.7)
+        }
+        await editor.previewReady()
+        let title = editor.project.clips.first { $0.kind == .title }
+        try check(title?.track == 0 && abs((title?.start ?? 0) - 1.44) < 1e-9 && abs(editor.project.duration - 4.44) < 1e-9,
+                  "titel \(title?.start ?? -1) s, projekt \(editor.project.duration) s")
+
+        guard let item = editor.player.currentItem else { throw err("Forhåndsvisning: ingen afspiller") }
+        for _ in 0..<100 where item.status == .unknown { try await Task.sleep(for: .milliseconds(50)) }
+        let length = try await item.asset.load(.duration).seconds
+        editor.seek(2.11)
+        await editor.player.seek(to: CompositionBuilder.time(2.11), toleranceBefore: .zero, toleranceAfter: .zero)
+        let landed = editor.player.currentTime().seconds
+
+        // The player's item at 2.11 s: white title pixels over the yellow photo.
+        func white(at seconds: Double) async throws -> Int {
+            let generator = AVAssetImageGenerator(asset: item.asset)
+            generator.videoComposition = item.videoComposition
+            generator.requestedTimeToleranceBefore = .zero
+            generator.requestedTimeToleranceAfter = .zero
+            let (image, _) = try await generator.image(at: CompositionBuilder.time(seconds))
+            let w = image.width, h = image.height
+            var data = [UInt8](repeating: 0, count: w * h * 4)
+            let ctx = CGContext(data: &data, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+                                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+            ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
+            return stride(from: 0, to: data.count, by: 4).filter { data[$0] > 230 && data[$0 + 1] > 230 && data[$0 + 2] > 230 }.count
+        }
+        let before = try await white(at: 1), during = try await white(at: 2.11)
+
+        editor.play()
+        try await Task.sleep(for: .milliseconds(600))
+        let played = editor.currentTime, playing = editor.isPlaying
+        editor.pause()
+        print("preview: item \(item.status.rawValue) \(item.error.map { "\($0)" } ?? "") \(length) s, seek to \(landed) s,",
+              "title pixels \(before) / \(during), played to \(played) s, playing \(playing)")
+
+        try check(item.status == .readyToPlay, "status \(item.status.rawValue) \(String(describing: item.error))")
+        try check(abs(length - editor.project.duration) < 0.01, "afspilleren er \(length) s, projektet \(editor.project.duration) s")
+        try check(abs(landed - 2.11) < 0.01, "søgning til 2,11 s endte ved \(landed) s")
+        try check(before == 0 && during > 1000, "titel i billedet \(before) \(during)")
+        try check(playing && played > 2.3, "afspilning nåede \(played) s")
     }
 
     /// Export picks its bitrate from the frame size, the frame rate and how much the picture moves, and the
@@ -899,7 +963,9 @@ enum SelfTest {
         ctx.fill(CGRect(x: 0, y: 0, width: 800, height: 600))
         ctx.setFillColor(CGColor(srgbRed: 0.1, green: 0.1, blue: 0.1, alpha: 1))
         ctx.fillEllipse(in: CGRect(x: 250, y: 150, width: 300, height: 300))
-        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else { return }
+        // PNG, or JPEG for a .jpg like a photo from a camera.
+        let type = UTType(filenameExtension: url.pathExtension) ?? .png
+        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, type.identifier as CFString, 1, nil) else { return }
         CGImageDestinationAddImage(dest, ctx.makeImage()!, nil)
         CGImageDestinationFinalize(dest)
     }
