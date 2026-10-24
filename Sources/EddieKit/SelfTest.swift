@@ -453,7 +453,7 @@ enum SelfTest {
         while !started.isSet { try await Task.sleep(for: .milliseconds(20)) }
         job.cancel()
         do {
-            try await job.value
+            _ = try await job.value
             throw err("Eksportkvalitet: afbrudt eksport blev færdig")
         } catch is CancellationError {
             try check(!FileManager.default.fileExists(atPath: cancelled.path), "afbrudt fil ligger der stadig")

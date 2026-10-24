@@ -211,10 +211,11 @@ enum Exporter {
     private static func pump(_ output: AVAssetReaderOutput, into input: AVAssetWriterInput, label: String,
                              sample: (@Sendable (CMTime) -> Void)? = nil) async {
         let queue = DispatchQueue(label: "eddie.export.\(label)")
-        let state = PumpState()
+        let state = PumpState(output: output, input: input)
         await withCheckedContinuation { (done: CheckedContinuation<Void, Never>) in
             input.requestMediaDataWhenReady(on: queue) {
                 guard !state.finished else { return }
+                let output = state.output, input = state.input
                 let finish = {
                     state.finished = true
                     input.markAsFinished()
@@ -232,7 +233,10 @@ enum Exporter {
 
     /// Touched only on the pump's own queue.
     private final class PumpState: @unchecked Sendable {
+        let output: AVAssetReaderOutput
+        let input: AVAssetWriterInput
         var finished = false
+        init(output: AVAssetReaderOutput, input: AVAssetWriterInput) { self.output = output; self.input = input }
     }
 
     /// The last progress reported, touched only on the video pump's queue.
