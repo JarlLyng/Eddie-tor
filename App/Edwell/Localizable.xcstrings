@@ -489,16 +489,6 @@
         }
       }
     },
-    "Choose the recording; the fades and title are set up for you (⇧⌘N)" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vælg optagelsen; fades og titel sættes op for dig (⇧⌘N)"
-          }
-        }
-      }
-    },
     "Choose the session recording" : {
       "localizations" : {
         "da" : {
@@ -765,6 +755,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Træk video, lyd eller billeder hertil"
+          }
+        }
+      }
+    },
+    "Drag video, photos or music onto the timeline. Split with S, add a title with G, then export with ⌘E." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk video, fotos eller musik ned på tidslinjen. Del med S, tilføj tekst med G, og eksporter med ⌘E."
           }
         }
       }
@@ -1165,6 +1165,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "HEVC (mindre fil)"
+          }
+        }
+      }
+    },
+    "Hide this tip" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skjul tippet"
           }
         }
       }
