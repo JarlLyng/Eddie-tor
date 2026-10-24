@@ -699,6 +699,14 @@ final class Editor {
         }
     }
 
+    /// Returns once the preview player has the project as it is now (for the self test).
+    func previewReady() async {
+        while let task = rebuildTask {
+            await task.value
+            if task == rebuildTask { return }
+        }
+    }
+
     private func install(_ result: BuildResult) {
         if let item = player.currentItem, installedStructure == result.structureKey {
             item.videoComposition = result.videoComposition
