@@ -53,6 +53,7 @@ The window is captured through ScreenCaptureKit, as the window server shows it (
 - `Compositor.swift`: `EddieCompositor` (custom `AVVideoCompositing`) draws every frame with Core Image for both preview and export: placement, crop, rotation, opacity, transitions, titles (Core Text).
 - `Exporter.swift`: MP4 export without a preset: the composition's frames (through the same compositor) and mixed sound go through `AVAssetReader` into `AVAssetWriter`. `Exporter.bitrate` sets the video bitrate from the frame's area, the frame rate and `Exporter.motion` (moving detail, sampled on half-size frames); the self test checks the encoder keeps to it.
 - `Views/`: media bin, preview, timeline, inspector (Rush-style tool tabs, ⌘1–⌘6), export sheet.
+- `website/`: the site at edwell.iamjarl.com (home, `/support`, `/privacy`, which App Store Connect links to), static HTML on the IAMJARL marketing kit, published by `.github/workflows/deploy-pages.yml` on a push to `main`. The design system is served from `website/assets/iamjarl-design@vX.Y.Z/`; take a new release with `node scripts/iamjarl-vendor.mjs vX.Y.Z --root website`. Until launch: no store link, no price, no store fragments. Public copy follows the hub's `VOICE.md`.
 
 ## Design system
 
