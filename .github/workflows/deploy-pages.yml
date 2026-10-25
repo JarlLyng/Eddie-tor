@@ -1,0 +1,60 @@
+name: Deploy site
+
+# Publishes website/ to GitHub Pages at edwell.iamjarl.com, as it is: no build step, no Jekyll.
+# The design system is served from the site itself; the check fails the run if that copy no longer
+# matches what the pages load at its pinned tag (iamjarl-design's dist/vendor.mjs).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+      - "scripts/iamjarl-vendor.mjs"
+      - ".github/workflows/deploy-pages.yml"
+  pull_request:
+    paths:
+      - "website/**"
+      - "scripts/iamjarl-vendor.mjs"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Design system copy matches its tag
+        run: |
+          tag=$(grep -oh 'iamjarl-design@v[0-9]*\.[0-9]*\.[0-9]*' website/*.html | sort -u | cut -d@ -f2)
+          [ "$(echo "$tag" | wc -l)" -eq 1 ] || { echo "The pages load more than one release: $tag"; exit 1; }
+          node scripts/iamjarl-vendor.mjs "$tag" --root website --check --no-git
+
+  deploy:
+    needs: check
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: website
+      - id: deployment
+        uses: actions/deploy-pages@v4
