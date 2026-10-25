@@ -1,0 +1,43 @@
+/* Edwell's holding site, on the IAMJARL marketing kit.
+
+   Edwell has no identity in the design system yet: it comes with the site brief, and the
+   registry entry waits for launch (iamjarl-design#114). Until then the pages are held in the
+   tokens' dark mode (<html class="dark">), whose primary is the icon's lime, and take that as
+   their accent. Titles use Outfit, the face the app itself ships. */
+:root {
+  --ij-color-accent: var(--ij-color-primary);
+  --ij-color-accent-text: var(--ij-color-primary);
+  --ij-color-on-accent: var(--ij-color-on-primary);
+  --ij-font-display: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ij-display-weight: var(--ij-font-weight-semibold);
+}
+
+/* The footer stays at the bottom of a short page. */
+body.ij-page {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+body.ij-page > main { flex: 1; }
+
+ij-nav:not(:defined) {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--ij-spacing-lg);
+  padding: var(--ij-spacing-md) var(--ij-spacing-xxxl);
+}
+
+/* Home: the icon, the name and the line, in the middle of the screen. */
+.edwell-holding { display: grid; align-content: center; }
+.edwell-icon { display: block; }
+
+/* Questions on the support page read as one list, a rule above each. */
+.edwell-faq { padding-top: var(--ij-spacing-lg); border-top: 1px solid var(--ij-color-border-subtle); }
+.edwell-faq > * + * { margin-top: var(--ij-spacing-sm); }
+.edwell-faq p { margin-bottom: 0; color: var(--ij-color-text-secondary); }
+
+.edwell-footer {
+  border-top: 1px solid var(--ij-color-border-subtle);
+  padding-block: var(--ij-mkt-space-block);
+}
+.edwell-footer p { margin: 0; }
+.ij-page .edwell-footer a { color: var(--ij-color-text-secondary); }
+.ij-page .edwell-footer a:hover { color: var(--ij-color-text-primary); }
