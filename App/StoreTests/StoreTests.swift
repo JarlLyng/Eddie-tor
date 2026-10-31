@@ -54,10 +54,12 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(store.trialProduct?.price, 0)
         XCTAssertEqual(store.access, .notStarted)
         XCTAssertFalse(store.access.canExport)
+        XCTAssertTrue(store.offersPurchase, "the toolbar's button, once the App Store's record is read")
 
         await store.startTrial()
         XCTAssertEqual(store.access, .trial(daysLeft: 14))
         XCTAssertTrue(store.access.canExport)
+        XCTAssertTrue(store.offersPurchase)
 
         // A relaunch reads the trial back from the App Store's record and doesn't restart it.
         let relaunched = await freshStore()
@@ -66,16 +68,19 @@ final class StoreTests: XCTestCase {
         relaunched.now = { Date().addingTimeInterval(15 * 86_400) }
         XCTAssertEqual(relaunched.access, .trialEnded)
         XCTAssertFalse(relaunched.access.canExport)
+        XCTAssertTrue(relaunched.offersPurchase)
 
         await relaunched.buy()
         XCTAssertEqual(relaunched.access, .unlocked)
         XCTAssertNil(relaunched.message)
+        XCTAssertFalse(relaunched.offersPurchase, "the toolbar's button goes once Edwell is bought")
     }
 
     func testBuyWithoutTrial() async throws {
         let store = await freshStore()
         await store.buy()
         XCTAssertEqual(store.access, .unlocked)
+        XCTAssertFalse(store.offersPurchase)
         let relaunched = await freshStore()
         XCTAssertEqual(relaunched.access, .unlocked)
     }

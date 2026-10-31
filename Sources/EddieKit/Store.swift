@@ -60,6 +60,9 @@ final class Store {
     private(set) var unlocked = false
     private(set) var trialStart: Date?
     private(set) var isLoading = false
+    /// The App Store's record has been read once. Until then a buyer looks like someone who hasn't
+    /// started the trial, so the toolbar offers nothing yet.
+    private(set) var hasReadEntitlements = false
     /// A purchase or a restore is under way.
     private(set) var isBusy = false
     /// What went wrong or is pending, for the purchase sheet. Nil when there is nothing to say.
@@ -73,6 +76,7 @@ final class Store {
 
     init(localBuild: Bool = Store.isLocalBuild) {
         self.localBuild = localBuild
+        hasReadEntitlements = localBuild
         guard !localBuild else { return }
         // Purchases can also finish outside the sheet: Ask to Buy, another Mac, a refund.
         updates = Task { [weak self] in
@@ -82,8 +86,24 @@ final class Store {
     }
 
     var access: Access {
-        localBuild ? .unlocked : Access.compute(unlocked: unlocked, trialStart: trialStart, now: now())
+        localBuild ? Self.snapshotAccess ?? .unlocked : Access.compute(unlocked: unlocked, trialStart: trialStart, now: now())
     }
+
+    /// The toolbar's button to the purchase sheet: there while something is left to buy.
+    var offersPurchase: Bool { hasReadEntitlements && access != .unlocked }
+
+    /// Debug aid for the snapshot hook: a build signed on this Mac, otherwise unlocked, can show the trial's
+    /// states with EDDIE_ACCESS=not-started, a number of days left, or ended. A store build never reads it,
+    /// so it can only lock export, never open it.
+    private static let snapshotAccess: Access? = {
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["EDDIE_SNAPSHOT"] != nil, let value = environment["EDDIE_ACCESS"] else { return nil }
+        switch value {
+        case "not-started": return .notStarted
+        case "ended": return .trialEnded
+        default: return Int(value).map { .trial(daysLeft: $0) }
+        }
+    }()
 
     func load() async {
         await refresh()
@@ -189,5 +209,6 @@ final class Store {
         }
         unlocked = owned
         trialStart = started
+        hasReadEntitlements = true
     }
 }

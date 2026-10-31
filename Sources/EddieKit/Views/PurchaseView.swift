@@ -86,6 +86,43 @@ struct PurchaseView: View {
     private var paragraphs: [String] { PurchaseCopy.paragraphs(store.access, price: store.unlockProduct?.displayPrice) }
 }
 
+/// The way to the sheet from the toolbar, for someone who chose Not Now or is partway through the trial.
+/// It counts the days down, and once they're over it asks in the accent.
+struct PurchaseButton: View {
+    @Environment(Store.self) private var store
+
+    var body: some View {
+        // The days left go down while the window stays open.
+        TimelineView(.everyMinute) { _ in
+            if let label = PurchaseCopy.toolbar(store.access) {
+                let button = Button(label.title) { store.showsPurchase = true }
+                    .accessibilityLabel(label.voiceOver)
+                if store.access == .trialEnded {
+                    button.buttonStyle(PrimaryButtonStyle(compact: true))
+                } else if #available(macOS 26, *) {
+                    // Plain glass, like the toolbar's own; the window's tint would fill it with the accent.
+                    button.ijFont(.sm).buttonStyle(.glass).tint(nil)
+                } else {
+                    button.ijFont(.sm)
+                }
+            }
+        }
+    }
+}
+
+/// `PurchaseButton` just left of Export. On macOS 26 it draws its own glass, so the toolbar doesn't
+/// put the accent button and Export together in one.
+struct PurchaseToolbarItem: ToolbarContent {
+    var body: some ToolbarContent {
+        if #available(macOS 26, *) {
+            ToolbarItem(placement: .primaryAction) { PurchaseButton() }
+                .sharedBackgroundVisibility(.hidden)
+        } else {
+            ToolbarItem(placement: .primaryAction) { PurchaseButton() }
+        }
+    }
+}
+
 /// The sheet's words, kept apart from the view so the self test can read them. Before the trial
 /// starts they must name its length, what stops when it ends, and the price (guideline 3.1.1).
 enum PurchaseCopy {
@@ -120,6 +157,21 @@ enum PurchaseCopy {
             ].compactMap { $0 }
         case .unlocked:
             return [String(localized: "Thank you for buying it. Everything works, on every Mac signed in to your Apple Account.")]
+        }
+    }
+
+    /// The toolbar's button to the sheet, as it reads and as VoiceOver says it; none once Edwell is bought.
+    /// After the trial nothing says free.
+    static func toolbar(_ access: Access) -> (title: String, voiceOver: String)? {
+        switch access {
+        case .notStarted:
+            (String(localized: "Try Edwell free"), String(localized: "Try Edwell free for 14 days"))
+        case .trial(let days):
+            (String(localized: "\(days) days left · Buy"), String(localized: "Buy Edwell, \(days) days left of your trial"))
+        case .trialEnded:
+            (String(localized: "Buy Edwell"), String(localized: "Buy Edwell, your trial is over"))
+        case .unlocked:
+            nil
         }
     }
 }

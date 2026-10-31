@@ -131,7 +131,8 @@ enum SelfTest {
 
     /// The trial and the purchase without the App Store (the StoreKit cases are in App/StoreTests): when
     /// export opens and closes, that a build signed on this Mac is unlocked, that Edwell.storekit matches
-    /// the product ids, and that the screen that starts the trial says what guideline 3.1.1 asks for.
+    /// the product ids, that the screen that starts the trial says what guideline 3.1.1 asks for, and what the
+    /// toolbar's button says in each state.
     @MainActor
     private static func purchaseTests() throws {
         func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Køb: \(message)") } }
@@ -157,6 +158,26 @@ enum SelfTest {
         let expected = danish ? ["14 dage", "$9.99", "eksport"] : ["14 days", "$9.99", "export"]
         try check(expected.allSatisfy { start.localizedCaseInsensitiveContains($0) }, "3.1.1: \(start)")
         try check(!PurchaseCopy.paragraphs(.trialEnded, price: "$9.99").joined().localizedCaseInsensitiveContains("free"), "aldrig gratis")
+
+        // The toolbar's button to the sheet in each state, as it reads and as VoiceOver says it, and gone once bought.
+        let states: [Access] = [.notStarted, .trial(daysLeft: 13), .trialEnded]
+        let titles = states.map { PurchaseCopy.toolbar($0)?.title ?? "" }
+        try check(titles == (danish ? ["Prøv Edwell gratis", "13 dage tilbage · Køb", "Køb Edwell"]
+                                    : ["Try Edwell free", "13 days left · Buy", "Buy Edwell"]), "knappen: \(titles)")
+        let voiceOver = states.map { PurchaseCopy.toolbar($0)?.voiceOver ?? "" }
+        try check(voiceOver == (danish ? ["Prøv Edwell gratis i 14 dage", "Køb Edwell, 13 dage tilbage af din prøveperiode", "Køb Edwell, din prøveperiode er slut"]
+                                       : ["Try Edwell free for 14 days", "Buy Edwell, 13 days left of your trial", "Buy Edwell, your trial is over"]),
+                  "VoiceOver: \(voiceOver)")
+        let ended = (PurchaseCopy.toolbar(.trialEnded).map { $0.title + " " + $0.voiceOver }) ?? ""
+        try check(!ended.localizedCaseInsensitiveContains("free") && !ended.localizedCaseInsensitiveContains("gratis"), "knappen: aldrig gratis")
+        try check(PurchaseCopy.toolbar(.unlocked) == nil && !Store(localBuild: true).offersPurchase, "knappen efter køb")
+        // One day left is singular where the catalog's plurals are compiled in, in the app.
+        if Bundle.main.bundleURL.pathExtension == "app" {
+            let last = PurchaseCopy.toolbar(.trial(daysLeft: 1))
+            try check(last?.title == (danish ? "1 dag tilbage · Køb" : "1 day left · Buy")
+                      && last?.voiceOver == (danish ? "Køb Edwell, 1 dag tilbage af din prøveperiode" : "Buy Edwell, 1 day left of your trial"),
+                      "knappen: sidste dag \(String(describing: last))")
+        }
 
         guard Bundle.main.bundleURL.pathExtension != "app" else { return }
         let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
