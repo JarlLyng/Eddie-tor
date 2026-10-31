@@ -11,19 +11,25 @@ extension Tokens {
     static let clipFill = Palette.Text.primary.opacity(0.14)
 }
 
-/// The design system's primary button: `primary` with `onPrimary` text.
+/// The design system's primary button: `primary` with `onPrimary` text. Compact, it fits the toolbar.
 struct PrimaryButtonStyle: ButtonStyle {
+    var compact = false
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .ijFont(.base, weight: .semibold)
+            .ijFont(compact ? .sm : .base, weight: .semibold)
             .foregroundStyle(Tokens.Palette.onPrimary)
-            .padding(.vertical, Tokens.Spacing.sm)
-            .padding(.horizontal, Tokens.Spacing.xl)
+            .padding(.vertical, compact ? Self.toolbarPadding : Tokens.Spacing.sm)
+            .padding(.horizontal, compact ? Tokens.Spacing.md : Tokens.Spacing.xl)
             .background(configuration.isPressed ? Tokens.Palette.primaryPressed : Tokens.Palette.primary,
                         in: RoundedRectangle(cornerRadius: Tokens.Radius.md))
             .opacity(isEnabled ? 1 : Tokens.Opacity.disabled)
+    }
+
+    /// As tall as the toolbar's glass from macOS 26, and as its controls before.
+    private static var toolbarPadding: CGFloat {
+        if #available(macOS 26, *) { Tokens.Spacing.sm } else { Tokens.Spacing.xs }
     }
 }
 
