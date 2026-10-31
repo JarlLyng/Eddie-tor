@@ -604,8 +604,9 @@ private struct ClipView: View {
             if span.end > span.start, let peaks = editor.cache.waveforms[clip.mediaID ?? UUID()] {
                 WaveformView(peaks: peaks, sourceIn: clip.sourceIn + span.start * sourcePerPoint,
                              duration: (span.end - span.start) * sourcePerPoint, volume: clip.volume)
+                    // `body` aligns `content` to the bottom, so this already fills the area under the label.
                     .frame(width: span.end - span.start, height: height - Tokens.Spacing.lg)
-                    .offset(x: span.start, y: Tokens.Spacing.lg)
+                    .offset(x: span.start)
             }
         case .title:
             EmptyView()
