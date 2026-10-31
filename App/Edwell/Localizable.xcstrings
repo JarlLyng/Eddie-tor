@@ -143,6 +143,46 @@
         }
       }
     },
+    "%lld days left · Buy" : {
+      "localizations" : {
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld dag tilbage · Køb"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld dage tilbage · Køb"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day left · Buy"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days left · Buy"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld media files can't be read" : {
       "localizations" : {
         "da" : {
@@ -445,6 +485,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bund"
+          }
+        }
+      }
+    },
+    "Buy Edwell" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Køb Edwell"
+          }
+        }
+      }
+    },
+    "Buy Edwell, %lld days left of your trial" : {
+      "localizations" : {
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Køb Edwell, %lld dag tilbage af din prøveperiode"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Køb Edwell, %lld dage tilbage af din prøveperiode"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Buy Edwell, %lld day left of your trial"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Buy Edwell, %lld days left of your trial"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Buy Edwell, your trial is over" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Køb Edwell, din prøveperiode er slut"
           }
         }
       }
@@ -2481,6 +2581,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prøv Edwell i 14 dage"
+          }
+        }
+      }
+    },
+    "Try Edwell free" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prøv Edwell gratis"
+          }
+        }
+      }
+    },
+    "Try Edwell free for 14 days" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prøv Edwell gratis i 14 dage"
           }
         }
       }

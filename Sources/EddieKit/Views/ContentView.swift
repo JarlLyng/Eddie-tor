@@ -39,6 +39,9 @@ struct ContentView: View {
                 .pickerStyle(.segmented)
                 .help("Aspect ratio")
             }
+            if store.offersPurchase {
+                PurchaseToolbarItem()
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button { editor.showExport = true } label: { Label("Export", systemImage: "square.and.arrow.up") }
                     .help("Export to MP4 (⌘E)")
