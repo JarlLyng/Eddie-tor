@@ -66,6 +66,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 editor.open(URL(fileURLWithPath: project))
                 editor.selection = editor.project.clips.first { $0.kind == .image }?.id
                 editor.inspectorTab = .position
+                // EDDIE_ADD_TITLE=seconds: moves the playhead there and presses G.
+                if let time = ProcessInfo.processInfo.environment["EDDIE_ADD_TITLE"].flatMap(Double.init) {
+                    editor.seek(time)
+                    editor.addTitle()
+                }
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) {

@@ -383,17 +383,10 @@ enum SelfTest {
         guard let item = editor.player.currentItem else { throw err("Forhåndsvisning: ingen afspiller") }
         for _ in 0..<100 where item.status == .unknown { try await Task.sleep(for: .milliseconds(50)) }
         let length = try await item.asset.load(.duration).seconds
-        editor.seek(2.11)
-        await editor.player.seek(to: CompositionBuilder.time(2.11), toleranceBefore: .zero, toleranceAfter: .zero)
-        let landed = editor.player.currentTime().seconds
 
-        // The player's item at 2.11 s: white title pixels over the yellow photo.
-        func white(at seconds: Double) async throws -> Int {
-            let generator = AVAssetImageGenerator(asset: item.asset)
-            generator.videoComposition = item.videoComposition
-            generator.requestedTimeToleranceBefore = .zero
-            generator.requestedTimeToleranceAfter = .zero
-            let (image, _) = try await generator.image(at: CompositionBuilder.time(seconds))
+        // White title pixels over the yellow photo.
+        func white(_ image: CGImage?) -> Int {
+            guard let image else { return -1 }
             let w = image.width, h = image.height
             var data = [UInt8](repeating: 0, count: w * h * 4)
             let ctx = CGContext(data: &data, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
@@ -401,6 +394,51 @@ enum SelfTest {
             ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
             return stride(from: 0, to: data.count, by: 4).filter { data[$0] > 230 && data[$0 + 1] > 230 && data[$0 + 2] > 230 }.count
         }
+        /// The player's item, or the export's composition, at a time.
+        func white(at seconds: Double, export: BuildResult? = nil) async throws -> Int {
+            let generator = AVAssetImageGenerator(asset: export?.composition ?? item.asset)
+            generator.videoComposition = export?.videoComposition ?? item.videoComposition
+            generator.requestedTimeToleranceBefore = .zero
+            generator.requestedTimeToleranceAfter = .zero
+            return white(try await generator.image(at: CompositionBuilder.time(seconds)).image)
+        }
+        /// What the player shows at the playhead, as the preview pane draws it.
+        let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+        item.add(output)
+        func shown() async throws -> Int {
+            let time = CompositionBuilder.time(editor.currentTime)
+            for _ in 0..<80 where !output.hasNewPixelBuffer(forItemTime: time) { try await Task.sleep(for: .milliseconds(25)) }
+            guard let buffer = output.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else { return -1 }
+            let frame = CIImage(cvPixelBuffer: buffer)
+            return white(CIContext().createCGImage(frame, from: frame.extent))
+        }
+
+        // G puts the title at the playhead, where its fade-in starts from nothing. Paused, with the title selected,
+        // the player shows that frame in full, and again when the title is selected later; the frame after it,
+        // playback and export keep the fade.
+        editor.seek(1)
+        editor.seek(1.44)
+        let added = try await shown()
+        editor.selection = nil
+        await editor.previewReady()
+        let deselected = try await shown()
+        editor.selection = title?.id
+        await editor.previewReady()
+        let reselected = try await shown()
+        let next = try await white(at: 1.44 + 1.0 / 30)
+        let exported = try await white(at: 1.44, export: try await CompositionBuilder.build(editor.project))
+        editor.play()
+        let whilePlaying = try await white(at: 1.44)
+        editor.pause()
+        editor.seek(1.44)
+        print("preview: new title at the playhead \(added), deselected \(deselected), selected \(reselected),",
+              "next frame \(next), export \(exported), playing \(whilePlaying)")
+        try check(added > 1000 && deselected == 0 && reselected > 1000, "ny titel ved afspilningshovedet \(added) \(deselected) \(reselected)")
+        try check(next == 0 && exported == 0 && whilePlaying == 0, "titlens fade \(next) \(exported) \(whilePlaying)")
+
+        editor.seek(2.11)
+        await editor.player.seek(to: CompositionBuilder.time(2.11), toleranceBefore: .zero, toleranceAfter: .zero)
+        let landed = editor.player.currentTime().seconds
         let before = try await white(at: 1), during = try await white(at: 2.11)
 
         editor.play()
