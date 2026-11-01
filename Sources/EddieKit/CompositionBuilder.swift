@@ -34,7 +34,8 @@ enum CompositionBuilder {
         var pitch: AVAudioTimePitchAlgorithm?
     }
 
-    static func build(_ project: Project) async throws -> BuildResult {
+    /// `pausedTitle` is for the preview player only.
+    static func build(_ project: Project, pausedTitle: PausedTitle? = nil) async throws -> BuildResult {
         let composition = AVMutableComposition()
         var videoSlots: [Slot] = []
         var audioSlots: [Slot] = []
@@ -123,7 +124,7 @@ enum CompositionBuilder {
         func layer(_ clip: Clip, content: RenderLayer.Content, start: CMTime, duration: CMTime) -> RenderLayer {
             let (enter, leave) = effects(clip)
             return RenderLayer(
-                content: content, start: start, end: start + duration,
+                content: content, clipID: clip.id, start: start, end: start + duration,
                 scale: clip.scale, offsetX: clip.offsetX, offsetY: clip.offsetY, fill: clip.fill,
                 rotation: clip.rotation, opacity: clip.opacity, flipH: clip.flipH, flipV: clip.flipV,
                 crop: (clip.cropLeft, clip.cropRight, clip.cropTop, clip.cropBottom), feather: clip.feather,
@@ -204,7 +205,8 @@ enum CompositionBuilder {
             let active = layers
                 .filter { $0.start < range.end && $0.end > range.start }
                 .sorted { $0.z < $1.z }
-            instructions.append(EddieInstruction(timeRange: range, layers: active, background: project.background))
+            instructions.append(EddieInstruction(timeRange: range, layers: active, background: project.background,
+                                                 pausedTitle: pausedTitle))
         }
 
         let videoComposition = AVMutableVideoComposition()
