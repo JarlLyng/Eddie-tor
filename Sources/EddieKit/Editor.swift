@@ -42,7 +42,15 @@ enum InspectorTab: Int, CaseIterable, Identifiable {
 @MainActor @Observable
 final class Editor {
     private(set) var project = Project()
-    var selection: UUID?
+    var selection: UUID? {
+        didSet {
+            // A title under the paused playhead loses its fades while selected; draw the frame again.
+            let affected = [oldValue, selection].contains { id in
+                project.clips.contains { $0.id == id && $0.kind == .title && $0.start <= currentTime && currentTime < $0.end }
+            }
+            if selection != oldValue, !isPlaying, affected { scheduleRebuild(delay: 0) }
+        }
+    }
     var currentTime: Double = 0
     private(set) var isPlaying = false
     /// Timeline zoom in points per second.
@@ -68,6 +76,7 @@ final class Editor {
 
     let cache = MediaCache()
     @ObservationIgnored let player = AVPlayer()
+    @ObservationIgnored private let pausedTitle = PausedTitle()
     @ObservationIgnored private var shuttleRate: Double = 0
     @ObservationIgnored private var clipboard: [Clip] = []
     @ObservationIgnored private var undoStack: [Project] = []
@@ -624,6 +633,7 @@ final class Editor {
         guard project.duration > 0 else { return }
         if currentTime >= project.duration - 0.05 { seek(project.inPoint ?? 0) }
         shuttleRate = 1
+        pausedTitle.set(nil, at: 0)
         player.rate = 1
         isPlaying = true
     }
@@ -650,12 +660,14 @@ final class Editor {
                 return
             }
         }
+        pausedTitle.set(nil, at: 0)
         player.rate = Float(shuttleRate)
         isPlaying = true
     }
 
     func seek(_ time: Double) {
         currentTime = min(max(0, time), max(project.duration, 0))
+        showPausedTitle()
         player.seek(to: CompositionBuilder.time(currentTime), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
@@ -698,14 +710,20 @@ final class Editor {
         }
     }
 
+    /// While paused, the selected title is drawn at the playhead without its fades (`PausedTitle`).
+    private func showPausedTitle() {
+        let title = isPlaying ? nil : selectedClip.flatMap { $0.kind == .title ? $0.id : nil }
+        pausedTitle.set(title, at: currentTime)
+    }
+
     private func scheduleRebuild(delay: Double = 0.12) {
         rebuildTask?.cancel()
-        let snapshot = project
+        let snapshot = project, pausedTitle = pausedTitle
         rebuildTask = Task { [weak self] in
             if delay > 0 { try? await Task.sleep(for: .seconds(delay)) }
             guard !Task.isCancelled else { return }
             do {
-                let result = try await CompositionBuilder.build(snapshot)
+                let result = try await CompositionBuilder.build(snapshot, pausedTitle: pausedTitle)
                 guard !Task.isCancelled else { return }
                 self?.install(result)
             } catch {
@@ -738,6 +756,7 @@ final class Editor {
             player.rate = Float(shuttleRate)
         } else {
             // Shows the new frame while paused.
+            showPausedTitle()
             player.seek(to: CompositionBuilder.time(currentTime), toleranceBefore: .zero, toleranceAfter: .zero)
         }
     }
