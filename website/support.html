@@ -7,13 +7,15 @@
   <meta name="description" content="Help with Edwell, the simple Mac video editor. The 14-day trial, restoring a purchase, formats and the macOS it needs, or email support@iamjarl.com.">
   <link rel="canonical" href="https://edwell.iamjarl.com/support">
   <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#000000">
   <link rel="icon" type="image/png" href="/assets/favicon.png">
   <link rel="apple-touch-icon" href="/assets/edwell-icon.png">
   <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/css/tokens.css" integrity="sha384-dwNVnicsf+dtw01r5p08OIz0PAoO6RGpCdqZ4uOMnjy52ZvPD8H6/XoSie5rGYTe">
-  <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/fonts/outfit.css" integrity="sha384-i0YszCUj4POg1bR2PB2zrwvuJcrSfaRdV0N26BN6n6KUewwu3cCw9/mMIDESbPpi">
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/fonts/fraunces.css" integrity="sha384-rnzOIiLQ631zol+MLs/T3PzPzScEIEQga9gFiacTaf7HJgvKERmEUbbHysNNlUab">
   <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/kit/kit.css" integrity="sha384-nUfZVPynd+qv9zKy31CNHBMAm4lfLPzO2XpNIuNW/YgL6qQNZDgLjG5aYRDoR6Qm">
   <link rel="stylesheet" href="/assets/site.css">
   <script type="module" src="/assets/iamjarl-design@v1.35.1/dist/components/ij-nav.js" integrity="sha384-95VZFSpjnq1uGjMyR2zC3pAec8DTD+3cyJATjk5Kl4WpTj1vPnWkgZOLM3qETtSn"></script>
+  <script type="module" src="/assets/iamjarl-design@v1.35.1/dist/components/ij-footer.js" integrity="sha384-i37426tUYyrzNktVPZXGI26zfSccQnLf7v7bj8+w9GMsCiimLXduUK//vx30mU/g"></script>
   <!-- Cookieless analytics on the portfolio's self-hosted Umami, counting this domain only. -->
   <script defer src="https://umami-iamjarl.vercel.app/script.js" data-website-id="0e97e99f-ef1a-4e83-a6de-13c35ca272bf" data-domains="edwell.iamjarl.com"></script>
 </head>
@@ -22,6 +24,8 @@
 
 <ij-nav>
   <a slot="brand" href="/">Edwell</a>
+  <!-- PLACEHOLDER until the release with iamjarl-design#114: the nav's call to action. -->
+  <a slot="cta" data-ij-placeholder="iamjarl-design#114" href="https://apps.apple.com/app/id6825963733?pt=128512007&amp;ct=site&amp;mt=12" data-umami-event="store-click" data-umami-event-store="mac-app-store" data-umami-event-placement="nav" data-umami-event-locale="en">Download</a>
 </ij-nav>
 
 <main id="main">
@@ -56,10 +60,14 @@
   </article>
 </main>
 
-<footer class="edwell-footer">
-  <div class="ij-container">
-    <p class="ij-small">&copy; 2026 IAMJARL &middot; <a href="/">Edwell</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="https://iamjarl.com">All projects</a></p>
-  </div>
-</footer>
+<!-- PLACEHOLDER until the release with iamjarl-design#114: the registry doesn't know "edwell" yet, so the
+     footer shows its fallback. With the release, paste dist/footers/edwell.html after the links. -->
+<ij-footer app="edwell" data-ij-placeholder="iamjarl-design#114">
+  <a slot="links" href="/">Edwell</a>
+  <a slot="links" href="/privacy">Privacy</a>
+  <a slot="links" href="/premiere-rush-alternative-mac">Leaving Premiere Rush</a>
+  <a slot="links" href="https://github.com/JarlLyng/Eddie-tor">Source on GitHub</a>
+  <p>&copy; 2026 IAMJARL &middot; <a href="/">Edwell</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="https://iamjarl.com">All projects</a></p>
+</ij-footer>
 </body>
 </html>

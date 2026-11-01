@@ -1,16 +1,43 @@
-/* Edwell's holding site, on the IAMJARL marketing kit.
+/* Edwell's site, on the IAMJARL marketing kit (Eddie-tor#31).
 
-   Edwell has no identity in the design system yet: it comes with the site brief, and the
-   registry entry waits for launch (iamjarl-design#114). Until then the pages are held in the
-   tokens' dark mode (<html class="dark">), whose primary is the icon's lime, and take that as
-   their accent. Titles use Outfit, the face the app itself ships. */
+   The cutting room: the app's own black ground, the icon's lime as the thread (the playhead, the
+   selection, the buy button, never long text), Fraunces for headlines and the system's UI face for
+   the rest. The pictures are the app's window and timeline. */
+
+/* ---------- STAND-IN for dist/identity/edwell.css ----------
+   The registry entry with Edwell's identity is iamjarl-design#114, released on launch day. Until then
+   these are the values that sheet should carry: dark only, on the window's black, the preview's #0D0D0D
+   for surfaces, Fraunces soft. With that release, load the identity sheet after tokens.css and delete
+   this block. */
 :root {
-  --ij-color-accent: var(--ij-color-primary);
-  --ij-color-accent-text: var(--ij-color-primary);
-  --ij-color-on-accent: var(--ij-color-on-primary);
-  --ij-font-display: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --ij-display-weight: var(--ij-font-weight-semibold);
+  color-scheme: dark;
+  --ij-color-bg-app: #000000;
+  --ij-color-bg-card: #0D0D0D;
+  --ij-color-surface-default: #0D0D0D;
+  --ij-color-text-primary: #F2F2F2;
+  --ij-color-text-secondary: #C2C2C2;
+  --ij-color-text-tertiary: #A9A9A9;
+  --ij-color-accent: #D0FF00;
+  --ij-color-accent-rgb: 208, 255, 0;
+  --ij-color-on-accent: #000000;
+  --ij-color-accent-text: #D0FF00;
+  --ij-color-accent-family: #D0FF00;
+  --ij-color-accent-family-rgb: 208, 255, 0;
+  --ij-font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --ij-font-display-axes: 'SOFT' 100;
 }
+/* ---------- end of the stand-in ---------- */
+
+:root {
+  --ij-display-weight: 400;
+  --ij-wordmark-em: 3.4;
+}
+
+/* PLACEHOLDER until iamjarl-design#114: the footer's app isn't in the registry, so the component leaves
+   its children as they are. Show only the fallback line. Goes with the data-ij-placeholder attribute. */
+.ij-page ij-footer[data-ij-placeholder] > [slot] { display: none; }
+.ij-page ij-footer[data-ij-placeholder] > p { margin: 0; font-size: var(--ij-mkt-small-size); color: var(--ij-color-text-tertiary); }
+.ij-page ij-footer[data-ij-placeholder] a { color: var(--ij-color-text-secondary); }
 
 /* The footer stays at the bottom of a short page. */
 body.ij-page {
@@ -25,19 +52,117 @@ ij-nav:not(:defined) {
   padding: var(--ij-spacing-md) var(--ij-spacing-xxxl);
 }
 
-/* Home: the icon, the name and the line, in the middle of the screen. */
-.edwell-holding { display: grid; align-content: center; }
-.edwell-icon { display: block; }
+/* ---------- Hero: the window at the content's full width, at the size it was captured ---------- */
+
+.edwell-hero-window { --ij-window-width: 1100px; }
+
+/* ---------- What it does: the timeline across the page, then two pieces ---------- */
+
+.edwell-pieces .ij-card__piece { min-height: 0; }
+.edwell-pieces .ij-card__piece > img { width: 100%; height: auto; border-radius: var(--ij-radius-sm); }
+/* At most the size they were captured at, and never wider than the card. */
+.edwell-pieces .edwell-piece--title { max-width: 420px; }
+.edwell-pieces .edwell-piece--export { max-width: 460px; }
+@media (min-width: 768px) {
+  .edwell-pieces > .edwell-card--full { grid-column: 1 / -1; }
+  /* As tall as the taller piece, so the two headings line up. */
+  .edwell-pieces .ij-card--half .ij-card__piece { min-height: 343px; }
+}
+
+/* ---------- Every format: the 4, and the same frame at one height ---------- */
+
+.edwell-formats__head { display: flex; align-items: center; gap: var(--ij-mkt-space-stack); }
+.edwell-formats__head .ij-numeral { font-size: var(--ij-mkt-wordmark-size); line-height: 0.8; }
+.edwell-formats__head .ij-lede { max-width: 30ch; }
+
+/* Each frame grows in proportion to its width at a shared height, so the frames in a row stand at
+   the same height: four in a row on a wide screen, two and two on a phone. */
+.edwell-formats { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--ij-spacing-lg); }
+.edwell-format--16x9 { flex: 1.7778 1 0; }
+.edwell-format--9x16 { flex: 0.5625 1 0; }
+.edwell-format--1x1 { flex: 1 1 0; }
+.edwell-format--4x5 { flex: 0.8 1 0; }
+.edwell-formats__break { flex-basis: 100%; height: 0; margin-top: calc(-1 * var(--ij-spacing-lg)); }
+@media (min-width: 768px) {
+  .edwell-formats__break { display: none; }
+}
+.edwell-format { margin: 0; display: flex; flex-direction: column; gap: var(--ij-spacing-sm); min-width: 0; }
+.edwell-format img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--ij-radius-sm);
+  box-shadow: 0 0 0 1px var(--ij-color-border-default);
+}
+.edwell-format figcaption { font-size: var(--ij-mkt-small-size); color: var(--ij-color-text-secondary); }
+.edwell-format figcaption .ij-num { color: var(--ij-color-text-primary); margin-right: 0.35em; }
+.edwell-formats__note { color: var(--ij-color-text-secondary); }
+
+/* ---------- Keyboard first: the keys as caps ---------- */
+
+.edwell-keys { display: grid; gap: var(--ij-mkt-space-stack); grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 768px) {
+  .edwell-keys { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.edwell-keys__group { display: flex; flex-direction: column; gap: var(--ij-spacing-lg); }
+.edwell-keys__group p { margin: 0; color: var(--ij-color-text-secondary); max-width: 32ch; }
+.edwell-keys__caps { display: flex; gap: var(--ij-spacing-sm); }
+.edwell-keys kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.4em;
+  height: 2.4em;
+  padding: 0 0.5em;
+  box-sizing: border-box;
+  border: 1px solid var(--ij-color-border-default);
+  border-bottom-width: 3px;
+  border-radius: var(--ij-radius-md);
+  background: var(--ij-color-bg-card);
+  color: var(--ij-color-text-primary);
+  font-family: var(--ij-font-ui);
+  font-size: var(--ij-mkt-title-size);
+  font-weight: var(--ij-font-weight-semibold);
+  line-height: 1;
+}
+
+/* ---------- Privacy and price: four, two by two, then in a row ---------- */
+
+@media (min-width: 768px) {
+  .edwell-assurances { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--ij-mkt-space-block); }
+}
+
+/* ---------- The Rush line, the source line ---------- */
+
+.edwell-rush { padding-block: var(--ij-mkt-space-block); text-align: center; }
+.edwell-rush .ij-lede { max-width: none; margin: 0; color: var(--ij-color-text-primary); }
+.edwell-source { max-width: var(--ij-mkt-width-narrow); margin: var(--ij-mkt-space-block) auto 0; }
+
+/* ---------- Questions: one list, a rule above each ---------- */
+
+.edwell-faq-list { border-bottom: 1px solid var(--ij-color-border-subtle); }
+.edwell-faq-list details { border-top: 1px solid var(--ij-color-border-subtle); }
+.edwell-faq-list summary {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ij-spacing-lg);
+  padding-block: var(--ij-spacing-lg);
+  cursor: pointer;
+  list-style: none;
+  font-weight: var(--ij-font-weight-semibold);
+}
+.edwell-faq-list summary::-webkit-details-marker { display: none; }
+.edwell-faq-list summary::after { content: "+"; color: var(--ij-color-text-secondary); font-weight: 400; }
+.edwell-faq-list details[open] summary::after { content: "\2212"; }
+.edwell-faq-list details p { margin: 0 0 var(--ij-spacing-lg); color: var(--ij-color-text-secondary); }
+
+.edwell-trademark { max-width: 52ch; margin: 0; }
+
+/* ---------- Text pages: support, privacy, the Rush page ---------- */
 
 /* Questions on the support page read as one list, a rule above each. */
 .edwell-faq { padding-top: var(--ij-spacing-lg); border-top: 1px solid var(--ij-color-border-subtle); }
 .edwell-faq > * + * { margin-top: var(--ij-spacing-sm); }
+.edwell-faq h3 { margin: 0; font-size: var(--ij-mkt-body-size); }
 .edwell-faq p { margin-bottom: 0; color: var(--ij-color-text-secondary); }
-
-.edwell-footer {
-  border-top: 1px solid var(--ij-color-border-subtle);
-  padding-block: var(--ij-mkt-space-block);
-}
-.edwell-footer p { margin: 0; }
-.ij-page .edwell-footer a { color: var(--ij-color-text-secondary); }
-.ij-page .edwell-footer a:hover { color: var(--ij-color-text-primary); }
+.ij-page .edwell-article h2 { margin-top: var(--ij-mkt-space-block); }
+.ij-page .edwell-article h2 + * { margin-top: var(--ij-spacing-lg); }
