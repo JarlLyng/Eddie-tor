@@ -8,10 +8,10 @@ A small macOS video editor that replaces Adobe Premiere Rush, whose support ende
 
 - **Developer:** [IAMJARL](https://iamjarl.com) (Jarl). The full personal name is never used in copy or docs; see `BRAND_LEGAL.md` in the hub.
 - **Website:** [edwell.iamjarl.com](https://edwell.iamjarl.com)
-- **App Store:** "Edwell: Video Editor", Apple ID 6825963733, bundle id `com.iamjarl.edwell`. Eddie stays the repo and working name (the library is `EddieKit`).
+- **App Store:** ["Edwell: Video Editor"](https://apps.apple.com/app/id6825963733), Apple ID 6825963733, bundle id `com.iamjarl.edwell`. Eddie stays the repo and working name (the library is `EddieKit`).
 - **License:** [MIT](LICENSE), open source.
 - **Price:** a free download with every feature for 14 days, then $9.99 once to keep exporting (one in-app purchase; no subscription, no ads, no watermark).
-- **Status:** 1.0 on the Mac App Store (approved November 2026). 1.1 is in TestFlight.
+- **Status:** 1.0 released on the Mac App Store on 2026-11-12. 1.1 is in TestFlight.
 
 ## Boundaries: work only in this repo
 
