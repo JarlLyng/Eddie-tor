@@ -2,7 +2,7 @@ import IAMJARLDesignTokens
 import SwiftUI
 
 private let rulerHeight: CGFloat = 24
-private let headerWidth: CGFloat = 96
+private let headerWidth: CGFloat = 116
 
 struct TimelinePanel: View {
     @Environment(Editor.self) private var editor
@@ -69,69 +69,37 @@ struct TimelinePanel: View {
         scroll(to: 0)
     }
 
+    /// The four moves a short video is made of, and zoom. Everything else has its key and its menu
+    /// (Duplicate, Undo, Snap, Loop) or happens by itself (a clip dragged past the last track makes a new one).
     private var toolbar: some View {
-        @Bindable var editor = editor
-        return HStack(spacing: Tokens.Spacing.md) {
-            Button { editor.togglePlay() } label: { Image(systemName: editor.isPlaying ? "pause.fill" : "play.fill") }
-                .help("Play / pause (Space, J K L)")
-            Text("\(timecode(editor.currentTime, fps: editor.project.fps))  /  \(timecode(editor.project.duration, fps: editor.project.fps))")
-                .ijFont(.sm, design: .monospaced)
-                .foregroundStyle(Tokens.Palette.Text.secondary)
-            Divider().frame(height: 18)
-            Button { editor.splitAtPlayhead() } label: { Image(systemName: "scissors") }
+        HStack(spacing: Tokens.Spacing.lg) {
+            Button { editor.splitAtPlayhead() } label: { Label("Split", systemImage: "scissors") }
                 .help("Split the clip at the playhead (S)")
-            Button { editor.duplicateSelection() } label: { Image(systemName: "plus.square.on.square") }
-                .help("Duplicate (D)")
-                .disabled(editor.selection == nil)
-            Button { editor.deleteSelection() } label: { Image(systemName: "trash") }
+            Button { editor.addTitle() } label: { Label("Title", systemImage: "textformat") }
+                .help("Add a title (G)")
+            Button { editor.applyDefaultTransition() } label: { Label("Transition", systemImage: "rectangle.righthalf.inset.filled.arrow.right") }
+                .help("Add a transition (⌘D)")
+            Button { editor.deleteSelection() } label: { Label("Delete", systemImage: "trash") }
                 .help("Delete the selected clip (⌫)")
                 .disabled(editor.selection == nil)
-            Button { editor.addTitle() } label: { Image(systemName: "textformat") }
-                .help("Add a title (G)")
-            Button { editor.applyDefaultTransition() } label: { Image(systemName: "rectangle.righthalf.inset.filled.arrow.right") }
-                .help("Add a transition (⌘D)")
-            Menu {
-                Button("Video Track") { editor.addTrack(.visual) }
-                Button("Audio Track") { editor.addTrack(.audio) }
-                Button("Title Track") { editor.addTrack(.title) }
-            } label: { Image(systemName: "rectangle.stack.badge.plus").foregroundStyle(Tokens.Palette.Text.primary) }
-                .menuIndicator(.hidden)
-                .fixedSize()
-                .help("Add a track")
-            Divider().frame(height: 18)
-            Button { editor.undo() } label: { Image(systemName: "arrow.uturn.backward") }
-                .help("Undo (⌘Z)").disabled(!editor.canUndo)
-            Button { editor.redo() } label: { Image(systemName: "arrow.uturn.forward") }
-                .help("Redo (⇧⌘Z)").disabled(!editor.canRedo)
-            Divider().frame(height: 18)
-            Toggle(isOn: $editor.snapping) { activeIcon("arrow.right.and.line.vertical.and.arrow.left", editor.snapping) }
-                .toggleStyle(.button)
-                .help("Snap to edges and the playhead (⌘Y)")
-            Toggle(isOn: $editor.loopPlayback) { activeIcon("repeat", editor.loopPlayback) }
-                .toggleStyle(.button)
-                .help("Loop playback, between in and out if they're set (⌘L)")
-            Toggle(isOn: editor.projectBinding(\.magneticMain)) { activeIcon("rectangle.compress.vertical", editor.project.magneticMain) }
-                .toggleStyle(.button)
-                .help("Magnetic main track: clips on V1 always sit without gaps")
             Spacer()
-            Button { editor.pps = max(editor.pps / 1.4, 4) } label: { Image(systemName: "minus.magnifyingglass") }
-                .help("Zoom out (−)")
-            Slider(value: Binding(get: { log(editor.pps) }, set: { editor.pps = exp($0) }), in: log(4)...log(600))
-                .frame(width: 140)
-            Button { editor.pps = min(editor.pps * 1.4, 600) } label: { Image(systemName: "plus.magnifyingglass") }
-                .help("Zoom in (=)")
-            Button("Fit") { zoomToFit() }
-                .help("Show the whole timeline (\\)")
+            HStack(spacing: Tokens.Spacing.sm) {
+                Button { editor.pps = max(editor.pps / 1.4, 4) } label: { Image(systemName: "minus.magnifyingglass") }
+                    .help("Zoom out (−)")
+                Slider(value: Binding(get: { log(editor.pps) }, set: { editor.pps = exp($0) }), in: log(4)...log(600))
+                    .frame(width: 140)
+                Button { editor.pps = min(editor.pps * 1.4, 600) } label: { Image(systemName: "plus.magnifyingglass") }
+                    .help("Zoom in (=)")
+                Button("Fit") { zoomToFit() }
+                    .help("Show the whole timeline (\\)")
+            }
         }
+        .labelStyle(.titleAndIcon)
+        .ijFont(.sm)
         .buttonStyle(.borderless)
         .foregroundStyle(Tokens.Palette.Text.primary)
         .padding(.horizontal, Tokens.Spacing.md)
-        .padding(.vertical, Tokens.Spacing.xs)
-    }
-
-    /// Icons take the text colour; a switched-on tool takes the accent.
-    private func activeIcon(_ name: String, _ active: Bool) -> some View {
-        Image(systemName: name).foregroundStyle(active ? Tokens.Palette.primary : Tokens.Palette.Text.primary)
+        .padding(.vertical, Tokens.Spacing.sm)
     }
 
     private var headers: some View {
@@ -238,7 +206,8 @@ private struct TrackHeader: View {
             Text(row.label)
                 .ijFont(.xs, weight: .semibold)
                 .foregroundStyle(row.group == .visual && row.index == 0 && editor.project.magneticMain ? Tokens.Palette.primary : Tokens.Palette.Text.secondary)
-                .frame(width: 22, alignment: .leading)
+                .lineLimit(1)
+                .fixedSize()
                 .help(row.group == .visual && row.index == 0 ? "Main track" : "")
             Spacer(minLength: 0)
             if row.group != .audio {
@@ -608,7 +577,7 @@ private struct ClipView: View {
                 Button("Add Transition  (⌘D)") { editor.selection = clip.id; editor.applyDefaultTransition() }
             }
             if clip.kind == .video, !clip.audioDetached, media?.hasAudio == true {
-                Button("Separate Audio  (E)") { editor.selection = clip.id; editor.separateAudio() }
+                Button("Detach Audio  (E)") { editor.selection = clip.id; editor.separateAudio() }
             }
             Divider()
             Button("Delete", role: .destructive) { editor.selection = clip.id; editor.deleteSelection() }
@@ -756,6 +725,7 @@ private struct ClipView: View {
                 let updated = apply(mode, to: origin, dx: value.translation.width, dy: value.translation.height)
                 editor.floating = mode == .move && editor.project.isMagnetic(updated) ? origin.id : nil
                 editor.interact { project in
+                    project.makeTrack(updated.group, updated.track)
                     if let i = project.clips.firstIndex(where: { $0.id == origin.id }) { project.clips[i] = updated }
                 }
             }
@@ -793,8 +763,9 @@ private struct ClipView: View {
             }
             c.start = max(0, start)
             let steps = Int((dy / row.height).rounded())
-            let count = editor.project.trackCount(o.group)
-            let track = min(max(o.track + steps * row.downwardStep, 0), count - 1)
+            // One past the last track is allowed: dragging there makes a new track (`Project.makeTrack`).
+            let last = min(editor.project.trackCount(o.group), Project.maxTracks(o.group) - 1)
+            let track = min(max(o.track + steps * row.downwardStep, 0), last)
             if !editor.isLocked(o.group, track) { c.track = track }
 
         case .trimStart where magnetic:

@@ -68,7 +68,11 @@ final class Editor {
     var inspectorTab: InspectorTab = .position
     var snapping = true
     var loopPlayback = false
-    var showMedia = true
+    /// The media bin. Hidden at first, since Import puts files straight on the timeline; Y or the toolbar's
+    /// sidebar button shows it, and the choice is kept for next time.
+    var showMedia = false {
+        didSet { if persist, showMedia != oldValue { UserDefaults.standard.set(showMedia, forKey: "showMedia") } }
+    }
     var monitorMaximized = false
     /// The part of the timeline in view, in points. Clips draw their frames and waveform only here.
     var viewport: ClosedRange<Double> = 0...2000
@@ -78,6 +82,8 @@ final class Editor {
     var floating: UUID?
 
     let cache = MediaCache()
+    /// The export running or just finished, which the export sheet shows.
+    let exportJob: ExportJob
     @ObservationIgnored let player = AVPlayer()
     @ObservationIgnored private let pausedTitle = PausedTitle()
     @ObservationIgnored private var shuttleRate: Double = 0
@@ -108,6 +114,8 @@ final class Editor {
 
     init(persist: Bool = true) {
         self.persist = persist
+        exportJob = ExportJob(remembersFirstExport: persist)
+        if persist { showMedia = UserDefaults.standard.bool(forKey: "showMedia") }
         player.actionAtItemEnd = .pause
         player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
             MainActor.assumeIsolated { self?.playerTick(time) }
@@ -556,16 +564,6 @@ final class Editor {
         guard let clip = project.clips.first(where: { $0.id == id }) else { return }
         let value = min(max(duration, 1 / Double(project.fps)), maxDuration(clip))
         updateClip(id) { $0.duration = value }
-    }
-
-    func addTrack(_ group: TrackGroup) {
-        edit { project in
-            switch group {
-            case .title: project.titleTracks = min(project.titleTracks + 1, 6)
-            case .visual: project.visualTracks = min(project.visualTracks + 1, 8)
-            case .audio: project.audioTracks = min(project.audioTracks + 1, 8)
-            }
-        }
     }
 
     func toggleFlag(_ row: TrackRow, _ flag: WritableKeyPath<TrackFlags, Bool>) {
