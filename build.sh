@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Builds build/Edwell.app from App/Edwell.xcodeproj: the Mac App Store app, sandboxed, signed to run locally.
-# Needs Xcode. The self test needs only the Command Line Tools (see CLAUDE.md).
+# Needs Xcode. The self test needs only the Command Line Tools (see AGENTS.md).
 #   ./build.sh            build
 #   ./build.sh --install  build and copy to /Applications
 #   ./build.sh --open     build and open the app
