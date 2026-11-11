@@ -859,6 +859,16 @@
         }
       }
     },
+    "Drag music here" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk musik hertil"
+          }
+        }
+      }
+    },
     "Drag to move the playhead" : {
       "localizations" : {
         "da" : {
@@ -869,12 +879,32 @@
         }
       }
     },
+    "Drag video or photos here" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk video eller fotos hertil"
+          }
+        }
+      }
+    },
     "Drag video, audio or images here" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Træk video, lyd eller billeder hertil"
+          }
+        }
+      }
+    },
+    "Drag video, photos or music here" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk video, fotos eller musik hertil"
           }
         }
       }
@@ -1815,6 +1845,16 @@
         }
       }
     },
+    "Press G to add a title" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryk på G for at tilføje tekst"
+          }
+        }
+      }
+    },
     "Previous / next clip edge" : {
       "localizations" : {
         "da" : {
@@ -2431,6 +2471,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De er flyttet, slettet eller ligger på et drev, der ikke er tilsluttet, eller Edwell har ikke fået lov at åbne dem på denne Mac. Find dem én gang, så husker projektet dem, når du gemmer."
+          }
+        }
+      }
+    },
+    "They line up on the timeline in the order you add them." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De lægger sig på tidslinjen i den rækkefølge, du tilføjer dem."
           }
         }
       }

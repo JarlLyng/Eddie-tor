@@ -49,8 +49,11 @@ final class Editor {
                 project.clips.contains { $0.id == id && $0.kind == .title && $0.start <= currentTime && currentTime < $0.end }
             }
             if selection != oldValue, !isPlaying, affected { scheduleRebuild(delay: 0) }
+            if selection != titleToType { titleToType = nil }
         }
     }
+    /// A title just added with G, whose text the inspector selects so typing replaces it.
+    var titleToType: UUID?
     var currentTime: Double = 0
     private(set) var isPlaying = false
     /// Timeline zoom in points per second.
@@ -86,6 +89,7 @@ final class Editor {
     @ObservationIgnored private var autosaveTask: Task<Void, Never>?
     @ObservationIgnored private var installedStructure: [String]?
     @ObservationIgnored private var keyMonitor: Any?
+    @ObservationIgnored private var clickMonitor: Any?
     @ObservationIgnored private var interacting = false
 
     /// Declared in App/Edwell/Info.plist with the extensions below; `.eddie` is what projects were saved as
@@ -114,10 +118,15 @@ final class Editor {
 
     // MARK: - Derived
 
+    /// The tracks the timeline shows: the first of each kind, so a title, a picture and music always have a
+    /// place, and any other track with a clip on it. An empty track shows up once a clip is dragged onto it.
     var rows: [TrackRow] {
-        (0..<project.titleTracks).reversed().map { TrackRow(group: .title, index: $0) }
-            + (0..<project.visualTracks).reversed().map { TrackRow(group: .visual, index: $0) }
-            + (0..<project.audioTracks).map { TrackRow(group: .audio, index: $0) }
+        func shown(_ group: TrackGroup) -> [TrackRow] {
+            (0..<project.trackCount(group))
+                .filter { index in index == 0 || project.clips.contains { $0.group == group && $0.track == index } }
+                .map { TrackRow(group: group, index: $0) }
+        }
+        return shown(.title).reversed() + shown(.visual).reversed() + shown(.audio)
     }
 
     var selectedClip: Clip? {
@@ -198,6 +207,20 @@ final class Editor {
         Binding(
             get: { self.project[keyPath: keyPath] },
             set: { value in self.edit(coalesce: "\(keyPath)") { $0[keyPath: keyPath] = value } }
+        )
+    }
+
+    /// The format as the toolbar and the inspector pick it. A format picked by the user stays, whatever
+    /// the first clip's shape.
+    var aspectBinding: Binding<AspectRatio> {
+        Binding(
+            get: { self.project.aspect },
+            set: { value in
+                self.edit(coalesce: "\(\Project.aspect)") { project in
+                    project.aspect = value
+                    project.aspectChosen = true
+                }
+            }
         )
     }
 
@@ -346,11 +369,18 @@ final class Editor {
             return
         }
         clip.start = placement(for: clip, at: time)
-        edit { $0.clips.append(clip) }
+        // Until the user picks a format, the first video or photo sets it, so it isn't cropped to one nobody chose.
+        let format = clip.group != .visual || project.aspectChosen || project.clips.contains { $0.group == .visual }
+            ? nil : AspectRatio.fitting(width: media.width, height: media.height)
+        edit { project in
+            project.clips.append(clip)
+            if let format { project.aspect = format }
+        }
         selection = clip.id
     }
 
     func dropMedia(_ ids: [String], at time: Double, row: TrackRow) -> Bool {
+        let wasEmpty = project.clips.isEmpty
         var placed = false
         var cursor = max(0, time)
         for idString in ids {
@@ -361,6 +391,7 @@ final class Editor {
             cursor = selectedClip?.end ?? cursor
             placed = true
         }
+        if wasEmpty { fitNewTimeline() }
         return placed
     }
 
@@ -372,11 +403,23 @@ final class Editor {
             if best == nil || start < best!.start - 0.01 { best = (track, start) }
         }
         guard let best else { errorMessage = String(localized: "All title tracks are locked."); return }
+        var style = TitleStyle()
+        style.y = Self.freeTitleHeight(among: project.clips.filter {
+            $0.kind == .title && $0.start < best.start + duration && best.start < $0.end
+        }.compactMap(\.title?.y))
         let clip = Clip(kind: .title, track: best.track, start: best.start, duration: duration,
-                        fadeIn: 0.25, fadeOut: 0.25, title: TitleStyle())
+                        fadeIn: 0.25, fadeOut: 0.25, title: style)
         edit { $0.clips.append(clip) }
         selection = clip.id
+        titleToType = clip.id
         inspectorTab = .text
+    }
+
+    /// Where a new title goes so it isn't drawn over a title already showing then: the bottom, else the top,
+    /// else the middle. `taken` are the heights of those titles.
+    nonisolated static func freeTitleHeight(among taken: [Double]) -> Double {
+        let places = [TitleStyle().y, 0.2, 0.5]
+        return places.first { place in taken.allSatisfy { abs($0 - place) >= 0.15 } } ?? places[0]
     }
 
     /// Splits the selected clip at the playhead, or every clip under the playhead if none is selected.
@@ -590,11 +633,17 @@ final class Editor {
         importMedia(panel.urls)
     }
 
-    func importMedia(_ urls: [URL], thenAddToTimeline: Bool = false) {
-        Task {
-            let added = await load(urls)
-            if thenAddToTimeline { added.forEach { add($0) } }
-        }
+    /// Import as in Rush: the files go into the media bin and onto the end of the timeline, one after another,
+    /// video and photos on the main track and music on the first audio track. Used by the Import button,
+    /// a drop on the media bin and files opened from Finder.
+    func importMedia(_ urls: [URL]) {
+        Task { await importToTimeline(urls) }
+    }
+
+    func importToTimeline(_ urls: [URL]) async {
+        let wasEmpty = project.clips.isEmpty
+        for media in await load(urls) { add(media) }
+        if wasEmpty { fitNewTimeline() }
     }
 
     /// Files dragged from Finder straight onto a track: imported, then placed where they were dropped,
@@ -602,6 +651,11 @@ final class Editor {
     func dropFiles(_ urls: [URL], at time: Double, row: TrackRow) async {
         let added = await load(urls)
         _ = dropMedia(added.map(\.id.uuidString), at: time, row: row)
+    }
+
+    /// The first clips in an empty timeline are shown whole, however long they are.
+    private func fitNewTimeline() {
+        if !project.clips.isEmpty { zoomToFitRequest += 1 }
     }
 
     /// Adds the files to the project's media, each once, and returns them in order, including any that
@@ -1003,8 +1057,23 @@ final class Editor {
         guard keyMonitor == nil else { return }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, NSApp.keyWindow?.attachedSheet == nil else { return event }
-            if NSApp.keyWindow?.firstResponder is NSText { return event }
+            if let text = NSApp.keyWindow?.firstResponder as? NSText {
+                // Escape stops typing, so the single keys are shortcuts again.
+                if event.keyCode == 53 { text.window?.makeFirstResponder(nil); return nil }
+                return event
+            }
             return handleKey(event) ? nil : event
+        }
+        // A click anywhere but in the text being typed stops typing too, so Space after writing a title
+        // plays instead of adding a space to it.
+        clickMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { event in
+            guard let window = event.window, let text = window.firstResponder as? NSTextView,
+                  let content = window.contentView else { return event }
+            // A text field edits through a shared field editor inside it; a text editor is its own view.
+            let editing = text.isFieldEditor ? text.delegate as? NSView : text.enclosingScrollView ?? text
+            let hit = content.hitTest(content.superview?.convert(event.locationInWindow, from: nil) ?? event.locationInWindow)
+            if let editing, let hit, !hit.isDescendant(of: editing) { window.makeFirstResponder(nil) }
+            return event
         }
     }
 

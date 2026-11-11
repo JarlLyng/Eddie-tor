@@ -15,7 +15,7 @@ struct TimelinePanel: View {
         VStack(spacing: 0) {
             toolbar
             Divider()
-            if !hintDismissed {
+            if !hintDismissed && !editor.project.clips.isEmpty {
                 FirstRunHint { hintDismissed = true }
                 Divider()
             }
@@ -32,6 +32,9 @@ struct TimelinePanel: View {
                 }
             }
             .background(Tokens.Palette.Background.app)
+            // Over the tracks rather than instead of them, so the timeline keeps measuring its width and the
+            // first import can zoom to fit.
+            .overlay { if editor.project.clips.isEmpty { EmptyTimeline() } }
         }
         .onChange(of: scrollOffset) { updateViewport() }
         .onChange(of: visibleWidth) { updateViewport() }
@@ -227,6 +230,7 @@ private struct ScrollHooks: ViewModifier {
 private struct TrackHeader: View {
     @Environment(Editor.self) private var editor
     let row: TrackRow
+    @ViewState private var hovering = false
 
     var body: some View {
         let flags = editor.project.flags(row.group, row.index)
@@ -248,8 +252,12 @@ private struct TrackHeader: View {
         .padding(.horizontal, Tokens.Spacing.xs)
         .background(Tokens.Palette.Background.card)
         .overlay(alignment: .bottom) { Rectangle().fill(Tokens.Palette.Border.subtle).frame(height: 1) }
+        .contentShape(Rectangle())
+        .onHover { hovering = $0 }
     }
 
+    /// The switches show while the pointer is on the header; one that's on always shows, so a hidden,
+    /// muted or locked track says so.
     private func flagButton(_ flag: WritableKeyPath<TrackFlags, Bool>, active: Bool, on: String, off: String, help: LocalizedStringKey) -> some View {
         Button { editor.toggleFlag(row, flag) } label: {
             Image(systemName: active ? on : off)
@@ -259,6 +267,7 @@ private struct TrackHeader: View {
         }
         .buttonStyle(.borderless)
         .help(help)
+        .opacity(active || hovering ? 1 : 0)
     }
 }
 
@@ -420,7 +429,18 @@ private struct TrackLane: View {
                     if editor.isPlaying { editor.pause() }
                     editor.seek(location.x / editor.pps)
                 }
-            ForEach(editor.clips(in: row)) { clip in
+            let clips = editor.clips(in: row)
+            if clips.isEmpty, row.index == 0 {
+                // The first track of each kind stays even when empty, and says what goes there.
+                Text(row.placeholder)
+                    .ijFont(.sm)
+                    .foregroundStyle(Tokens.Palette.Text.tertiary)
+                    .frame(height: row.height, alignment: .center)
+                    .padding(.leading, Tokens.Spacing.md)
+                    .offset(x: editor.viewport.lowerBound)
+                    .allowsHitTesting(false)
+            }
+            ForEach(clips) { clip in
                 ClipView(clip: clip, row: row)
                     .frame(width: max(clip.duration * editor.pps, 3), height: row.height - 6)
                     .offset(x: clip.start * editor.pps, y: 3)
@@ -451,6 +471,56 @@ private enum TimelineDrop: Transferable {
         // Files first, in case Finder also offers a file's path as text.
         ProxyRepresentation(importing: { (url: URL) in TimelineDrop.file(url) })
         ProxyRepresentation(importing: { (id: String) in TimelineDrop.media(id) })
+    }
+}
+
+private extension TrackRow {
+    var placeholder: LocalizedStringKey {
+        switch group {
+        case .title: "Press G to add a title"
+        case .visual: "Drag video or photos here"
+        case .audio: "Drag music here"
+        }
+    }
+}
+
+/// An empty project's timeline: one place to drop the first files, or to import them. They land on the
+/// main track one after another, music on the first audio track.
+private struct EmptyTimeline: View {
+    @Environment(Editor.self) private var editor
+    @ViewState private var targeted = false
+
+    var body: some View {
+        VStack(spacing: Tokens.Spacing.md) {
+            Image(systemName: "film.stack")
+                .font(.largeTitle)
+                .foregroundStyle(Tokens.Palette.Text.secondary)
+            Text("Drag video, photos or music here")
+                .ijFont(.lg, weight: .semibold)
+                .foregroundStyle(Tokens.Palette.Text.primary)
+            Text("They line up on the timeline in the order you add them.")
+                .ijFont(.sm)
+                .foregroundStyle(Tokens.Palette.Text.secondary)
+            Button("Import…") { editor.showImportPanel() }
+                .buttonStyle(PrimaryButtonStyle())
+        }
+        .multilineTextAlignment(.center)
+        .padding(Tokens.Spacing.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(targeted ? Tokens.Palette.primarySubtle : Tokens.Palette.Background.app)
+        .overlay {
+            RoundedRectangle(cornerRadius: Tokens.Radius.md)
+                .strokeBorder(targeted ? Tokens.Palette.primary : Tokens.Palette.Border.default,
+                              style: StrokeStyle(lineWidth: Tokens.Focus.width, dash: [6, 4]))
+                .padding(Tokens.Spacing.md)
+        }
+        .dropDestination(for: TimelineDrop.self) { items, _ in
+            let main = TrackRow(group: .visual, index: 0)
+            let files = items.compactMap { if case .file(let url) = $0 { url } else { nil } }
+            let ids = items.compactMap { if case .media(let id) = $0 { id } else { nil } }
+            if !files.isEmpty { Task { await editor.dropFiles(files, at: 0, row: main) } }
+            return editor.dropMedia(ids, at: 0, row: main) || !files.isEmpty
+        } isTargeted: { targeted = $0 }
     }
 }
 
