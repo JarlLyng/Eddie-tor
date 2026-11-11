@@ -25,60 +25,41 @@ struct InspectorView: View {
 private struct ProjectInspector: View {
     @Environment(Editor.self) private var editor
 
+    /// What the whole video needs: its format, its background and how long it is. The rest waits under
+    /// More Settings, and the shortcuts are in Help.
     var body: some View {
         Form {
-            Section("Format") {
-                Picker("Aspect Ratio", selection: editor.projectBinding(\.aspect)) {
+            Section {
+                Picker("Aspect Ratio", selection: editor.aspectBinding) {
                     ForEach(AspectRatio.allCases) { aspect in
                         Text("\(aspect.label)  (\(Int(aspect.renderSize.width))×\(Int(aspect.renderSize.height)))").tag(aspect)
                     }
-                }
-                Picker("Frame Rate", selection: editor.projectBinding(\.fps)) {
-                    ForEach([24, 25, 30, 50, 60], id: \.self) { Text("\($0)").tag($0) }
                 }
                 ColorPicker("Background Color", selection: Binding(
                     get: { editor.project.background.color },
                     set: { color in editor.edit(coalesce: "background") { $0.background = RGBA(color) } }
                 ), supportsOpacity: false)
-                Toggle("Magnetic Main Track (V1)", isOn: editor.projectBinding(\.magneticMain))
-            }
-            Section("Overview") {
                 LabeledContent("Duration", value: timecode(editor.project.duration, fps: editor.project.fps))
                 if editor.project.inPoint != nil || editor.project.outPoint != nil {
                     LabeledContent("In / Out", value: "\(timecode(editor.project.inPoint ?? 0, fps: editor.project.fps)) – \(timecode(editor.project.outPoint ?? editor.project.duration, fps: editor.project.fps))")
                 }
-                LabeledContent("Clips", value: "\(editor.project.clips.count)")
-                LabeledContent("Media", value: "\(editor.project.media.count)")
+            } header: {
+                Text("Format")
+            } footer: {
+                Text("Click a clip on the timeline to change it.")
+                    .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
             }
-            Section("Shortcuts") {
-                shortcut("Play / pause", String(localized: "Space"))
-                shortcut("Rewind / stop / forward", "J  K  L")
-                shortcut("One frame back / forward", "←  →")
-                shortcut("Previous / next clip edge", "↑  ↓")
-                shortcut("Split clip", "S")
-                shortcut("Trim start / end to playhead", "Q  W")
-                shortcut("Duplicate", "D")
-                shortcut("New title", "G")
-                shortcut("Separate audio", "E")
-                shortcut("Delete", "⌫")
-                shortcut("Add transition", "⌘D")
-                shortcut("Copy / cut / paste", "⌘C  ⌘X  ⌘V")
-                shortcut("In / out point", "I  O")
-                shortcut("Go to in / out", "⇧I  ⇧O")
-                shortcut("Clear in / out / both", "⌥I  ⌥O  ⌥X")
-                shortcut("Zoom in / out / fit", "=  −  \\")
-                shortcut("Snap / loop", "⌘Y  ⌘L")
-                shortcut("Tools", "⌘1 ⌘2 ⌘4 ⌘5 ⌘6")
-                shortcut("Large preview / media", "`  Y")
-                shortcut("Export", "⌘E")
+            Section {
+                DisclosureGroup("More Settings") {
+                    Picker("Frame Rate", selection: editor.projectBinding(\.fps)) {
+                        ForEach([24, 25, 30, 50, 60], id: \.self) { Text("\($0)").tag($0) }
+                    }
+                    Toggle("Close Gaps Between Video Clips", isOn: editor.projectBinding(\.magneticMain))
+                }
             }
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
-    }
-
-    private func shortcut(_ action: LocalizedStringKey, _ keys: String) -> some View {
-        LabeledContent(action) { Text(keys).ijFont(.sm, design: .monospaced).foregroundStyle(Tokens.Palette.Text.secondary) }
     }
 }
 
@@ -95,6 +76,7 @@ private struct ClipInspector: View {
     /// The clip as it is now. Looked up by its id, not through the selection, which may have moved on to another
     /// clip when this inspector draws for the last time.
     private var current: Clip { editor.project.clips.first { $0.id == clip.id } ?? clip }
+    @FocusState private var typing: Bool
 
     var body: some View {
         let (tabs, tab) = editor.inspectorTabs(for: clip)
@@ -160,38 +142,126 @@ private struct ClipInspector: View {
                 .scrollContentBackground(.hidden)
                 .padding(Tokens.Spacing.xs)
                 .background(Tokens.Palette.Background.muted, in: RoundedRectangle(cornerRadius: Tokens.Radius.sm))
-            Picker("Font", selection: editor.binding(clip.id, \Clip.title!.fontFamily, fallback: "Helvetica Neue")) {
-                ForEach(Self.fontFamilies, id: \.self) { Text(BundledFonts.displayName($0)).tag($0) }
-            }
-            Picker("Weight", selection: editor.binding(clip.id, \Clip.title!.weight, fallback: 700)) {
-                ForEach(Self.weights, id: \.0) { Text($0.1).tag($0.0) }
-            }
+                .focused($typing)
+                .task { await selectNewTitle() }
+            presets
+            LabeledContent("Font") { fontMenu }
             slider("Size", \Clip.title!.size, 20...300, unit: "px")
-            Picker("Alignment", selection: editor.binding(clip.id, \Clip.title!.align, fallback: .center)) {
-                Image(systemName: "text.alignleft").help("Left").tag(TextAlign.left)
-                Image(systemName: "text.aligncenter").help("Center").tag(TextAlign.center)
-                Image(systemName: "text.alignright").help("Right").tag(TextAlign.right)
-            }
-            .pickerStyle(.segmented)
-            slider("Line Spacing", \Clip.title!.lineHeight, 0.6...2, percent: true)
             ColorPicker("Color", selection: colorBinding(\Clip.title!.color))
-            Toggle("Shadow", isOn: editor.binding(clip.id, \Clip.title!.shadow, fallback: true))
-            Toggle("Background", isOn: editor.binding(clip.id, \Clip.title!.background, fallback: false))
-            if clip.title?.background == true {
-                ColorPicker("Background Color", selection: colorBinding(\Clip.title!.backgroundColor))
+        }
+        Section {
+            LabeledContent("Position") { positionGrid }
+        } footer: {
+            Text("Or drag the text in the preview.").ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
+        }
+        Section {
+            DisclosureGroup("More Settings") {
+                Picker("Weight", selection: editor.binding(clip.id, \Clip.title!.weight, fallback: 700)) {
+                    ForEach(Self.weights, id: \.0) { Text($0.1).tag($0.0) }
+                }
+                Picker("Alignment", selection: editor.binding(clip.id, \Clip.title!.align, fallback: .center)) {
+                    Image(systemName: "text.alignleft").help("Left").tag(TextAlign.left)
+                    Image(systemName: "text.aligncenter").help("Center").tag(TextAlign.center)
+                    Image(systemName: "text.alignright").help("Right").tag(TextAlign.right)
+                }
+                .pickerStyle(.segmented)
+                slider("Line Spacing", \Clip.title!.lineHeight, 0.6...2, percent: true)
+                Toggle("Shadow", isOn: editor.binding(clip.id, \Clip.title!.shadow, fallback: true))
+                Toggle("Background", isOn: editor.binding(clip.id, \Clip.title!.background, fallback: false))
+                if current.title?.background == true {
+                    ColorPicker("Background Color", selection: colorBinding(\Clip.title!.backgroundColor))
+                }
+                slider("Horizontal", \Clip.title!.x, 0...1, percent: true)
+                slider("Vertical", \Clip.title!.y, 0...1, percent: true)
+                Text("Horizontal is the left edge, center or right edge of the text, depending on the alignment.")
+                    .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
             }
         }
-        Section("Position") {
-            slider("Horizontal", \Clip.title!.x, 0...1, percent: true)
-            slider("Vertical", \Clip.title!.y, 0...1, percent: true)
-            HStack {
-                Button("Top") { setTitleY(0.12) }
-                Button("Middle") { setTitleY(0.5) }
-                Button("Bottom") { setTitleY(0.82) }
+    }
+
+    private static let presetRows: [[TitlePreset]] = [[.bigCenter, .bigLeft], [.lowerThird, .caption]]
+
+    /// Four ready-made looks; the one the title has now is marked.
+    private var presets: some View {
+        let style = current.title ?? TitleStyle()
+        return Grid(horizontalSpacing: Tokens.Spacing.sm, verticalSpacing: Tokens.Spacing.sm) {
+            ForEach(Self.presetRows, id: \.self) { pair in
+                GridRow {
+                    ForEach(pair) { preset in
+                        let button = Button { applyPreset(preset) } label: {
+                            Text(preset.label).frame(maxWidth: .infinity)
+                        }
+                        if preset.matches(style) {
+                            button.buttonStyle(.borderedProminent)
+                        } else {
+                            button.buttonStyle(.bordered)
+                        }
+                    }
+                }
             }
-            Text("Horizontal is the left edge, center or right edge of the text, depending on the alignment.")
-                .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
-            Text("Tip: drag in the preview to move the text.").ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
+        }
+    }
+
+    /// The fonts most titles need, and every font on the Mac one menu further.
+    private var fontMenu: some View {
+        let family = current.title?.fontFamily
+        let font = editor.binding(clip.id, \Clip.title!.fontFamily, fallback: "Helvetica Neue")
+        return Menu(BundledFonts.displayName(family ?? "")) {
+            Picker("Font", selection: font) {
+                ForEach(BundledFonts.titleChoices(current: family), id: \.self) { Text(BundledFonts.displayName($0)).tag($0) }
+            }
+            .pickerStyle(.inline)
+            .labelsHidden()
+            Divider()
+            Menu("All Fonts") {
+                Picker("All Fonts", selection: font) {
+                    ForEach(Self.fontFamilies, id: \.self) { Text(BundledFonts.displayName($0)).tag($0) }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            }
+        }
+        .fixedSize()
+    }
+
+    private static let placeNames: [[LocalizedStringKey]] = [
+        ["Top Left", "Top", "Top Right"],
+        ["Left", "Middle", "Right"],
+        ["Bottom Left", "Bottom", "Bottom Right"],
+    ]
+
+    /// Nine places in the frame, one click each: the column sets the alignment as well.
+    private var positionGrid: some View {
+        let style = current.title ?? TitleStyle()
+        return Grid(horizontalSpacing: Tokens.Spacing.xs, verticalSpacing: Tokens.Spacing.xs) {
+            ForEach(0..<3, id: \.self) { row in
+                GridRow {
+                    ForEach(0..<3, id: \.self) { column in
+                        let placed = style.isPlaced(column: column, row: row)
+                        Button {
+                            editor.updateClip(clip.id) { $0.title?.place(column: column, row: row) }
+                        } label: {
+                            Image(systemName: placed ? "circle.fill" : "circle")
+                                .foregroundStyle(placed ? Tokens.Palette.primary : Tokens.Palette.Text.secondary)
+                                .frame(width: 28, height: 18)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.borderless)
+                        .help(Self.placeNames[row][column])
+                        .accessibilityLabel(Text(Self.placeNames[row][column]))
+                    }
+                }
+            }
+        }
+        .padding(Tokens.Spacing.sm)
+        .background(Tokens.Palette.Background.muted, in: RoundedRectangle(cornerRadius: Tokens.Radius.sm))
+    }
+
+    private func applyPreset(_ preset: TitlePreset) {
+        editor.updateClip(clip.id) { clip in
+            guard var style = clip.title else { return }
+            preset.apply(to: &style)
+            clip.title = style
         }
     }
 
@@ -274,7 +344,7 @@ private struct ClipInspector: View {
                 }
             }
             Toggle("Preserve Pitch", isOn: editor.binding(clip.id, \.maintainPitch, fallback: true))
-            LabeledContent("Source Length", value: String(format: "%.2f s", current.sourceDuration))
+            LabeledContent("Original Length", value: String(format: "%.2f s", current.sourceDuration))
             Text("The clip gets shorter or longer, so the same part of the recording plays. You can type up to 1000 % in the field.")
                 .ijFont(.xs).foregroundStyle(Tokens.Palette.Text.secondary)
         }
@@ -292,7 +362,7 @@ private struct ClipInspector: View {
             slider("Fade In", \.fadeIn, 0...3, unit: "s")
             slider("Fade Out", \.fadeOut, 0...3, unit: "s")
             if current.kind == .video {
-                Button("Separate Audio to Its Own Track  (E)") { editor.separateAudio() }
+                Button("Detach Audio  (E)") { editor.separateAudio() }
             }
         }
     }
@@ -321,7 +391,7 @@ private struct ClipInspector: View {
             slider("Right", \.cropRight, 0...0.5, percent: true)
             slider("Top", \.cropTop, 0...0.5, percent: true)
             slider("Bottom", \.cropBottom, 0...0.5, percent: true)
-            slider("Feather", \.feather, 0...100, unit: "px")
+            slider("Soft Edge", \.feather, 0...100, unit: "px")
         }
         Section {
             Button("Reset Size, Position and Crop") {
@@ -345,11 +415,20 @@ private struct ClipInspector: View {
         }
     }
 
-    private func setTitleY(_ y: Double) {
-        editor.updateClip(clip.id) { c in
-            guard let align = c.title?.align else { return }
-            c.title?.x = align == .left ? 0.05 : align == .right ? 0.95 : 0.5
-            c.title?.y = y
+    /// A title just added with G: its text is selected, so typing replaces it. Escape or a click elsewhere
+    /// stops typing (`Editor.installKeyMonitor`).
+    private func selectNewTitle() async {
+        guard editor.titleToType == clip.id else { return }
+        editor.titleToType = nil
+        typing = true
+        let text = current.title?.text
+        // The text view becomes first responder on a later pass; select its text once it has.
+        for _ in 0..<20 {
+            if let view = NSApp.keyWindow?.firstResponder as? NSTextView, !view.isFieldEditor, view.string == text {
+                view.selectAll(nil)
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(20))
         }
     }
 

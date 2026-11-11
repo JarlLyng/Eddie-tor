@@ -46,6 +46,11 @@ struct EddieApp: App {
         }
         .defaultSize(width: 1400, height: 900)
         .commands { EddieCommands(editor: editor, store: store) }
+
+        Window("Keyboard Shortcuts", id: ShortcutsView.windowID) {
+            ShortcutsView().tint(Tokens.Palette.primary)
+        }
+        .windowResizability(.contentSize)
     }
 }
 
@@ -155,6 +160,7 @@ struct EddieCommands: Commands {
         }
         // Instead of the default item, which only says help isn't available.
         CommandGroup(replacing: .help) {
+            ShortcutsMenuItem()
             Button("Send Feedback…") { Feedback.compose(editor: editor) }
         }
         CommandGroup(after: .appInfo) {
@@ -202,7 +208,7 @@ struct EddieCommands: Commands {
             Button("Trim Start to Playhead  (Q)") { editor.trimToPlayhead(start: true) }
             Button("Trim End to Playhead  (W)") { editor.trimToPlayhead(start: false) }
             Button("Duplicate  (D)") { editor.duplicateSelection() }
-            Button("Separate Audio  (E)") { editor.separateAudio() }
+            Button("Detach Audio  (E)") { editor.separateAudio() }
             Button("Delete  (⌫)") { editor.deleteSelection() }
             Divider()
             Button("Add Title  (G)") { editor.addTitle() }

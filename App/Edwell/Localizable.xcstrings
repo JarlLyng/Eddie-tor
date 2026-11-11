@@ -28,17 +28,6 @@
       },
       "shouldTranslate" : false
     },
-    "%@  /  %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@  /  %2$@"
-          }
-        }
-      },
-      "shouldTranslate" : false
-    },
     "%@ (edited)" : {
       "localizations" : {
         "da" : {
@@ -289,16 +278,6 @@
         }
       }
     },
-    "Add a track" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tilføj spor"
-          }
-        }
-      }
-    },
     "Add a transition (⌘D)" : {
       "localizations" : {
         "da" : {
@@ -369,6 +348,16 @@
         }
       }
     },
+    "All Fonts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle skrifttyper"
+          }
+        }
+      }
+    },
     "All title tracks are locked." : {
       "localizations" : {
         "da" : {
@@ -429,16 +418,6 @@
         }
       }
     },
-    "Audio Track" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lydspor"
-          }
-        }
-      }
-    },
     "Background" : {
       "localizations" : {
         "da" : {
@@ -455,6 +434,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Baggrundsfarve"
+          }
+        }
+      }
+    },
+    "Big Center" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stor i midten"
+          }
+        }
+      }
+    },
+    "Big Left" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stor til venstre"
           }
         }
       }
@@ -485,6 +484,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bund"
+          }
+        }
+      }
+    },
+    "Bottom Left" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nederst til venstre"
+          }
+        }
+      }
+    },
+    "Bottom Right" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nederst til højre"
           }
         }
       }
@@ -579,6 +598,16 @@
         }
       }
     },
+    "Caption" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billedtekst"
+          }
+        }
+      }
+    },
     "Center" : {
       "localizations" : {
         "da" : {
@@ -639,17 +668,17 @@
         }
       }
     },
-    "Clip" : {
+    "Click a clip on the timeline to change it." : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Klip"
+            "value" : "Klik på et klip på tidslinjen for at ændre det."
           }
         }
       }
     },
-    "Clips" : {
+    "Clip" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -669,12 +698,12 @@
         }
       }
     },
-    "Codec" : {
+    "Close Gaps Between Video Clips" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Codec"
+            "value" : "Luk huller mellem videoklip"
           }
         }
       }
@@ -799,6 +828,26 @@
         }
       }
     },
+    "Detach Audio  (E)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adskil lyd  (E)"
+          }
+        }
+      }
+    },
+    "Detach audio" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adskil lyd"
+          }
+        }
+      }
+    },
     "Dip to Black" : {
       "localizations" : {
         "da" : {
@@ -859,6 +908,16 @@
         }
       }
     },
+    "Drag music here" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk musik hertil"
+          }
+        }
+      }
+    },
     "Drag to move the playhead" : {
       "localizations" : {
         "da" : {
@@ -869,12 +928,32 @@
         }
       }
     },
+    "Drag video or photos here" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk video eller fotos hertil"
+          }
+        }
+      }
+    },
     "Drag video, audio or images here" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Træk video, lyd eller billeder hertil"
+          }
+        }
+      }
+    },
+    "Drag video, photos or music here" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk video, fotos eller musik hertil"
           }
         }
       }
@@ -909,22 +988,22 @@
         }
       }
     },
-    "Duplicate (D)" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dupliker (D)"
-          }
-        }
-      }
-    },
     "Duration" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Varighed"
+          }
+        }
+      }
+    },
+    "Edit" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rediger"
           }
         }
       }
@@ -1069,16 +1148,6 @@
         }
       }
     },
-    "Export…" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eksporter…"
-          }
-        }
-      }
-    },
     "Extra Bold" : {
       "localizations" : {
         "da" : {
@@ -1125,16 +1194,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fade ud"
-          }
-        }
-      }
-    },
-    "Feather" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Blød kant"
           }
         }
       }
@@ -1265,6 +1324,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gå til ind / ud"
+          }
+        }
+      }
+    },
+    "Go to the end" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gå til slutningen"
+          }
+        }
+      }
+    },
+    "Go to the start" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gå til starten"
           }
         }
       }
@@ -1419,12 +1498,32 @@
         }
       }
     },
+    "In and Out" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ind og ud"
+          }
+        }
+      }
+    },
     "In and out points: I and O" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ind- og udpunkt: I og O"
+          }
+        }
+      }
+    },
+    "Keyboard Shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tastaturgenveje"
           }
         }
       }
@@ -1509,32 +1608,12 @@
         }
       }
     },
-    "Loop playback, between in and out if they're set (⌘L)" : {
+    "Lower Third" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gentag afspilning, inden for ind/ud hvis de er sat (⌘L)"
-          }
-        }
-      }
-    },
-    "Magnetic Main Track (V1)" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Magnetisk hovedspor (V1)"
-          }
-        }
-      }
-    },
-    "Magnetic main track: clips on V1 always sit without gaps" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Magnetisk hovedspor: klip på V1 ligger altid uden huller"
+            "value" : "Navneskilt"
           }
         }
       }
@@ -1585,6 +1664,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mangler fil"
+          }
+        }
+      }
+    },
+    "More Settings" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flere indstillinger"
           }
         }
       }
@@ -1705,12 +1794,32 @@
         }
       }
     },
+    "One frame back (←)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et billede tilbage (←)"
+          }
+        }
+      }
+    },
     "One frame back / forward" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Et billede tilbage / frem"
+          }
+        }
+      }
+    },
+    "One frame forward (→)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et billede frem (→)"
           }
         }
       }
@@ -1755,12 +1864,32 @@
         }
       }
     },
-    "Overview" : {
+    "Or drag the text in the preview." : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Overblik"
+            "value" : "Eller træk teksten i preview."
+          }
+        }
+      }
+    },
+    "Original Length" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oprindelig længde"
+          }
+        }
+      }
+    },
+    "Play" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afspil"
           }
         }
       }
@@ -1811,6 +1940,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bevar tonehøjde"
+          }
+        }
+      }
+    },
+    "Press G to add a title" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryk på G for at tilføje tekst"
           }
         }
       }
@@ -1885,32 +2024,12 @@
         }
       }
     },
-    "Range" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Område"
-          }
-        }
-      }
-    },
     "Redo" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annuller fortryd"
-          }
-        }
-      }
-    },
-    "Redo (⇧⌘Z)" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Annuller fortryd (⇧⌘Z)"
           }
         }
       }
@@ -2035,36 +2154,6 @@
         }
       }
     },
-    "Separate Audio  (E)" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adskil lyd  (E)"
-          }
-        }
-      }
-    },
-    "Separate Audio to Its Own Track  (E)" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adskil lyd til eget spor  (E)"
-          }
-        }
-      }
-    },
-    "Separate audio" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adskil lyd"
-          }
-        }
-      }
-    },
     "Set In Point  (I)" : {
       "localizations" : {
         "da" : {
@@ -2095,12 +2184,12 @@
         }
       }
     },
-    "Shortcuts" : {
+    "Share…" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Genveje"
+            "value" : "Del…"
           }
         }
       }
@@ -2121,6 +2210,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vis i Finder"
+          }
+        }
+      }
+    },
+    "Show or hide your media (Y)" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis eller skjul dine medier (Y)"
           }
         }
       }
@@ -2185,12 +2284,12 @@
         }
       }
     },
-    "Snap to edges and the playhead (⌘Y)" : {
+    "Soft Edge" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Snap til kanter og afspilningshoved (⌘Y)"
+            "value" : "Blød kant"
           }
         }
       }
@@ -2201,16 +2300,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nogle filer kunne ikke åbnes. Edwell kan bruge video, lyd og billeder."
-          }
-        }
-      }
-    },
-    "Source Length" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kildelængde"
           }
         }
       }
@@ -2231,6 +2320,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hastighed"
+          }
+        }
+      }
+    },
+    "Split" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del"
           }
         }
       }
@@ -2281,6 +2380,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start 14 dages prøveperiode"
+          }
+        }
+      }
+    },
+    "Stop typing" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop med at skrive"
           }
         }
       }
@@ -2435,6 +2544,16 @@
         }
       }
     },
+    "They line up on the timeline in the order you add them." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De lægger sig på tidslinjen i den rækkefølge, du tilføjer dem."
+          }
+        }
+      }
+    },
     "Thin" : {
       "localizations" : {
         "da" : {
@@ -2455,32 +2574,12 @@
         }
       }
     },
-    "Tip: drag in the preview to move the text." : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tip: træk i preview for at flytte teksten."
-          }
-        }
-      }
-    },
     "Title" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tekst"
-          }
-        }
-      }
-    },
-    "Title Track" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tekstspor"
           }
         }
       }
@@ -2515,12 +2614,42 @@
         }
       }
     },
+    "Top Left" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Øverst til venstre"
+          }
+        }
+      }
+    },
+    "Top Right" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Øverst til højre"
+          }
+        }
+      }
+    },
     "Track %@ is locked." : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sporet %@ er låst."
+          }
+        }
+      }
+    },
+    "Transition" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overgang"
           }
         }
       }
@@ -2625,16 +2754,6 @@
         }
       }
     },
-    "Undo (⌘Z)" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fortryd (⌘Z)"
-          }
-        }
-      }
-    },
     "Untitled" : {
       "localizations" : {
         "da" : {
@@ -2665,12 +2784,12 @@
         }
       }
     },
-    "Video Track" : {
+    "View" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Videospor"
+            "value" : "Vis"
           }
         }
       }
@@ -2721,6 +2840,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Din tekst"
+          }
+        }
+      }
+    },
+    "Your video is ready" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din video er klar"
           }
         }
       }
