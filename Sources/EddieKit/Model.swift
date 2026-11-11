@@ -159,6 +159,63 @@ struct TitleStyle: Codable, Hashable, Sendable {
         try c.encode(x, forKey: .x)
         try c.encode(y, forKey: .y)
     }
+
+    /// The nine places a title can be put with one click: a column (aligned left, centred or right) and a row.
+    static let columns: [(align: TextAlign, x: Double)] = [(.left, 0.05), (.center, 0.5), (.right, 0.95)]
+    static let rows: [Double] = [0.12, 0.5, 0.82]
+
+    mutating func place(column: Int, row: Int) {
+        (align, x) = Self.columns[column]
+        y = Self.rows[row]
+    }
+
+    func isPlaced(column: Int, row: Int) -> Bool {
+        align == Self.columns[column].align && abs(x - Self.columns[column].x) < 0.02 && abs(y - Self.rows[row]) < 0.02
+    }
+}
+
+/// Ready-made looks for a title, all in Outfit. Picking one keeps the text and its colour and sets the rest.
+enum TitlePreset: String, CaseIterable, Identifiable {
+    case bigCenter, bigLeft, lowerThird, caption
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .bigCenter: String(localized: "Big Center")
+        case .bigLeft: String(localized: "Big Left")
+        case .lowerThird: String(localized: "Lower Third")
+        case .caption: String(localized: "Caption")
+        }
+    }
+
+    func apply(to style: inout TitleStyle) {
+        style.fontFamily = BundledFonts.outfit
+        style.lineHeight = 1
+        style.shadow = false
+        style.background = false
+        switch self {
+        case .bigCenter:
+            style.weight = 800; style.size = 140; style.shadow = true
+            style.place(column: 1, row: 1)
+        case .bigLeft:
+            style.weight = 800; style.size = 150; style.lineHeight = 0.8
+            style.place(column: 0, row: 1)
+        case .lowerThird:
+            style.weight = 600; style.size = 64; style.background = true
+            style.place(column: 0, row: 2)
+        case .caption:
+            style.weight = 500; style.size = 54; style.background = true
+            style.place(column: 1, row: 2)
+            style.y = 0.88
+        }
+    }
+
+    func matches(_ style: TitleStyle) -> Bool {
+        var preset = style
+        apply(to: &preset)
+        return preset == style
+    }
 }
 
 struct Clip: Identifiable, Codable, Hashable, Sendable {
@@ -303,6 +360,18 @@ struct Project: Codable, Equatable, Sendable {
         case .audio: audioTracks
         }
     }
+
+    static func maxTracks(_ group: TrackGroup) -> Int { group == .title ? 6 : 8 }
+
+    /// A clip dragged past the last track of its kind gets a new one, up to `maxTracks`.
+    mutating func makeTrack(_ group: TrackGroup, _ index: Int) {
+        let count = min(index + 1, Self.maxTracks(group))
+        switch group {
+        case .title: titleTracks = max(titleTracks, count)
+        case .visual: visualTracks = max(visualTracks, count)
+        case .audio: audioTracks = max(audioTracks, count)
+        }
+    }
 }
 
 struct TrackRow: Identifiable, Hashable {
@@ -311,12 +380,14 @@ struct TrackRow: Identifiable, Hashable {
 
     var id: String { "\(group.rawValue)\(index)" }
 
+    /// "Video", "Video 2" and so on: what the track holds, not an editor's code.
     var label: String {
-        switch group {
-        case .title: "T\(index + 1)"
-        case .visual: "V\(index + 1)"
-        case .audio: "A\(index + 1)"
+        let name = switch group {
+        case .title: String(localized: "Title")
+        case .visual: String(localized: "Video")
+        case .audio: String(localized: "Audio")
         }
+        return index == 0 ? name : "\(name) \(index + 1)"
     }
 
     var height: CGFloat {

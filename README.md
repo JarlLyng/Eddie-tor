@@ -5,18 +5,19 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 ## Features
 
 - **First run** is an empty timeline that says where the first files go, with an Import button. Once there are clips, one tip above the timeline: split with S, add a title with G, export with ⌘E. Close the tip and it stays closed; it also goes after the first export
-- **Import** video, audio and images (the **+** button, ⌘I, a drop on Media, or files opened from Finder): they go onto the end of the timeline one after another, video and photos on V1 and music on A1, and an empty timeline zooms to show them. Or drag files straight onto a track to place them
+- **Import** video, audio and images (the **+** button, ⌘I, a drop on Media, or files opened from Finder): they go onto the end of the timeline one after another, video and photos on the Video track and music on the Audio track, and an empty timeline zooms to show them. Or drag files straight onto a track to place them
+- **A quiet window**: above the timeline only Split, Title, Transition and Delete, and zoom. The media bin is hidden at first (the sidebar button or Y shows it, and it stays as you left it). With nothing selected, the inspector shows the format, the background and the length, with frame rate and gap closing under More Settings. The shortcuts are in Help › Keyboard Shortcuts (⌘/)
 - **The format follows the first clip**: the first video or photo in a new project sets 16:9, 9:16, 1:1 or 4:5 to its own shape, until you pick a format yourself
-- **Magnetic main track**: clips on V1 always follow each other, so deleting and trimming close the gap. Drag a clip to move it to a new place
-- **More tracks**: 3 video tracks, 2 title tracks and 2 audio tracks, and you can add more. The timeline shows the first of each and any track with a clip on it; drag a clip up or down to use another. Each track can be hidden, muted and locked, with switches that show when the pointer is on the track's name
-- **Clips**: move (also between tracks), trim at the edges, split (S), ripple trim to the playhead (Q/W), duplicate (D), copy/cut/paste and separate the audio from the video (E)
+- **Magnetic main track**: clips on the first video track always follow each other, so deleting and trimming close the gap. Drag a clip to move it to a new place
+- **More tracks**, named for what they hold (Title, Video, Video 2, Audio …). The timeline shows the first of each and any track with a clip on it; drag a clip up or down to use another, and past the last one to make a new one (up to 8 video, 6 title and 8 audio tracks). Each track can be hidden, muted and locked, with switches that show when the pointer is on the track's name
+- **Clips**: move (also between tracks), trim at the edges, split (S), ripple trim to the playhead (Q/W), duplicate (D), copy/cut/paste and detach the audio from the video (E)
 - **Transitions**: cross dissolve, dip to black or white, and push in four directions, at the start and end of a clip. Between two clips on the main track they overlap, and the sound cross-fades too
 - **Speed**: 10–1000 % per clip, with or without preserved pitch
 - **Size and position**: fill the frame or show the whole picture, size, position, rotation, opacity, flipping, and crop with a soft edge
-- **Titles**: font, weight (100–900), size, color, left/center/right alignment, line spacing, shadow, background box, position and fade. A new title (G) has its text selected, so you just type; Escape or a click elsewhere ends the typing. It goes where no other title shows at that moment. Drag the text directly in the preview. Outfit ships with the app (OFL, from the design system), so projects look the same on every Mac
+- **Titles**: four styles to start from (Big Center, Big Left, Lower Third, Caption), nine places in the frame one click each, a short font list with every other font under All Fonts, size and color; weight (100–900), alignment, line spacing, shadow, background box, exact position and fade under More Settings. A new title (G) has its text selected, so you just type; Escape or a click elsewhere ends the typing. It goes where no other title shows at that moment. Drag the text directly in the preview. Outfit ships with the app (OFL, from the design system), so projects look the same on every Mac
 - **Audio**: volume per clip (0–200 %), mute, fade in and out
 - **Format**: 16:9, 9:16, 1:1 and 4:5
-- **Export** to MP4 (H.264 or HEVC) in 1080p, the whole project or only between the in and out points. The bitrate is the app's own, set from the frame size, the frame rate and how much the picture moves, with AAC sound at 48 kHz. Cancel stops an export halfway and leaves no file
+- **Export** to MP4 (H.264 or HEVC) in 1080p: ⌘E opens the save panel straight away, with the file type and the in/out range below the name, and the finished video has Show in Finder and Share…. The whole project or only between the in and out points. The bitrate is the app's own, set from the frame size, the frame rate and how much the picture moves, with AAC sound at 48 kHz. Cancel stops an export halfway and leaves no file
 - **New Ambient Session**, the owner's own template, kept out of sight: hold ⌥ in the File menu and New Project turns into it (⌥⌘N). Choose the recording, and the app sets it up as it was done in Rush: the whole recording on V1 with a 0.5 s dip to black and a sound fade at both ends, and the title "Ambient / Session NNN" from 11.2 to 50.8 s, left-aligned in Outfit ExtraBold 177 px, in the session's own color. Then put the playhead where the session starts and press **Q**, and where it ends and press **W**. The title stays at 11.2 s
 - Undo/redo, autosave, and projects saved as `.edwell` files (old `.eddie` files still open)
 - **Trial and purchase**: everything works for 14 days, then export needs one purchase ($9.99 once, no subscription). Projects always open and edit. Restore Purchases is in the Edwell menu. A build you make yourself with `./build.sh` is unlocked
@@ -35,7 +36,7 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 | Q W | Trim the start / end to the playhead |
 | D | Duplicate |
 | G | New title |
-| E | Separate audio |
+| E | Detach audio |
 | ⌫ | Delete |
 | ⌘D | Add the default transition (cross dissolve) |
 | ⌘C ⌘X ⌘V | Copy / cut / paste at the playhead |
@@ -46,6 +47,8 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 | ⌘1 ⌘2 ⌘4 ⌘5 ⌘6 | Text, transitions, speed, audio, position |
 | \` | Large preview |
 | Y | Show/hide media |
+| esc | Stop typing in a text field |
+| ⌘/ | Keyboard Shortcuts |
 | ⌘Z / ⇧⌘Z | Undo / redo |
 | ⌘S, ⌘O, ⌘E | Save, open, export |
 
