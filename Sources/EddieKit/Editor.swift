@@ -828,9 +828,10 @@ final class Editor {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.movie]
         panel.message = String(localized: "Choose the session recording")
-        // The sandbox hides the folder from fileExists; the panel itself falls back when it isn't there.
-        panel.directoryURL = AmbientSession.recordingsFolder
+        // The folder of the last recording; the panel itself falls back when it's gone.
+        if let folder = AmbientSession.recordingsFolder { panel.directoryURL = folder }
         guard panel.runModal() == .OK, let url = panel.url else { return }
+        AmbientSession.remember(recording: url)
         Task {
             guard let recording = await MediaLoader.load(url), recording.kind == .video else {
                 errorMessage = String(localized: "\(url.lastPathComponent) couldn't be opened as a video.")
