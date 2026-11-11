@@ -33,7 +33,7 @@ struct ContentView: View {
                     .help("Import video, audio or images (⌘I)")
             }
             ToolbarItem(placement: .principal) {
-                Picker("Format", selection: editor.projectBinding(\.aspect)) {
+                Picker("Format", selection: editor.aspectBinding) {
                     ForEach(AspectRatio.allCases) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)

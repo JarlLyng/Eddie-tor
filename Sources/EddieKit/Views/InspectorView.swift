@@ -28,7 +28,7 @@ private struct ProjectInspector: View {
     var body: some View {
         Form {
             Section("Format") {
-                Picker("Aspect Ratio", selection: editor.projectBinding(\.aspect)) {
+                Picker("Aspect Ratio", selection: editor.aspectBinding) {
                     ForEach(AspectRatio.allCases) { aspect in
                         Text("\(aspect.label)  (\(Int(aspect.renderSize.width))×\(Int(aspect.renderSize.height)))").tag(aspect)
                     }
@@ -95,6 +95,7 @@ private struct ClipInspector: View {
     /// The clip as it is now. Looked up by its id, not through the selection, which may have moved on to another
     /// clip when this inspector draws for the last time.
     private var current: Clip { editor.project.clips.first { $0.id == clip.id } ?? clip }
+    @FocusState private var typing: Bool
 
     var body: some View {
         let (tabs, tab) = editor.inspectorTabs(for: clip)
@@ -160,6 +161,8 @@ private struct ClipInspector: View {
                 .scrollContentBackground(.hidden)
                 .padding(Tokens.Spacing.xs)
                 .background(Tokens.Palette.Background.muted, in: RoundedRectangle(cornerRadius: Tokens.Radius.sm))
+                .focused($typing)
+                .task { await selectNewTitle() }
             Picker("Font", selection: editor.binding(clip.id, \Clip.title!.fontFamily, fallback: "Helvetica Neue")) {
                 ForEach(Self.fontFamilies, id: \.self) { Text(BundledFonts.displayName($0)).tag($0) }
             }
@@ -342,6 +345,23 @@ private struct ClipInspector: View {
         case .image: String(localized: "Image")
         case .audio: String(localized: "Audio")
         case .title: String(localized: "Title")
+        }
+    }
+
+    /// A title just added with G: its text is selected, so typing replaces it. Escape or a click elsewhere
+    /// stops typing (`Editor.installKeyMonitor`).
+    private func selectNewTitle() async {
+        guard editor.titleToType == clip.id else { return }
+        editor.titleToType = nil
+        typing = true
+        let text = current.title?.text
+        // The text view becomes first responder on a later pass; select its text once it has.
+        for _ in 0..<20 {
+            if let view = NSApp.keyWindow?.firstResponder as? NSTextView, !view.isFieldEditor, view.string == text {
+                view.selectAll(nil)
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(20))
         }
     }
 

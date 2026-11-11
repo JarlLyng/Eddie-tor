@@ -25,6 +25,18 @@ enum AspectRatio: String, Codable, CaseIterable, Identifiable, Sendable {
     }
 
     var ratio: CGFloat { renderSize.width / renderSize.height }
+
+    /// The format closest to a picture's shape, so the first clip in a new project isn't cropped to a
+    /// format nobody chose. 4:3 counts as 16:9, 3:4 as 4:5. Nil for something without a picture.
+    static func fitting(width: Double, height: Double) -> AspectRatio? {
+        guard width > 0, height > 0 else { return nil }
+        switch width / height {
+        case 1.15...: return .landscape
+        case 0.9..<1.15: return .square
+        case 0.68..<0.9: return .vertical45
+        default: return .portrait
+        }
+    }
 }
 
 struct RGBA: Codable, Hashable, Sendable {
@@ -253,6 +265,8 @@ struct TrackFlags: Codable, Hashable, Sendable {
 struct Project: Codable, Equatable, Sendable {
     var version = 2
     var aspect: AspectRatio = .portrait
+    /// Set once the user picks a format. Until then the first video or photo on the timeline sets it.
+    var aspectChosen = false
     var fps = 30
     var background = RGBA.black
     var titleTracks = 2
@@ -387,6 +401,8 @@ extension Project {
         audioTracks = try c.value(.audioTracks, d.audioTracks)
         media = try c.value(.media, d.media)
         clips = try c.value(.clips, d.clips)
+        // A file from before the flag keeps its format once it has a picture in it.
+        aspectChosen = try c.value(.aspectChosen, clips.contains { $0.group == .visual })
         magneticMain = try c.value(.magneticMain, d.magneticMain)
         trackFlags = try c.value(.trackFlags, d.trackFlags)
         inPoint = try c.decodeIfPresent(Double.self, forKey: .inPoint)

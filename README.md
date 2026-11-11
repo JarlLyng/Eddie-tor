@@ -4,15 +4,16 @@ A small video editor for the Mac, made to replace Adobe Premiere Rush. On the Ma
 
 ## Features
 
-- **First run** is an empty project and one tip above the timeline: drag media in, split with S, add a title with G, export with ⌘E. Close the tip and it stays closed; it also goes after the first export
-- **Import** video, audio and images (the **+** button, ⌘I, or drag files into Media or straight onto a track)
+- **First run** is an empty timeline that says where the first files go, with an Import button. Once there are clips, one tip above the timeline: split with S, add a title with G, export with ⌘E. Close the tip and it stays closed; it also goes after the first export
+- **Import** video, audio and images (the **+** button, ⌘I, a drop on Media, or files opened from Finder): they go onto the end of the timeline one after another, video and photos on V1 and music on A1, and an empty timeline zooms to show them. Or drag files straight onto a track to place them
+- **The format follows the first clip**: the first video or photo in a new project sets 16:9, 9:16, 1:1 or 4:5 to its own shape, until you pick a format yourself
 - **Magnetic main track**: clips on V1 always follow each other, so deleting and trimming close the gap. Drag a clip to move it to a new place
-- **More tracks**: 3 video tracks, 2 title tracks and 2 audio tracks, and you can add more. Each track can be hidden, muted and locked
+- **More tracks**: 3 video tracks, 2 title tracks and 2 audio tracks, and you can add more. The timeline shows the first of each and any track with a clip on it; drag a clip up or down to use another. Each track can be hidden, muted and locked, with switches that show when the pointer is on the track's name
 - **Clips**: move (also between tracks), trim at the edges, split (S), ripple trim to the playhead (Q/W), duplicate (D), copy/cut/paste and separate the audio from the video (E)
 - **Transitions**: cross dissolve, dip to black or white, and push in four directions, at the start and end of a clip. Between two clips on the main track they overlap, and the sound cross-fades too
 - **Speed**: 10–1000 % per clip, with or without preserved pitch
 - **Size and position**: fill the frame or show the whole picture, size, position, rotation, opacity, flipping, and crop with a soft edge
-- **Titles**: font, weight (100–900), size, color, left/center/right alignment, line spacing, shadow, background box, position and fade. Drag the text directly in the preview. Outfit ships with the app (OFL, from the design system), so projects look the same on every Mac
+- **Titles**: font, weight (100–900), size, color, left/center/right alignment, line spacing, shadow, background box, position and fade. A new title (G) has its text selected, so you just type; Escape or a click elsewhere ends the typing. It goes where no other title shows at that moment. Drag the text directly in the preview. Outfit ships with the app (OFL, from the design system), so projects look the same on every Mac
 - **Audio**: volume per clip (0–200 %), mute, fade in and out
 - **Format**: 16:9, 9:16, 1:1 and 4:5
 - **Export** to MP4 (H.264 or HEVC) in 1080p, the whole project or only between the in and out points. The bitrate is the app's own, set from the frame size, the frame rate and how much the picture moves, with AAC sound at 48 kHz. Cancel stops an export halfway and leaves no file
