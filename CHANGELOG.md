@@ -29,6 +29,6 @@ A quicker, quieter editor (#34).
 ### Fixed
 - Escape or a click elsewhere ends typing in a title, so Space plays again instead of adding a space.
 
-## [1.0] - 2026-11-12
+## [1.0] - 2026-11-11
 
 The first release on the Mac App Store: a magnetic timeline with more tracks on demand, split and ripple trims, transitions, speed, size and position, static titles with Outfit built in, volume and fades, every format from vertical to widescreen, and MP4 export in H.264 or HEVC at 1080p. Free to try for 14 days, then one purchase to keep exporting.
