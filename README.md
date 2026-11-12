@@ -27,10 +27,10 @@ Edwell is a simple video editor for your Mac. Put your clips on a timeline, cut 
     <source media="(prefers-color-scheme: dark)" srcset="https://madebyhuman.iamjarl.com/badges/co-created-white.svg">
     <img src="https://madebyhuman.iamjarl.com/badges/co-created-black.svg" alt="Co-created with AI" width="120" height="40"></picture></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
-  <a href="https://github.com/JarlLyng/Eddie-tor/actions/workflows/ci.yml"><img src="https://github.com/JarlLyng/Eddie-tor/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/JarlLyng/Edwell/actions/workflows/ci.yml"><img src="https://github.com/JarlLyng/Edwell/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
-The developer half: what's in the app, how to build and test it, and how it's put together. Edwell was made to replace Adobe Premiere Rush, which Adobe has retired, and it keeps the parts of Rush that actually get used. Eddie is its working name, kept for this repo and the code (`EddieKit`). The interface is in English and Danish, and it runs on macOS 14 Sonoma and later.
+The developer half: what's in the app, how to build and test it, and how it's put together. Edwell was made to replace Adobe Premiere Rush, which Adobe has retired, and it keeps the parts of Rush that actually get used. Eddie is its working name, kept in the code (`EddieKit`). The interface is in English and Danish, and it runs on macOS 14 Sonoma and later.
 
 ### What's in it
 
