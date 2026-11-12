@@ -4,10 +4,7 @@ All notable changes to Edwell are written down here.
 
 ## [Unreleased]
 
-### Changed
-- The Ambient Session panel opens where the last recording was chosen, instead of at a folder written into the code.
-
-## [1.1] - in TestFlight
+## [1.1] - in review
 
 A quicker, quieter editor (#34).
 
@@ -25,6 +22,7 @@ A quicker, quieter editor (#34).
 - Rarer settings for the project and for titles sit under More Settings.
 - ⌘E opens the save panel straight away, with the file type and the in/out range below the name. The finished video has Show in Finder and Share….
 - Plainer words in the inspector and the menus.
+- The Ambient Session panel opens where the last recording was chosen, instead of at a folder written into the code.
 
 ### Fixed
 - Escape or a click elsewhere ends typing in a title, so Space plays again instead of adding a space.
