@@ -28,7 +28,7 @@ Bug reports, ideas and pull requests are welcome. For a bigger change, open an i
 
 ## Reporting bugs
 
-Open an [issue](https://github.com/JarlLyng/Eddie-tor/issues/new) with:
+Open an [issue](https://github.com/JarlLyng/Edwell/issues/new) with:
 
 - your macOS version and Edwell's version (Edwell › About Edwell),
 - the steps to reproduce it,
