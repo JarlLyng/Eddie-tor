@@ -41,6 +41,9 @@
   <!-- PLACEHOLDER until the release with iamjarl-design#114: "offers" holds only the store page,
        so the vendor script recognises the app. Run with that release, it replaces the Offer with
        dist/store/edwell.en.offer.json, the price included. -->
+  <!-- REPO PRIVATE until Eddie-tor#9: put back into the JSON-LD below, after "softwareRequirements":
+       "license": "https://github.com/JarlLyng/Eddie-tor/blob/main/LICENSE",
+     and as the last FAQ question: "Is it open source?", answered "Yes, under the MIT licence. The code is on GitHub." -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -55,7 +58,6 @@
     "url": "https://edwell.iamjarl.com/",
     "screenshot": "https://edwell.iamjarl.com/assets/edwell/hero-poster-2200.jpg",
     "softwareRequirements": "macOS 14.0 or later",
-    "license": "https://github.com/JarlLyng/Eddie-tor/blob/main/LICENSE",
     "inLanguage": "en",
     "offers": {
       "@type": "Offer",
@@ -124,11 +126,6 @@
         "@type": "Question",
         "name": "Which Macs does it run on?",
         "acceptedAnswer": { "@type": "Answer", "text": "Any Mac with macOS 14 Sonoma or later." }
-      },
-      {
-        "@type": "Question",
-        "name": "Is it open source?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes, under the MIT licence. The code is on GitHub." }
       }
     ]
   }
@@ -290,7 +287,7 @@
         <p>Every week I edit an hour-long ambient session, plus the odd music video. I did it in Premiere Rush until Adobe retired it, and I didn't want a subscription for what I actually do: cut, add a title, export. So I built a small editor for my Mac, and I've used it every week since.</p>
         <p class="ij-maker__sign">Jarl</p>
       </div>
-      <p class="edwell-source ij-small">Edwell is open source under the MIT licence. Read the code or report an issue <a href="https://github.com/JarlLyng/Eddie-tor">on GitHub</a>.</p>
+      <!-- REPO PRIVATE until Eddie-tor#9: <p class="edwell-source ij-small">Edwell is open source under the MIT licence. Read the code or report an issue <a href="https://github.com/JarlLyng/Eddie-tor">on GitHub</a>.</p> -->
     </div>
   </section>
 
@@ -314,8 +311,8 @@
             <p>No. Edwell can't read Rush project files. Start from your original clips, or export them from Rush while it still runs, and rebuild the edit in Edwell.</p></details>
           <details><summary>Which Macs does it run on?</summary>
             <p>Any Mac with macOS 14 Sonoma or later.</p></details>
-          <details><summary>Is it open source?</summary>
-            <p>Yes, under the MIT licence. The code is on GitHub.</p></details>
+          <!-- REPO PRIVATE until Eddie-tor#9: <details><summary>Is it open source?</summary>
+            <p>Yes, under the MIT licence. The code is on GitHub.</p></details> -->
         </div>
       </div>
     </div>
@@ -345,8 +342,8 @@
   <a slot="links" href="/support">Support</a>
   <a slot="links" href="/privacy">Privacy</a>
   <a slot="links" href="/premiere-rush-alternative-mac">Leaving Premiere Rush</a>
-  <a slot="links" href="https://github.com/JarlLyng/Eddie-tor">Source on GitHub</a>
-  <p>&copy; 2026 IAMJARL &middot; <a href="/support">Support</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/premiere-rush-alternative-mac">Leaving Premiere Rush</a> &middot; <a href="https://github.com/JarlLyng/Eddie-tor">Source on GitHub</a> &middot; <a href="https://iamjarl.com">All projects</a></p>
+  <!-- REPO PRIVATE until Eddie-tor#9: <a slot="links" href="https://github.com/JarlLyng/Eddie-tor">Source on GitHub</a> -->
+  <p>&copy; 2026 IAMJARL &middot; <a href="/support">Support</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/premiere-rush-alternative-mac">Leaving Premiere Rush</a><!-- REPO PRIVATE until Eddie-tor#9: &middot; <a href="https://github.com/JarlLyng/Eddie-tor">Source on GitHub</a> --> &middot; <a href="https://iamjarl.com">All projects</a></p>
 </ij-footer>
 
 </body>
