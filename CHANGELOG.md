@@ -22,6 +22,7 @@ A quicker, quieter editor (#34).
 - Rarer settings for the project and for titles sit under More Settings.
 - ⌘E opens the save panel straight away, with the file type and the in/out range below the name. The finished video has Show in Finder and Share….
 - Plainer words in the inspector and the menus.
+- In Danish, Split is "Opdel", so it no longer reads like Share ("Del…").
 - The Ambient Session panel opens where the last recording was chosen, instead of at a folder written into the code.
 
 ### Fixed
