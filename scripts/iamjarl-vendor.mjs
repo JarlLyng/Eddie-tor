@@ -1,4 +1,4 @@
-// IAMJARL design system v1.35.1: generated from tools/vendor.mjs, do not edit
+// IAMJARL design system v1.36.0: generated from tools/vendor.mjs, do not edit
 // Takes one release of the IAMJARL design system into a static site, served
 // from the site's own origin: the owner's rule since 1.32.2 (#100). It does in
 // one command what the README's recipe does by hand, and what TonVault, Wean

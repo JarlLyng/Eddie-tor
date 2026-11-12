@@ -3,58 +3,353 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Edwell. A simple video editor for the Mac.</title>
-  <meta name="description" content="Edwell is a simple Mac video editor you buy once. Every format, titles and a magnetic timeline, with no account, no watermark and no subscription. On the Mac App Store.">
+  <title>Edwell: Video Editor for Mac. Cut, title and export in minutes.</title>
+  <meta name="description" content="A simple video editor for your Mac. Cut on a magnetic timeline, drag titles onto the picture and export 16:9, 9:16, 1:1 or 4:5 at 1080p. Try it free for 14 days, then pay once.">
   <link rel="canonical" href="https://edwell.iamjarl.com/">
-  <meta name="robots" content="index, follow">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="author" content="IAMJARL">
+  <meta name="theme-color" content="#000000">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Edwell">
-  <meta property="og:description" content="A simple Mac video editor you buy once. On the Mac App Store.">
+  <meta property="og:site_name" content="Edwell">
+  <meta property="og:title" content="Edwell: Cut, title and export in minutes.">
+  <meta property="og:description" content="A simple video editor for your Mac. Try it free for 14 days, then pay once.">
   <meta property="og:url" content="https://edwell.iamjarl.com/">
+  <meta property="og:image" content="https://edwell.iamjarl.com/assets/edwell/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Edwell. Cut, title and export in minutes. Beside it, the Edwell window with the title Slow Mornings on the picture and five clips on the timeline.">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Edwell: Cut, title and export in minutes.">
+  <meta name="twitter:description" content="A simple video editor for your Mac. Try it free for 14 days, then pay once.">
+  <meta name="twitter:image" content="https://edwell.iamjarl.com/assets/edwell/og.png">
   <link rel="icon" type="image/png" href="/assets/favicon.png">
   <link rel="apple-touch-icon" href="/assets/edwell-icon.png">
-  <!-- The design system's marketing kit (iamjarl-design v1.35.1), served from this site and
-       checked against the tag's hashes. Edwell's own identity comes with its site brief. -->
-  <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/css/tokens.css" integrity="sha384-dwNVnicsf+dtw01r5p08OIz0PAoO6RGpCdqZ4uOMnjy52ZvPD8H6/XoSie5rGYTe">
-  <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/fonts/outfit.css" integrity="sha384-i0YszCUj4POg1bR2PB2zrwvuJcrSfaRdV0N26BN6n6KUewwu3cCw9/mMIDESbPpi">
-  <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/kit/kit.css" integrity="sha384-nUfZVPynd+qv9zKy31CNHBMAm4lfLPzO2XpNIuNW/YgL6qQNZDgLjG5aYRDoR6Qm">
+  <!-- The design system's marketing kit, served from this site and checked against the tag's hashes
+       (scripts/iamjarl-vendor.mjs). Edwell's identity sheet
+       (dist/identity/edwell.css) loads right after the tokens. -->
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.36.0/dist/css/tokens.css" integrity="sha384-4ElIrKMgfNJRZ4e32tAsA9Bcmrw0YrPTz194TDrOXZbYAF6+mbF/yssQCRNBYqRs">
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.36.0/dist/identity/edwell.css" integrity="sha384-4g8PlfFfyNIZRwO44XAbX3Hw6m2VNpNefQ/UJreNWE8NBNxVockc7Ux2DYuXsffd">
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.36.0/dist/fonts/fraunces.css" integrity="sha384-JeKIfoU48PEFwy97QH5XyE8vgP/re5gMlWK1rmDQOqaLClwzxO+f+RCaKx69qSL2">
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.36.0/dist/kit/kit.css" integrity="sha384-YUPw8Ejdh2W/YM8Ofx1gGq9aDMF+V+QsR+gYmNbY7O2sCXt4f6q6evIb5WmRFd1P">
   <link rel="stylesheet" href="/assets/site.css">
-  <script type="module" src="/assets/iamjarl-design@v1.35.1/dist/components/ij-nav.js" integrity="sha384-95VZFSpjnq1uGjMyR2zC3pAec8DTD+3cyJATjk5Kl4WpTj1vPnWkgZOLM3qETtSn"></script>
+  <script type="module" src="/assets/iamjarl-design@v1.36.0/dist/kit/kit.js" integrity="sha384-wt4K5HFdUeB8tiP0CJsndWjd4nLvHCrUNWkBkGpKrU7qTxB1ph1r3bO/PD5fEKmF"></script>
+  <script type="module" src="/assets/iamjarl-design@v1.36.0/dist/components/ij-nav.js" integrity="sha384-SWuiwp5zwGo90jQaJ3mUO13FViQPYZ6UfEObwkeiaz2HQAfmQCae2iCeJ24VJAMT"></script>
+  <script type="module" src="/assets/iamjarl-design@v1.36.0/dist/components/ij-footer.js" integrity="sha384-Z7md8d03PQnv03JqgFjepwr8CKkyDVpJqtaU+9/AEB6LAfSVIuH/0TiKXJ219Xbv"></script>
   <!-- Cookieless analytics on the portfolio's self-hosted Umami, counting this domain only. -->
   <script defer src="https://umami-iamjarl.vercel.app/script.js" data-website-id="0e97e99f-ef1a-4e83-a6de-13c35ca272bf" data-domains="edwell.iamjarl.com"></script>
+
+  <!-- REPO PRIVATE until Eddie-tor#9: put back into the JSON-LD below, after "softwareRequirements":
+       "license": "https://github.com/JarlLyng/Eddie-tor/blob/main/LICENSE",
+     and as the last FAQ question: "Is it open source?", answered "Yes, under the MIT licence. The code is on GitHub." -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "@id": "https://edwell.iamjarl.com/#app",
+    "name": "Edwell",
+    "alternateName": "Edwell: Video Editor",
+    "description": "A simple video editor for the Mac. Cut on a magnetic timeline, drag titles onto the picture and export 16:9, 9:16, 1:1 or 4:5 video as MP4 in H.264 or HEVC at 1080p. Free for 14 days, then a one-time purchase.",
+    "operatingSystem": "macOS 14 or later",
+    "applicationCategory": "MultimediaApplication",
+    "applicationSubCategory": "Video Editor",
+    "url": "https://edwell.iamjarl.com/",
+    "screenshot": "https://edwell.iamjarl.com/assets/edwell/hero-poster-2200.jpg",
+    "softwareRequirements": "macOS 14.0 or later",
+    "inLanguage": "en",
+    "offers": {
+      "@type": "Offer",
+      "price": "9.99",
+      "priceCurrency": "USD",
+      "url": "https://apps.apple.com/app/id6825963733"
+    },
+    "featureList": [
+      "A magnetic main track, where clips sit back to back and the rest closes up when you cut, trim or delete",
+      "Titles you place by dragging them on the picture, with font, weight, size and colour",
+      "16:9, 9:16, 1:1 and 4:5 from the same project",
+      "MP4 export in H.264 or HEVC at 1080p, of the whole project or between in and out points",
+      "Cross dissolve, dips to black and white, and push transitions",
+      "J, K and L to shuttle and stop, S to split, Q and W to trim",
+      "Edits and exports offline, with no account"
+    ],
+    "author": {
+      "@id": "https://iamjarl.com/#org"
+    },
+    "publisher": {
+      "@id": "https://iamjarl.com/#org"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://iamjarl.com/#org",
+    "name": "IAMJARL",
+    "url": "https://iamjarl.com",
+    "sameAs": ["https://github.com/JarlLyng"]
+  }
+  </script>
+  <!-- Mirrors the visible FAQ word for word. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is Edwell free?",
+        "acceptedAnswer": { "@type": "Answer", "text": "It's free to download, with everything open for 14 days. After that, export needs a one-time purchase. There's no subscription." }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens after the trial?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Your projects still open, and you can keep editing and saving them. Export asks for the purchase, which opens it for good." }
+      },
+      {
+        "@type": "Question",
+        "name": "Which formats can I make?",
+        "acceptedAnswer": { "@type": "Answer", "text": "16:9, 9:16, 1:1 and 4:5, from the same project. Edwell exports MP4 in H.264 or HEVC at 1080p." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it need the internet?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Editing and export work offline. Starting the trial and buying need a connection, because they go through the App Store." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it add a watermark?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. The video you export has nothing added to it." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can it open Premiere Rush projects?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. Edwell can't read Rush project files. Start from your original clips, or export them from Rush while it still runs, and rebuild the edit in Edwell." }
+      },
+      {
+        "@type": "Question",
+        "name": "Which Macs does it run on?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Any Mac with macOS 14 Sonoma or later." }
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="ij-page">
 <a class="ij-skip" href="#main">Skip to content</a>
 
-<ij-nav>
+<ij-nav cta-after=".ij-hero .ij-store">
   <a slot="brand" href="/">Edwell</a>
+  <a slot="links" href="#features">What it does</a>
+  <a slot="links" href="#formats">Formats</a>
+  <a slot="links" href="#faq">Questions</a>
+  <a slot="cta" href="https://apps.apple.com/app/id6825963733?pt=128512007&amp;ct=site&amp;mt=12" data-umami-event="store-click" data-umami-event-store="mac-app-store" data-umami-event-placement="nav" data-umami-event-locale="en">Download</a>
 </ij-nav>
 
-<main id="main" class="edwell-holding">
+<main id="main">
+
+  <!-- 1. Hero: the line, the store, and the app doing the three jobs -->
   <section class="ij-hero ij-hero--centred">
     <div class="ij-container ij-hero__inner">
       <div class="ij-hero__text">
-        <img class="edwell-icon" src="/assets/edwell-icon.png" width="128" height="128" alt="">
-        <h1 class="ij-display">Edwell</h1>
-        <p class="ij-lede">The simple Mac video editor you buy once. Every format, titles and a magnetic timeline, with no account, no watermark and no subscription.</p>
-        <!-- Written by hand until iamjarl-design#114 puts Edwell in the registry; the launch page (#32)
-             then takes the generated store fragment. -->
-        <div class="ij-store">
+        <h1 class="ij-display">Cut, title and export in minutes.</h1>
+        <p class="ij-lede">A simple video editor for your Mac. Try it free for 14 days, then pay once.</p>
+        <div class="ij-store" data-ij-store="edwell" data-ij-store-locale="en">
           <a class="ij-store-badge" href="https://apps.apple.com/app/id6825963733?pt=128512007&amp;ct=site&amp;mt=12" data-umami-event="store-click" data-umami-event-store="mac-app-store" data-umami-event-placement="hero" data-umami-event-locale="en">
-            <img src="/assets/iamjarl-design@v1.35.1/badges/mac-app-store-white-en-us.svg" alt="Download on the Mac App Store" width="156" height="40">
+            <img src="/assets/iamjarl-design@v1.36.0/badges/mac-app-store-white-en-us.svg" alt="Download on the Mac App Store" width="156" height="40">
           </a>
-          <p class="ij-store-facts">Free to try for 14 days, then $9.99 once &middot; macOS 14 or later</p>
+          <p class="ij-store-facts">Free to try for 14 days, then $9.99 once · macOS 14 or later</p>
         </div>
-        <p class="ij-small"><a href="/support">Support</a> &middot; <a href="/privacy">Privacy</a></p>
+      </div>
+      <div class="ij-hero__media">
+        <div class="ij-window edwell-hero-window">
+          <video class="ij-loop" muted playsinline loop preload="none" width="2200" height="1480"
+            poster="/assets/edwell/hero-poster-2200.jpg"
+            aria-label="The Edwell window. A clip on the timeline is split at the playhead, a title is added and typed, Slow Mornings, then dragged up onto the picture, and the format switches from 16:9 to 9:16.">
+            <source src="/assets/edwell/hero-loop-1100.mp4" type="video/mp4" media="(max-width: 900px)">
+            <source src="/assets/edwell/hero-loop-2200.mp4" type="video/mp4">
+          </video>
+        </div>
       </div>
     </div>
   </section>
+
+  <!-- 2. What it does, in three frameless pieces of the real window -->
+  <section class="ij-section" id="features" aria-labelledby="features-h">
+    <div class="ij-container ij-stack">
+      <h2 class="ij-headline" id="features-h">The parts you use every time.</h2>
+      <div class="ij-bento edwell-pieces">
+        <div class="ij-card edwell-card--full">
+          <div class="ij-card__piece">
+            <img src="/assets/edwell/timeline-1100.webp" srcset="/assets/edwell/timeline-1100.webp 1100w, /assets/edwell/timeline-2200.webp 2200w" sizes="(min-width: 1228px) 1036px, 90vw"
+              alt="The whole timeline, with two titles on T1, five clips back to back on V1 with transitions between them, and a music bed on A1." width="1100" height="310" loading="lazy" decoding="async">
+          </div>
+          <h3 class="ij-title">A magnetic timeline.</h3>
+          <p>Clips on the main track sit back to back, so when you cut, trim or delete, the rest of the video closes up behind it.</p>
+        </div>
+        <div class="ij-card ij-card--half">
+          <div class="ij-card__piece">
+            <img class="edwell-piece--title" src="/assets/edwell/title-420.webp" srcset="/assets/edwell/title-420.webp 1x, /assets/edwell/title-840.webp 2x"
+              alt="The preview with the title Slow Mornings selected on the picture, over hills at dawn." width="420" height="343" loading="lazy" decoding="async">
+          </div>
+          <h3 class="ij-title">Titles on the picture.</h3>
+          <p>Add a title at the playhead, type it, and drag it where you want it on the picture, in the font, weight, size and colour you choose.</p>
+        </div>
+        <div class="ij-card ij-card--half">
+          <div class="ij-card__piece">
+            <img class="edwell-piece--export" src="/assets/edwell/export-460.webp" srcset="/assets/edwell/export-460.webp 1x, /assets/edwell/export-920.webp 2x"
+              alt="The Export Video sheet: 16:9, 1,920 by 1,080, 30 fps, the duration, and the codec set to H.264." width="460" height="215" loading="lazy" decoding="async">
+          </div>
+          <h3 class="ij-title">Export in H.264 or HEVC at 1080p.</h3>
+          <p>An MP4 that plays anywhere, of the whole project or only the part between your in and out points.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Every format: the big 4 and the same frame in each -->
+  <section class="ij-section ij-section--band" id="formats" aria-labelledby="formats-h">
+    <div class="ij-container ij-stack">
+      <div class="edwell-formats__head">
+        <p class="ij-numeral" aria-hidden="true">4</p>
+        <div class="ij-stack">
+          <h2 class="ij-headline" id="formats-h">Every format.</h2>
+          <p class="ij-lede">Widescreen, vertical, square and portrait, from the same project.</p>
+        </div>
+      </div>
+      <div class="edwell-formats">
+        <figure class="edwell-format edwell-format--16x9">
+          <img src="/assets/edwell/format-16x9.webp" alt="Slow Mornings in 16:9." width="924" height="520" loading="lazy" decoding="async">
+          <figcaption><span class="ij-num">16:9</span> Widescreen</figcaption>
+        </figure>
+        <figure class="edwell-format edwell-format--9x16">
+          <img src="/assets/edwell/format-9x16.webp" alt="The same frame in 9:16." width="292" height="520" loading="lazy" decoding="async">
+          <figcaption><span class="ij-num">9:16</span> Vertical</figcaption>
+        </figure>
+        <span class="edwell-formats__break" aria-hidden="true"></span>
+        <figure class="edwell-format edwell-format--1x1">
+          <img src="/assets/edwell/format-1x1.webp" alt="The same frame in 1:1." width="520" height="520" loading="lazy" decoding="async">
+          <figcaption><span class="ij-num">1:1</span> Square</figcaption>
+        </figure>
+        <figure class="edwell-format edwell-format--4x5">
+          <img src="/assets/edwell/format-4x5.webp" alt="The same frame in 4:5." width="416" height="520" loading="lazy" decoding="async">
+          <figcaption><span class="ij-num">4:5</span> Portrait</figcaption>
+        </figure>
+      </div>
+      <p class="edwell-formats__note">Switch in the toolbar at any time, and your edit stays as it is.</p>
+    </div>
+  </section>
+
+  <!-- 4. Keyboard first -->
+  <section class="ij-section" aria-labelledby="keys-h">
+    <div class="ij-container ij-stack">
+      <h2 class="ij-headline" id="keys-h">Keyboard first.</h2>
+      <div class="edwell-keys">
+        <div class="edwell-keys__group">
+          <p class="edwell-keys__caps"><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd></p>
+          <p>Shuttle back, stop and shuttle forward. Press J or L again to go faster.</p>
+        </div>
+        <div class="edwell-keys__group">
+          <p class="edwell-keys__caps"><kbd>S</kbd></p>
+          <p>Split the clip at the playhead.</p>
+        </div>
+        <div class="edwell-keys__group">
+          <p class="edwell-keys__caps"><kbd>Q</kbd><kbd>W</kbd></p>
+          <p>Trim the start or the end of a clip to the playhead. On the main track, the rest follows.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Privacy and price, as features -->
+  <section class="ij-section ij-section--band" aria-labelledby="privacy-h">
+    <div class="ij-container ij-stack">
+      <h2 class="ij-headline" id="privacy-h">Your footage stays on your Mac.</h2>
+      <div class="ij-assurances edwell-assurances">
+        <div class="ij-assurance"><h3 class="ij-title">All on your Mac.</h3><p>Edwell edits and exports on your Mac, and both work offline. It never sends your footage or your projects anywhere.</p></div>
+        <div class="ij-assurance"><h3 class="ij-title">No account, no tracking, no watermark.</h3><p>There's nothing to sign up for, nothing counts what you do, and the video you export is yours as it is.</p></div>
+        <div class="ij-assurance"><h3 class="ij-title">Free for 14 days, then one purchase.</h3><p>The trial opens everything, export included. After that, one purchase opens export for good. There's no subscription.</p></div>
+        <div class="ij-assurance ij-assurance--label"><h3 class="ij-title">Data Not Collected.</h3><p>That's the privacy label on the Mac App Store, word for word.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. One line for people leaving Rush -->
+  <section class="ij-section edwell-rush" aria-label="An alternative to Premiere Rush">
+    <div class="ij-container">
+      <p class="ij-lede">Looking for an alternative to Adobe Premiere Rush? <a href="/premiere-rush-alternative-mac">Edwell keeps the simple parts.</a></p>
+    </div>
+  </section>
+
+  <!-- 7. A note from the maker, and 8. the source -->
+  <section class="ij-section ij-section--band" aria-label="A note from the maker">
+    <div class="ij-container">
+      <div class="ij-maker">
+        <p>Every week I edit an hour-long ambient session, plus the odd music video. I did it in Premiere Rush until Adobe retired it, and I didn't want a subscription for what I actually do: cut, add a title, export. So I built a small editor for my Mac, and I've used it every week since.</p>
+        <p class="ij-maker__sign">Jarl</p>
+      </div>
+      <!-- REPO PRIVATE until Eddie-tor#9: <p class="edwell-source ij-small">Edwell is open source under the MIT licence. Read the code or report an issue <a href="https://github.com/JarlLyng/Eddie-tor">on GitHub</a>.</p> -->
+    </div>
+  </section>
+
+  <!-- 9. FAQ. The FAQPage JSON-LD in the head mirrors this word for word. -->
+  <section class="ij-section" id="faq" aria-labelledby="faq-h">
+    <div class="ij-container">
+      <div class="ij-stack ij-measure">
+        <h2 class="ij-headline" id="faq-h">Questions.</h2>
+        <div class="edwell-faq-list">
+          <details><summary>Is Edwell free?</summary>
+            <p>It's free to download, with everything open for 14 days. After that, export needs a one-time purchase. There's no subscription.</p></details>
+          <details><summary>What happens after the trial?</summary>
+            <p>Your projects still open, and you can keep editing and saving them. Export asks for the purchase, which opens it for good.</p></details>
+          <details><summary>Which formats can I make?</summary>
+            <p>16:9, 9:16, 1:1 and 4:5, from the same project. Edwell exports MP4 in H.264 or HEVC at 1080p.</p></details>
+          <details><summary>Does it need the internet?</summary>
+            <p>Editing and export work offline. Starting the trial and buying need a connection, because they go through the App Store.</p></details>
+          <details><summary>Does it add a watermark?</summary>
+            <p>No. The video you export has nothing added to it.</p></details>
+          <details><summary>Can it open Premiere Rush projects?</summary>
+            <p>No. Edwell can't read Rush project files. Start from your original clips, or export them from Rush while it still runs, and rebuild the edit in Edwell.</p></details>
+          <details><summary>Which Macs does it run on?</summary>
+            <p>Any Mac with macOS 14 Sonoma or later.</p></details>
+          <!-- REPO PRIVATE until Eddie-tor#9: <details><summary>Is it open source?</summary>
+            <p>Yes, under the MIT licence. The code is on GitHub.</p></details> -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Closing: the wordmark, the store, the trademark line -->
+  <section class="ij-section" aria-label="Download Edwell">
+    <div class="ij-container ij-closing">
+      <p class="ij-wordmark">Edwell</p>
+      <div class="ij-store" data-ij-store="edwell" data-ij-store-locale="en">
+        <a class="ij-store-badge" href="https://apps.apple.com/app/id6825963733?pt=128512007&amp;ct=site&amp;mt=12" data-umami-event="store-click" data-umami-event-store="mac-app-store" data-umami-event-placement="footer" data-umami-event-locale="en">
+          <img src="/assets/iamjarl-design@v1.36.0/badges/mac-app-store-white-en-us.svg" alt="Download on the Mac App Store" width="156" height="40">
+        </a>
+        <p class="ij-store-facts">Free to try for 14 days, then $9.99 once · macOS 14 or later</p>
+      </div>
+      <p class="ij-small edwell-trademark">Adobe and Premiere Rush are trademarks of Adobe. Edwell is an independent app and isn't affiliated with Adobe.</p>
+    </div>
+  </section>
+
 </main>
 
-<footer class="edwell-footer">
-  <div class="ij-container">
-    <p class="ij-small">&copy; 2026 IAMJARL &middot; <a href="/privacy">Privacy</a> &middot; <a href="/support">Support</a> &middot; <a href="https://iamjarl.com">All projects</a></p>
-  </div>
-</footer>
+<ij-footer app="edwell">
+  <a slot="links" href="/support">Support</a>
+  <a slot="links" href="/privacy">Privacy</a>
+  <a slot="links" href="/premiere-rush-alternative-mac">Leaving Premiere Rush</a>
+  <!-- REPO PRIVATE until Eddie-tor#9: <a slot="links" href="https://github.com/JarlLyng/Eddie-tor">Source on GitHub</a> -->
+  <!-- IAMJARL cross-links for Edwell: generated, do not edit -->
+  <!-- design system v1.36.0, registry updated 2026-11-12 -->
+  <!-- Paste inside <ij-footer app="edwell">. Rebuild to refresh. -->
+  <a slot="cross-links" href="https://trimrpix.iamjarl.com">TrimrPix</a>
+  <a slot="cross-links" href="https://trimrpixforios.iamjarl.com">TrimrPix for iOS</a>
+  <a slot="cross-links" href="https://pagelens.iamjarl.com">PageLens</a>
+  <a slot="cross-links" href="https://madebyhuman.iamjarl.com">Made by Human</a>
+  <a slot="cross-links" href="https://iamjarl.com">All projects</a>
+  <p>&copy; 2026 IAMJARL &middot; <a href="/support">Support</a> &middot; <a href="/privacy">Privacy</a> &middot; <a href="/premiere-rush-alternative-mac">Leaving Premiere Rush</a><!-- REPO PRIVATE until Eddie-tor#9: &middot; <a href="https://github.com/JarlLyng/Eddie-tor">Source on GitHub</a> --> &middot; <a href="https://iamjarl.com">All projects</a></p>
+</ij-footer>
+
 </body>
 </html>
