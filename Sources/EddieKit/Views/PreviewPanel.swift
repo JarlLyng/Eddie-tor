@@ -19,17 +19,30 @@ struct PreviewPanel: View {
             .background(Tokens.Palette.Background.muted)
             .overlay(alignment: .top) { missingMedia }
 
+            // Where the playhead is, the transport, and how long the video is.
             HStack(spacing: Tokens.Spacing.lg) {
+                Text(timecode(editor.currentTime, fps: editor.project.fps))
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Button { editor.seek(0) } label: { Image(systemName: "backward.end.fill") }
+                    .help("Go to the start")
                 Button { editor.step(frames: -1) } label: { Image(systemName: "backward.frame.fill") }
+                    .help("One frame back (←)")
                 Button { editor.togglePlay() } label: {
                     Image(systemName: editor.isPlaying ? "pause.fill" : "play.fill").font(.title2)
                 }
+                    .help("Play / pause (Space, J K L)")
                 Button { editor.step(frames: 1) } label: { Image(systemName: "forward.frame.fill") }
+                    .help("One frame forward (→)")
                 Button { editor.seek(editor.project.duration) } label: { Image(systemName: "forward.end.fill") }
+                    .help("Go to the end")
+                Text(timecode(editor.project.duration, fps: editor.project.fps))
+                    .foregroundStyle(Tokens.Palette.Text.secondary)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
+            .ijFont(.sm, design: .monospaced)
             .buttonStyle(.borderless)
             .foregroundStyle(Tokens.Palette.Text.primary)
+            .padding(.horizontal, Tokens.Spacing.md)
             .padding(.vertical, Tokens.Spacing.sm)
         }
     }

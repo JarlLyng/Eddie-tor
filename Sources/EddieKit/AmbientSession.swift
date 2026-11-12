@@ -15,10 +15,17 @@ enum AmbientSession {
     static let titleEnd = 50.767
     static let dip = 0.5
 
-    static var recordingsFolder: URL {
-        FileManager.default.userHomeDirectory
-            .appendingPathComponent("Movies")
+    /// Where the panel for a new session opens: the folder of the last recording chosen. The repo is
+    /// public, so the maker's own folder is learned on first use, never written into the code.
+    static var recordingsFolder: URL? {
+        UserDefaults.standard.url(forKey: recordingsFolderKey)
     }
+
+    static func remember(recording url: URL) {
+        UserDefaults.standard.set(url.deletingLastPathComponent(), forKey: recordingsFolderKey)
+    }
+
+    private static let recordingsFolderKey = "ambientSessionFolder"
 
     /// "Ambient session 012 - RAW.mov" → 12.
     static func number(from url: URL) -> Int? {

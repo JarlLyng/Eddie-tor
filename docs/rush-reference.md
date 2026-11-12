@@ -6,9 +6,7 @@ Nothing here is copied from Adobe's files. Look files, title templates and prese
 
 ## How Rush was used: Ambient Sessions
 
-The recordings and the finished videos are in iCloud Drive:
-
-a folder in iCloud Drive
+The recordings and the finished videos are kept in iCloud Drive, side by side:
 
 - `Ambient session NNN - RAW.mov`: the Twitch recording, 1920×1080, H.264 at about 4.5 Mbit/s, AAC stereo at 192 kbit/s, usually close to an hour (011: 1 h 08 min).
 - `Ambient session NNN.mp4`: the result from Rush, 1920×1080 16:9, H.264 at about **19 Mbit/s**, AAC stereo at **317 kbit/s**, 20 s to 3.5 min shorter than the recording.
@@ -18,14 +16,14 @@ The exact edit comes from the Rush project for session 011 (read on 2026-10-22, 
 | Step | In Rush (session 011) | Eddie |
 |---|---|---|
 | Trim the recording | One clip on V1, source **212.967 s to 4069.300 s** of the recording: 3 min 33 s cut from the start, 5.8 s from the end. Timeline 0 to 3856.333 s, 30 fps | ✓ trim on the main track |
-| Fade in | **Dip to Black, 0.5 s**, at the head of the clip: black for the first 0.25 s, then up over 0.25 s | ✓ "Dyk til sort" at the start, 0.5 s, the same curve (measured frame by frame) |
-| Sound in and out | **Constant Power crossfade, 0.5 s**, at the head and the tail of the audio | ✓ set Lyd › "Fade ind" and "Fade ud" to 0.5 s on the clip. A dip at the very start or end doesn't fade the sound by itself; only a transition between two clips cross-fades it |
+| Fade in | **Dip to Black, 0.5 s**, at the head of the clip: black for the first 0.25 s, then up over 0.25 s | ✓ "Dip to Black" at the start, 0.5 s, the same curve (measured frame by frame) |
+| Sound in and out | **Constant Power crossfade, 0.5 s**, at the head and the tail of the audio | ✓ set Audio › "Fade In" and "Fade Out" to 0.5 s on the clip. A dip at the very start or end doesn't fade the sound by itself; only a transition between two clips cross-fades it |
 | Title | One graphic on V2 from **11.233 s to 50.767 s** (39.5 s), hard cut in and out. Text "Ambient⏎Session 011" in two lines | ✓ New Ambient Session (⌥⌘N) sets it up |
 | Title face | **Soleil Extra Bold** (PostScript name `SoleilXb`), from Adobe Fonts | Outfit at weight 800, shipped with Eddie. Soleil is used instead if its Extra Bold is installed (it isn't, even on the old Mac: only Soleil Light is activated there) |
 | Title size | about **177 px** in a 1080 px frame (177.27 is in the text data; the measured letter height agrees). Lines 166 px apart (tops of the ink at y 334 and 500) | ✓ 177 px, line height 77 %: the ink lands at y 332 and 500 |
 | Title colour | **#D622CE** in session 011 (measured in the video as #D828D0). A new colour every session, see below | ✓ |
 | Title position | Left-aligned. The text box's left edge at **2.1 % of the width** (41 px; ink starts at x 44), its anchor at 52.5 % of the height: the left middle of the frame. Scale 100 %, no rotation, opacity 100 %. No box, no shadow | ✓ left-aligned at x 2.13 %, y 46.7 % (the box's centre): ink at x 44, as in Rush |
-| Fade out | **Dip to Black, 0.5 s**, at the tail: down over 0.25 s, then black | ✓ "Dyk til sort" at the end, 0.5 s |
+| Fade out | **Dip to Black, 0.5 s**, at the tail: down over 0.25 s, then black | ✓ "Dip to Black" at the end, 0.5 s |
 | Audio | Audio type *music*, volume 0 dB, no auto volume (Loudness off), no tracks muted. Ducking is switched on in the clip's Essential Sound but there is nothing to duck under | ✓ nothing to add |
 | Export | 1080p H.264, about 19 Mbit/s, AAC 317 kbit/s (measured on the finished files) | 1080p H.264 at about **10.5 Mbit/s**, AAC 252 kbit/s (Apple's "highest quality" preset). Lower than Rush; a fixed bitrate needs a writer of Eddie's own |
 
@@ -56,18 +54,7 @@ Rush keeps a local copy of every Creative Cloud project as a small Git repositor
 
 That is how this page was filled in. An importer for Eddie could read the same, but the projects can only be refreshed from the cloud by Rush.
 
-What the 17 projects hold, besides the Ambient Sessions:
-
-| Project | Media | Titles |
-|---|---|---|
-| A music video | a song's audio file and video | Soleil Extra Bold |
-| A music video | a song's audio file and video | Soleil Extra Bold |
-| A music video | a song's audio file and video | Soleil Extra Bold |
-| A short video | a phone recording | Soleil Extra Bold |
-| A live recording from the studio | OBS recordings | Roboto Black, Roboto Thin, Source Sans Pro (Black, Light, Light Italic, Regular), Bebas Neue |
-| A test from 2023 | `Test01.mov`, `sound.wav` | |
-
-So Rush was also used for music videos: a song's audio file under video, with a title or two.
+Besides the Ambient Sessions, the 17 projects are music videos, a live recording from the studio and a test from 2023. A music video is a song's audio file under video, with a title or two in Soleil Extra Bold; the live recording uses Roboto, Source Sans Pro and Bebas Neue. So Rush was also used for music videos.
 
 ## Rush features and Eddie
 
@@ -142,7 +129,7 @@ Dialogue also had noise, rumble and reverb reduction, and named EQ presets (Podc
 
 ## Sources
 
-- The installed app: `Keyboard Shortcuts/en/Rush/Rush_Defaults.kys`, `Lumetri/LUTs/Creative/`, `BundledMogrts/` (27 files), `Plug-Ins/Common/` (transitions), and the profile in `~/Documents/Adobe/Premiere Rush/2.0/` (Essential Sound presets, recent imports).
+- The installed app: `Keyboard Shortcuts/en/Rush/Rush_Defaults.kys`, `Lumetri/LUTs/Creative/`, `BundledMogrts/` (27 files), `Plug-Ins/Common/` (transitions), and the user profile under `~/Documents/Adobe/Premiere Rush/2.0/` (Essential Sound presets, recent imports).
 - [Premiere Rush User Guide (Adobe)](https://helpx.adobe.com/premiere-rush/user-guide.html)
 - [Premiere Rush Discontinuation (Adobe)](https://helpx.adobe.com/premiere-rush/premiere-rush-discontinuation.html)
 - [Adobe Premiere Rush – a concise guide (Macquarie University)](https://adobe.arts.mq.edu.au/support/time-based-media/adobe-premiere-rush-a-conscise-guide/)

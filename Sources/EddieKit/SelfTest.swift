@@ -105,6 +105,12 @@ enum SelfTest {
         try await firstRunTests(dir, video: landscape, image: image, music: tone)
         print("first run tests ok")
 
+        try await firstMinutesTests(video: landscape, upright: rotated, image: image, music: tone)
+        print("first minutes tests ok")
+
+        try await quieterEditorTests(dir, video: landscape)
+        print("quieter editor tests ok")
+
         let photo = dir.appendingPathComponent("photo.jpg")
         try writeImage(to: photo)
         try await previewTests(photo: photo)
@@ -358,6 +364,146 @@ enum SelfTest {
         try check(abs(length - 10) < 0.1, "eksport \(length) s")
     }
 
+    /// The first minutes, made shorter: the first picture sets the format until the user picks one, Import
+    /// puts the files on the timeline, the timeline shows only the tracks in use, and a new title is ready
+    /// to type and doesn't land on another one.
+    @MainActor
+    private static func firstMinutesTests(video: URL, upright: URL, image: URL, music: URL) async throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("De første minutter: \(message)") } }
+
+        // The format nearest a picture's shape.
+        let shapes: [(Double, Double, AspectRatio?)] = [
+            (1920, 1080, .landscape), (800, 600, .landscape), (1080, 1920, .portrait), (1000, 1000, .square),
+            (1080, 1350, .vertical45), (600, 800, .vertical45), (0, 0, nil),
+        ]
+        for (w, h, expected) in shapes {
+            try check(AspectRatio.fitting(width: w, height: h) == expected, "format for \(Int(w))×\(Int(h))")
+        }
+
+        // Import puts video and photos on V1 one after another and music on A1, and shows them whole.
+        let editor = Editor(persist: false)
+        let v1 = TrackRow(group: .visual, index: 0), a1 = TrackRow(group: .audio, index: 0)
+        try check(editor.rows.map(\.id) == ["title0", "visual0", "audio0"], "tomme spor \(editor.rows.map(\.id))")
+        let zoom = editor.zoomToFitRequest
+        await editor.importToTimeline([music, video, image])
+        try check(editor.clips(in: v1).map(\.kind) == [.video, .image] && editor.clips(in: v1).map(\.start) == [0, 3],
+                  "import på V1 \(editor.clips(in: v1).map(\.start))")
+        try check(editor.clips(in: a1).map(\.kind) == [.audio], "import af musik på A1")
+        try check(editor.zoomToFitRequest == zoom + 1, "tidslinjen vises hel efter første import")
+        // Music came first, but the landscape video set the format; the photo after it didn't change it.
+        try check(editor.project.aspect == .landscape && !editor.project.aspectChosen, "format fra første video")
+        await editor.importToTimeline([video])
+        try check(editor.zoomToFitRequest == zoom + 1, "ingen ny zoom, når der allerede er klip")
+        // Dropped files zoom once too.
+        let dropped = Editor(persist: false)
+        await dropped.dropFiles([video, image], at: 0, row: v1)
+        try check(dropped.zoomToFitRequest == 1 && dropped.project.aspect == .landscape, "slip i tom tidslinje")
+
+        // An upright video in a new project gives 9:16, and undo takes the format back with the clip.
+        let upright1 = Editor(persist: false)
+        upright1.edit { $0.aspect = .square }
+        await upright1.importToTimeline([upright])
+        try check(upright1.project.aspect == .portrait, "stående video \(upright1.project.aspect)")
+        upright1.undo()
+        try check(upright1.project.aspect == .square && upright1.project.clips.isEmpty, "fortryd format")
+
+        // A format the user picked stays, and a project saved before the flag keeps its format once it has a picture.
+        let chosen = Editor(persist: false)
+        chosen.aspectBinding.wrappedValue = .square
+        await chosen.importToTimeline([video])
+        try check(chosen.project.aspect == .square && chosen.project.aspectChosen, "valgt format bliver")
+        for (project, expected) in [(editor.project, true), (Project(), false)] {
+            var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(project)) as? [String: Any] ?? [:]
+            json["aspectChosen"] = nil
+            let old = try JSONDecoder().decode(Project.self, from: JSONSerialization.data(withJSONObject: json))
+            try check(old.aspectChosen == expected, "gammel fil, valgt format \(old.aspectChosen)")
+        }
+
+        // Only the tracks in use show, besides the first of each kind.
+        editor.add(editor.project.media[1], at: 0, track: 2)
+        try check(editor.rows.map(\.id) == ["title0", "visual2", "visual0", "audio0"], "spor i brug \(editor.rows.map(\.id))")
+
+        // A new title is ready to type and finds a free height while another title shows.
+        try check(Editor.freeTitleHeight(among: []) == 0.8 && Editor.freeTitleHeight(among: [0.8]) == 0.2
+                  && Editor.freeTitleHeight(among: [0.75, 0.2]) == 0.5 && Editor.freeTitleHeight(among: [0.8, 0.2, 0.5]) == 0.8
+                  && Editor.freeTitleHeight(among: [0.467]) == 0.8, "titlens højde")
+        editor.seek(1)
+        editor.addTitle()
+        let first = editor.selectedClip
+        try check(first?.kind == .title && editor.titleToType == first?.id && editor.inspectorTab == .text, "ny titel klar til at skrive")
+        editor.seek(2)
+        editor.addTitle()
+        let second = editor.selectedClip
+        try check(second?.track == 1 && second?.title?.y == 0.2 && editor.titleToType == second?.id, "anden titel \(second?.title?.y ?? -1)")
+        editor.selection = first?.id
+        try check(editor.titleToType == nil, "valg af et andet klip")
+    }
+
+    /// The rest of the pass: tracks made by dragging past the last one, track names, title styles and places,
+    /// the short font list, the media bin hidden at first, and an export as the save panel starts it.
+    @MainActor
+    private static func quieterEditorTests(_ dir: URL, video: URL) async throws {
+        func check(_ condition: Bool, _ message: String) throws { if !condition { throw err("Roligere: \(message)") } }
+
+        var project = Project()
+        project.makeTrack(.visual, 3)
+        project.makeTrack(.visual, 1)
+        project.makeTrack(.title, 9)
+        try check(project.visualTracks == 4 && project.titleTracks == Project.maxTracks(.title) && project.audioTracks == 2,
+                  "nye spor \(project.visualTracks) \(project.titleTracks)")
+
+        let video1 = String(localized: "Video"), title1 = String(localized: "Title"), audio1 = String(localized: "Audio")
+        try check(TrackRow(group: .visual, index: 0).label == video1 && TrackRow(group: .visual, index: 1).label == "\(video1) 2"
+                  && TrackRow(group: .title, index: 0).label == title1 && TrackRow(group: .audio, index: 2).label == "\(audio1) 3",
+                  "spornavne \(TrackRow(group: .visual, index: 1).label)")
+
+        // A style keeps the text and its colour, and is the only one recognised afterwards.
+        var style = TitleStyle(text: "Hej", color: RGBA(r: 1, g: 0, b: 0, a: 1))
+        try check(TitlePreset.allCases.allSatisfy { !$0.matches(style) }, "ingen stil fra start")
+        for preset in TitlePreset.allCases {
+            preset.apply(to: &style)
+            try check(style.text == "Hej" && style.color.r == 1 && style.fontFamily == BundledFonts.outfit
+                      && TitlePreset.allCases.filter { $0.matches(style) } == [preset], "stil \(preset)")
+        }
+        style.place(column: 2, row: 0)
+        try check(style.align == .right && style.x == 0.95 && style.y == 0.12 && style.isPlaced(column: 2, row: 0)
+                  && !style.isPlaced(column: 1, row: 0), "placering")
+
+        let installed = ["Helvetica Neue", "Georgia", BundledFonts.outfit, "Comic Sans MS"]
+        try check(BundledFonts.titleChoices(current: "Georgia", installed: installed) == [BundledFonts.outfit, "Helvetica Neue", "Georgia"],
+                  "skriftliste")
+        try check(BundledFonts.titleChoices(current: "Comic Sans MS", installed: installed).first == "Comic Sans MS", "skrift uden for listen")
+
+        let editor = Editor(persist: false)
+        try check(!editor.showMedia, "mediebiblioteket vises fra start")
+
+        // Export as the save panel starts it: the options give the range, and the job ends with the file.
+        await editor.importToTimeline([video])
+        editor.edit { $0.inPoint = 1; $0.outPoint = 2 }
+        let options = ExportOptions()
+        try check(options.range(of: editor.project) == 1...2, "område")
+        options.onlyInOut = false
+        try check(options.range(of: editor.project) == nil, "hele projektet")
+        options.onlyInOut = true
+        let url = dir.appendingPathComponent("export-job.mp4")
+        let job = editor.exportJob
+        job.start(editor.project, to: url, codec: options.codec, range: options.range(of: editor.project))
+        try check(job.isExporting && job.showsSheet, "eksport startet")
+        await job.finish()
+        try check(job.state == .done(url), "eksport færdig \(job.state)")
+        let length = try await AVURLAsset(url: url).load(.duration).seconds
+        try check(abs(length - 1) < 0.05, "eksportens længde \(length)")
+        job.showsSheet = false
+        try check(job.state == .idle, "lukket ark")
+
+        // Cancelled: the sheet closes and no file is left.
+        let cancelled = dir.appendingPathComponent("export-cancelled.mp4")
+        job.start(editor.project, to: cancelled, codec: .h264, range: nil)
+        job.cancel()
+        await job.finish()
+        try check(job.state == .idle && !job.showsSheet && !FileManager.default.fileExists(atPath: cancelled.path), "annulleret \(job.state)")
+    }
+
     /// The preview player when stills and titles set the project's length: in a new 16:9 project, a photo
     /// on V3, then a title on T1 that runs past the photo's end. The player must reach all of it: the
     /// title shows, Play runs, and a seek lands where the playhead is.
@@ -383,17 +529,10 @@ enum SelfTest {
         guard let item = editor.player.currentItem else { throw err("Forhåndsvisning: ingen afspiller") }
         for _ in 0..<100 where item.status == .unknown { try await Task.sleep(for: .milliseconds(50)) }
         let length = try await item.asset.load(.duration).seconds
-        editor.seek(2.11)
-        await editor.player.seek(to: CompositionBuilder.time(2.11), toleranceBefore: .zero, toleranceAfter: .zero)
-        let landed = editor.player.currentTime().seconds
 
-        // The player's item at 2.11 s: white title pixels over the yellow photo.
-        func white(at seconds: Double) async throws -> Int {
-            let generator = AVAssetImageGenerator(asset: item.asset)
-            generator.videoComposition = item.videoComposition
-            generator.requestedTimeToleranceBefore = .zero
-            generator.requestedTimeToleranceAfter = .zero
-            let (image, _) = try await generator.image(at: CompositionBuilder.time(seconds))
+        // White title pixels over the yellow photo.
+        func white(_ image: CGImage?) -> Int {
+            guard let image else { return -1 }
             let w = image.width, h = image.height
             var data = [UInt8](repeating: 0, count: w * h * 4)
             let ctx = CGContext(data: &data, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
@@ -401,6 +540,51 @@ enum SelfTest {
             ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
             return stride(from: 0, to: data.count, by: 4).filter { data[$0] > 230 && data[$0 + 1] > 230 && data[$0 + 2] > 230 }.count
         }
+        /// The player's item, or the export's composition, at a time.
+        func white(at seconds: Double, export: BuildResult? = nil) async throws -> Int {
+            let generator = AVAssetImageGenerator(asset: export?.composition ?? item.asset)
+            generator.videoComposition = export?.videoComposition ?? item.videoComposition
+            generator.requestedTimeToleranceBefore = .zero
+            generator.requestedTimeToleranceAfter = .zero
+            return white(try await generator.image(at: CompositionBuilder.time(seconds)).image)
+        }
+        /// What the player shows at the playhead, as the preview pane draws it.
+        let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+        item.add(output)
+        func shown() async throws -> Int {
+            let time = CompositionBuilder.time(editor.currentTime)
+            for _ in 0..<80 where !output.hasNewPixelBuffer(forItemTime: time) { try await Task.sleep(for: .milliseconds(25)) }
+            guard let buffer = output.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else { return -1 }
+            let frame = CIImage(cvPixelBuffer: buffer)
+            return white(CIContext().createCGImage(frame, from: frame.extent))
+        }
+
+        // G puts the title at the playhead, where its fade-in starts from nothing. Paused, with the title selected,
+        // the player shows that frame in full, and again when the title is selected later; the frame after it,
+        // playback and export keep the fade.
+        editor.seek(1)
+        editor.seek(1.44)
+        let added = try await shown()
+        editor.selection = nil
+        await editor.previewReady()
+        let deselected = try await shown()
+        editor.selection = title?.id
+        await editor.previewReady()
+        let reselected = try await shown()
+        let next = try await white(at: 1.44 + 1.0 / 30)
+        let exported = try await white(at: 1.44, export: try await CompositionBuilder.build(editor.project))
+        editor.play()
+        let whilePlaying = try await white(at: 1.44)
+        editor.pause()
+        editor.seek(1.44)
+        print("preview: new title at the playhead \(added), deselected \(deselected), selected \(reselected),",
+              "next frame \(next), export \(exported), playing \(whilePlaying)")
+        try check(added > 1000 && deselected == 0 && reselected > 1000, "ny titel ved afspilningshovedet \(added) \(deselected) \(reselected)")
+        try check(next == 0 && exported == 0 && whilePlaying == 0, "titlens fade \(next) \(exported) \(whilePlaying)")
+
+        editor.seek(2.11)
+        await editor.player.seek(to: CompositionBuilder.time(2.11), toleranceBefore: .zero, toleranceAfter: .zero)
+        let landed = editor.player.currentTime().seconds
         let before = try await white(at: 1), during = try await white(at: 2.11)
 
         editor.play()

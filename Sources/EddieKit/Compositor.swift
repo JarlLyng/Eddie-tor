@@ -19,6 +19,7 @@ struct RenderLayer: @unchecked Sendable {
     }
 
     var content: Content
+    var clipID: UUID
     var start: CMTime
     var end: CMTime
     var scale: Double
@@ -57,16 +58,39 @@ final class EddieInstruction: NSObject, AVVideoCompositionInstructionProtocol, @
 
     let layers: [RenderLayer]
     let background: RGBA
+    /// Only in the preview; export draws every fade.
+    let pausedTitle: PausedTitle?
 
-    init(timeRange: CMTimeRange, layers: [RenderLayer], background: RGBA) {
+    init(timeRange: CMTimeRange, layers: [RenderLayer], background: RGBA, pausedTitle: PausedTitle?) {
         self.timeRange = timeRange
         self.layers = layers
         self.background = background
+        self.pausedTitle = pausedTitle
         var ids: [NSValue] = []
         for layer in layers {
             if case .video(let id, _) = layer.content { ids.append(NSNumber(value: id)) }
         }
         self.requiredSourceTrackIDs = ids
+    }
+}
+
+/// The selected title while the preview is paused. Its paused frame is drawn without the title's fades, so a
+/// title added at the playhead (where its fade-in starts from nothing) shows while the user types and places it.
+/// Playback, every other frame and export are drawn as they are.
+final class PausedTitle: @unchecked Sendable {
+    private let lock = NSLock()
+    private var clipID: UUID?
+    private var time: Double = 0
+
+    func set(_ clipID: UUID?, at time: Double) {
+        lock.lock(); defer { lock.unlock() }
+        self.clipID = clipID
+        self.time = time
+    }
+
+    func shows(_ clipID: UUID, at t: Double, within tolerance: Double) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        return clipID == self.clipID && abs(t - time) <= tolerance
     }
 }
 
@@ -101,13 +125,17 @@ final class EddieCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
         let size = request.renderContext.size
         let frame = CGRect(origin: .zero, size: size)
         let t = request.compositionTime.seconds
+        let frameDuration = request.renderContext.videoComposition.frameDuration.seconds
         let bg = instruction.background
 
         var image = CIImage(color: CIColor(red: bg.r, green: bg.g, blue: bg.b)).cropped(to: frame)
         for layer in instruction.layers where layer.start.seconds <= t + 1e-6 && t < layer.end.seconds {
             guard var layerImage = content(of: layer, request: request, canvas: size) else { continue }
             var opacity = layer.opacity
-            if case .title = layer.content { opacity *= layer.fadeOpacity(at: t) }
+            if case .title = layer.content,
+               instruction.pausedTitle?.shows(layer.clipID, at: t, within: frameDuration / 2) != true {
+                opacity *= layer.fadeOpacity(at: t)
+            }
             if opacity <= 0 { continue }
             if opacity < 1 { layerImage = layerImage.withOpacity(opacity) }
             image = Transitions.composite(layerImage, layer: layer, at: t, over: image, frame: frame)

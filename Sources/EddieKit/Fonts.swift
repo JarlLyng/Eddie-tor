@@ -20,6 +20,16 @@ enum BundledFonts {
         family == outfit ? "Outfit" : family
     }
 
+    /// The first fonts a title offers: Outfit, then a short choice of faces every Mac has. The rest are
+    /// one menu further, under All Fonts. A title in a face outside the list keeps it at the top.
+    static func titleChoices(current: String?, installed: [String] = NSFontManager.shared.availableFontFamilies) -> [String] {
+        let common = [outfit, "Helvetica Neue", "Avenir Next", "Futura", "Gill Sans", "Georgia", "Baskerville",
+                      "Didot", "Rockwell", "American Typewriter", "Marker Felt", "Menlo"]
+        let available = common.filter(installed.contains)
+        guard let current, !available.contains(current) else { return available }
+        return [current] + available
+    }
+
     /// Inside the app: Contents/Resources/Fonts. Built with `swift build`: the repository's Resources/Fonts.
     private static var fontsDirectory: URL? {
         if let bundled = Bundle.main.resourceURL?.appendingPathComponent("Fonts"),
