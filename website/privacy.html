@@ -10,12 +10,13 @@
   <meta name="theme-color" content="#000000">
   <link rel="icon" type="image/png" href="/assets/favicon.png">
   <link rel="apple-touch-icon" href="/assets/edwell-icon.png">
-  <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/css/tokens.css" integrity="sha384-dwNVnicsf+dtw01r5p08OIz0PAoO6RGpCdqZ4uOMnjy52ZvPD8H6/XoSie5rGYTe">
-  <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/fonts/fraunces.css" integrity="sha384-rnzOIiLQ631zol+MLs/T3PzPzScEIEQga9gFiacTaf7HJgvKERmEUbbHysNNlUab">
-  <link rel="stylesheet" href="/assets/iamjarl-design@v1.35.1/dist/kit/kit.css" integrity="sha384-nUfZVPynd+qv9zKy31CNHBMAm4lfLPzO2XpNIuNW/YgL6qQNZDgLjG5aYRDoR6Qm">
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.36.0/dist/css/tokens.css" integrity="sha384-4ElIrKMgfNJRZ4e32tAsA9Bcmrw0YrPTz194TDrOXZbYAF6+mbF/yssQCRNBYqRs">
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.36.0/dist/identity/edwell.css" integrity="sha384-4g8PlfFfyNIZRwO44XAbX3Hw6m2VNpNefQ/UJreNWE8NBNxVockc7Ux2DYuXsffd">
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.36.0/dist/fonts/fraunces.css" integrity="sha384-JeKIfoU48PEFwy97QH5XyE8vgP/re5gMlWK1rmDQOqaLClwzxO+f+RCaKx69qSL2">
+  <link rel="stylesheet" href="/assets/iamjarl-design@v1.36.0/dist/kit/kit.css" integrity="sha384-YUPw8Ejdh2W/YM8Ofx1gGq9aDMF+V+QsR+gYmNbY7O2sCXt4f6q6evIb5WmRFd1P">
   <link rel="stylesheet" href="/assets/site.css">
-  <script type="module" src="/assets/iamjarl-design@v1.35.1/dist/components/ij-nav.js" integrity="sha384-95VZFSpjnq1uGjMyR2zC3pAec8DTD+3cyJATjk5Kl4WpTj1vPnWkgZOLM3qETtSn"></script>
-  <script type="module" src="/assets/iamjarl-design@v1.35.1/dist/components/ij-footer.js" integrity="sha384-i37426tUYyrzNktVPZXGI26zfSccQnLf7v7bj8+w9GMsCiimLXduUK//vx30mU/g"></script>
+  <script type="module" src="/assets/iamjarl-design@v1.36.0/dist/components/ij-nav.js" integrity="sha384-SWuiwp5zwGo90jQaJ3mUO13FViQPYZ6UfEObwkeiaz2HQAfmQCae2iCeJ24VJAMT"></script>
+  <script type="module" src="/assets/iamjarl-design@v1.36.0/dist/components/ij-footer.js" integrity="sha384-Z7md8d03PQnv03JqgFjepwr8CKkyDVpJqtaU+9/AEB6LAfSVIuH/0TiKXJ219Xbv"></script>
   <!-- Cookieless analytics on the portfolio's self-hosted Umami, counting this domain only. -->
   <script defer src="https://umami-iamjarl.vercel.app/script.js" data-website-id="0e97e99f-ef1a-4e83-a6de-13c35ca272bf" data-domains="edwell.iamjarl.com"></script>
 </head>
@@ -24,8 +25,7 @@
 
 <ij-nav>
   <a slot="brand" href="/">Edwell</a>
-  <!-- PLACEHOLDER until the release with iamjarl-design#114: the nav's call to action. -->
-  <a slot="cta" data-ij-placeholder="iamjarl-design#114" href="https://apps.apple.com/app/id6825963733?pt=128512007&amp;ct=site&amp;mt=12" data-umami-event="store-click" data-umami-event-store="mac-app-store" data-umami-event-placement="nav" data-umami-event-locale="en">Download</a>
+  <a slot="cta" href="https://apps.apple.com/app/id6825963733?pt=128512007&amp;ct=site&amp;mt=12" data-umami-event="store-click" data-umami-event-store="mac-app-store" data-umami-event-placement="nav" data-umami-event-locale="en">Download</a>
 </ij-nav>
 
 <main id="main">
@@ -48,13 +48,19 @@
   </article>
 </main>
 
-<!-- PLACEHOLDER until the release with iamjarl-design#114: the registry doesn't know "edwell" yet, so the
-     footer shows its fallback. With the release, paste dist/footers/edwell.html after the links. -->
-<ij-footer app="edwell" data-ij-placeholder="iamjarl-design#114">
+<ij-footer app="edwell">
   <a slot="links" href="/">Edwell</a>
   <a slot="links" href="/support">Support</a>
   <a slot="links" href="/premiere-rush-alternative-mac">Leaving Premiere Rush</a>
   <!-- REPO PRIVATE until Eddie-tor#9: <a slot="links" href="https://github.com/JarlLyng/Eddie-tor">Source on GitHub</a> -->
+  <!-- IAMJARL cross-links for Edwell: generated, do not edit -->
+  <!-- design system v1.36.0, registry updated 2026-11-12 -->
+  <!-- Paste inside <ij-footer app="edwell">. Rebuild to refresh. -->
+  <a slot="cross-links" href="https://trimrpix.iamjarl.com">TrimrPix</a>
+  <a slot="cross-links" href="https://trimrpixforios.iamjarl.com">TrimrPix for iOS</a>
+  <a slot="cross-links" href="https://pagelens.iamjarl.com">PageLens</a>
+  <a slot="cross-links" href="https://madebyhuman.iamjarl.com">Made by Human</a>
+  <a slot="cross-links" href="https://iamjarl.com">All projects</a>
   <p>&copy; 2026 IAMJARL &middot; <a href="/">Edwell</a> &middot; <a href="/support">Support</a> &middot; <a href="https://iamjarl.com">All projects</a></p>
 </ij-footer>
 </body>

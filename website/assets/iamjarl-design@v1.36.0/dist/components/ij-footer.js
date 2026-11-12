@@ -1,4 +1,4 @@
-// IAMJARL <ij-footer> v1.35.1: generated, do not edit
+// IAMJARL <ij-footer> v1.36.0: generated, do not edit
 // Sources: components/select-links.js, components/labels.js, components/ij-footer.js, apps.json
 
 const REGISTRY = {
@@ -142,6 +142,14 @@ const REGISTRY = {
       "listed": true
     },
     {
+      "id": "edwell",
+      "name": "Edwell",
+      "url": "https://edwell.iamjarl.com",
+      "category": "images",
+      "status": "shipped",
+      "listed": true
+    },
+    {
       "id": "get-to-the-movie",
       "name": "Get to the Movie!",
       "url": "https://gettothemovie.iamjarl.com",
@@ -226,19 +234,25 @@ function selectLinks(registry, siteId, options = {}) {
   const topUp = [];
   if (siblings.length < minLinks) {
     const chosen = new Set(siblings.map(a => a.id));
+    // Among apps of equal reach, each footer starts with the ids after its own
+    // and wraps around. A plain alphabetical tie-break sent every footer to the
+    // same first apps, and the last id in a tie was never picked: adding Edwell
+    // left TrimrPix for iOS in two footers (#114).
+    const wraps = id => (id > siteId ? 0 : 1);
     const candidates = pool
       .filter(a => !chosen.has(a.id))
       .map(a => ({ app: a, reach: categoryReach(pool, a) }))
-      // Least-connected first, then by id. Deliberately NOT by position in
-      // apps.json: order would make a cosmetic re-sort of the registry rewrite
-      // every committed fragment. Reach already carries the "needs exposure"
-      // signal that ordering used to approximate.
-      .sort((x, y) => x.reach - y.reach || (x.app.id < y.app.id ? -1 : 1));
+      // Least-connected first, then by id from the footer's own. Deliberately
+      // NOT by position in apps.json: order would make a cosmetic re-sort of the
+      // registry rewrite every committed fragment. Reach already carries the
+      // "needs exposure" signal that ordering used to approximate.
+      .sort((x, y) => x.reach - y.reach || wraps(x.app.id) - wraps(y.app.id) || (x.app.id < y.app.id ? -1 : 1));
 
-    for (const c of candidates) {
-      if (siblings.length + topUp.length >= minLinks) break;
-      topUp.push(c.app);
-    }
+    const picked = candidates.slice(0, Math.max(0, minLinks - siblings.length));
+    // Shown least-connected first and then by id, as before: the wrap decides
+    // which apps a footer picks, not the order it lists them in.
+    picked.sort((x, y) => x.reach - y.reach || (x.app.id < y.app.id ? -1 : 1));
+    topUp.push(...picked.map(c => c.app));
   }
 
   return { self, siblings, topUp, always, links: [...siblings, ...topUp, ...always] };

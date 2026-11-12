@@ -4,40 +4,10 @@
    selection, the buy button, never long text), Fraunces for headlines and the system's UI face for
    the rest. The pictures are the app's window and timeline. */
 
-/* ---------- STAND-IN for dist/identity/edwell.css ----------
-   The registry entry with Edwell's identity is iamjarl-design#114, released on launch day. Until then
-   these are the values that sheet should carry: dark only, on the window's black, the preview's #0D0D0D
-   for surfaces, Fraunces soft. With that release, load the identity sheet after tokens.css and delete
-   this block. */
-:root {
-  color-scheme: dark;
-  --ij-color-bg-app: #000000;
-  --ij-color-bg-card: #0D0D0D;
-  --ij-color-surface-default: #0D0D0D;
-  --ij-color-text-primary: #F2F2F2;
-  --ij-color-text-secondary: #C2C2C2;
-  --ij-color-text-tertiary: #A9A9A9;
-  --ij-color-accent: #D0FF00;
-  --ij-color-accent-rgb: 208, 255, 0;
-  --ij-color-on-accent: #000000;
-  --ij-color-accent-text: #D0FF00;
-  --ij-color-accent-family: #D0FF00;
-  --ij-color-accent-family-rgb: 208, 255, 0;
-  --ij-font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --ij-font-display-axes: 'SOFT' 100;
-}
-/* ---------- end of the stand-in ---------- */
-
 :root {
   --ij-display-weight: 400;
   --ij-wordmark-em: 3.4;
 }
-
-/* PLACEHOLDER until iamjarl-design#114: the footer's app isn't in the registry, so the component leaves
-   its children as they are. Show only the fallback line. Goes with the data-ij-placeholder attribute. */
-.ij-page ij-footer[data-ij-placeholder] > [slot] { display: none; }
-.ij-page ij-footer[data-ij-placeholder] > p { margin: 0; font-size: var(--ij-mkt-small-size); color: var(--ij-color-text-tertiary); }
-.ij-page ij-footer[data-ij-placeholder] a { color: var(--ij-color-text-secondary); }
 
 /* The footer stays at the bottom of a short page. */
 body.ij-page {
